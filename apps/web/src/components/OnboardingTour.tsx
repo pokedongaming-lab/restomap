@@ -49,9 +49,9 @@ export default function OnboardingTour() {
   const router = useRouter()
 
   useEffect(() => {
+    // Show tour button always for now (can be toggled)
     const seen = localStorage.getItem('restomap:onboarding_seen')
     if (!seen) {
-      setHasSeen(false)
       setIsOpen(true)
     }
   }, [])
@@ -84,8 +84,7 @@ export default function OnboardingTour() {
     closeTour()
   }
 
-  // Show tour button if closed
-  if (!isOpen && hasSeen) {
+  // Show tour button always
     return (
       <button
         onClick={startTour}
