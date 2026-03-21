@@ -8,6 +8,7 @@ import { reportRoutes } from './routes/reports'
 import { competitorRoutes } from './routes/competitors'
 import { savedLocationsRoutes } from './routes/locations'
 import { heatmapRoutes } from './routes/heatmap'
+import { gapCategoryRoutes } from './routes/gapCategory'
 
 async function start() {
   const app = Fastify({ logger: true })
@@ -27,6 +28,7 @@ async function start() {
   await app.register(competitorRoutes)
   await app.register(savedLocationsRoutes)
   await app.register(heatmapRoutes)
+  await app.register(gapCategoryRoutes)
 
   const port = Number(process.env.PORT ?? 3001)
   await app.listen({ port, host: '0.0.0.0' })

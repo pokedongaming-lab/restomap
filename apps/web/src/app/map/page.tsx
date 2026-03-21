@@ -9,6 +9,7 @@ import HeatmapToggle from '@/components/HeatmapToggle'
 import ScoringPanel from '@/components/ScoringPanel'
 import SavedLocationsList from '@/components/SavedLocationsList'
 import CompetitorList from '@/components/CompetitorList'
+import GapCategoryPanel from '@/components/GapCategoryPanel'
 import OnboardingTour from '@/components/OnboardingTour'
 import { useSavedLocations } from '@/hooks/useSavedLocations'
 import { useHeatmap } from '@/hooks/useHeatmap'
@@ -193,6 +194,12 @@ export default function MapPage() {
                     lng={pin.lng}
                     radius={radius}
                     category={category}
+                  />
+                  <div className="border-t border-gray-100 my-4" />
+                  <GapCategoryPanel
+                    lat={pin.lat}
+                    lng={pin.lng}
+                    radius={radius}
                   />
                 </>
               ) : (
