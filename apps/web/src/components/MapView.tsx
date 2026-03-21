@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 
 export type MapPin = {
   lat: number
@@ -16,11 +16,11 @@ type Props = {
 
 const CITY_CENTERS: Record<string, [number, number]> = {
   jakarta:  [-6.2088,  106.8456],
-  surabaya: [-7.2575,  112.7521],
-  bandung:  [-6.9175,  107.6191],
-  bali:     [-8.4095,  115.1889],
+  surabaya: [-7.2575, 112.7521],
+  bandung:  [-6.9175, 107.6191],
+  bali:     [-8.4095, 115.1889],
   medan:    [ 3.5952,   98.6722],
-  makassar: [-5.1477,  119.4327],
+  makassar: [-5.1477, 119.4327],
 }
 
 export default function MapView({ onPinChange, radius = 1000, initialCity = 'jakarta' }: Props) {
@@ -31,6 +31,25 @@ export default function MapView({ onPinChange, radius = 1000, initialCity = 'jak
   const initializedRef = useRef(false)
   const [address, setAddress] = useState('')
 
+  // Handle flyto event from outside component
+  const handleFlyto = useCallback((e: Event) => {
+    const detail = (e as CustomEvent).detail
+    if (detail?.lat && detail?.lng && mapRef.current) {
+      mapRef.current.setView([detail.lat, detail.lng], 14)
+      // Also move marker
+      if (markerRef.current) {
+        markerRef.current.setLatLng([detail.lat, detail.lng])
+      }
+    }
+  }, [])
+
+  useEffect(() => {
+    window.addEventListener('restomap:flyto', handleFlyto)
+    return () => {
+      window.removeEventListener('restomap:flyto', handleFlyto)
+    }
+  }, [handleFlyto])
+
   useEffect(() => {
     // Guard: only initialize once
     if (initializedRef.current) return
@@ -38,6 +57,7 @@ export default function MapView({ onPinChange, radius = 1000, initialCity = 'jak
     initializedRef.current = true
 
     let L: any
+    let map: any
 
     import('leaflet').then((mod) => {
       L = mod.default ?? mod
@@ -51,7 +71,7 @@ export default function MapView({ onPinChange, radius = 1000, initialCity = 'jak
       })
 
       const center = CITY_CENTERS[initialCity] ?? CITY_CENTERS.jakarta
-      const map = L.map(containerRef.current, { zoomControl: true }).setView(center, 14)
+      map = L.map(containerRef.current, { zoomControl: true }).setView(center, 14)
       mapRef.current = map
 
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -94,37 +114,16 @@ export default function MapView({ onPinChange, radius = 1000, initialCity = 'jak
           onPinChange?.({ lat, lng })
         }
       })
-
-      // Listen for flyto events from city search
-      const handleFlyto = (e: Event) => {
-        const detail = (e as CustomEvent).detail
-        if (detail?.lat && detail?.lng) {
-          map.setView([detail.lat, detail.lng], 14)
-          // Also move marker
-          if (markerRef.current) {
-            markerRef.current.setLatLng([detail.lat, detail.lng])
-          }
-        }
-      }
-      window.addEventListener('restomap:flyto', handleFlyto)
-
-      // Store cleanup function
-      const cleanup = () => {
-        window.removeEventListener('restomap:flyto', handleFlyto)
-        if (mapRef.current) {
-          mapRef.current.remove()
-          mapRef.current = null
-          markerRef.current = null
-          circleRef.current = null
-          initializedRef.current = false
-        }
-      }
-
-      return cleanup
     })
 
     return () => {
-      cleanup()
+      if (mapRef.current) {
+        mapRef.current.remove()
+        mapRef.current = null
+        markerRef.current = null
+        circleRef.current = null
+        initializedRef.current = false
+      }
     }
   }, [])
 
