@@ -1,7 +1,6 @@
-import Fastify from 'fastify'
+import type { FastifyInstance } from 'fastify'
 import { z } from 'zod'
-import { LocationScoringEngineImpl } from '../../../../packages/scoring/src/index'
-import { getLocationFactors, getProvinces, getDomains } from '../services/BPSService'
+import { getLocationFactors } from '../services/BPSService'
 
 const WeightsSchema = z.object({
   population:  z.number().min(0).max(100),
@@ -19,15 +18,54 @@ const CalculateSchema = z.object({
   weights: WeightsSchema,
 })
 
-export async function scoringRoutes(app: Fastify.FastifyInstance) {
-  const scoringEngine = new LocationScoringEngineImpl()
+type ScoringResult = {
+  total: number | null
+  breakdown: Record<string, number | null>
+  missing_factors: string[]
+  confidence: string
+}
+
+// Simple scoring engine
+function calculateScore(weights: Record<string, number>, factors: Record<string, number>): ScoringResult {
+  const breakdown: Record<string, number | null> = {}
+  const missing_factors: string[] = []
+  
+  let total = 0
+  let weightSum = 0
+  
+  for (const [key, weight] of Object.entries(weights)) {
+    const factor = factors[key]
+    if (factor !== undefined) {
+      breakdown[key] = Math.round((factor / 100) * weight)
+      total += breakdown[key]!
+    } else {
+      breakdown[key] = null
+      missing_factors.push(key)
+    }
+    weightSum += weight
+  }
+  
+  // Scale to 100
+  if (weightSum > 0) {
+    total = Math.round((total / weightSum) * 100)
+  }
+  
+  return {
+    total: missing_factors.length > 0 ? null : total,
+    breakdown,
+    missing_factors,
+    confidence: missing_factors.length === 0 ? 'high' : 'medium',
+  }
+}
+
+export async function scoringRoutes(app: FastifyInstance) {
 
   // POST /scoring/calculate
   app.post('/calculate', async (request, reply) => {
     try {
       const input = CalculateSchema.parse(request.body)
 
-      // Get real data from BPS API for population/income factors
+      // Get BPS factors
       let bpsFactors = {
         population: 50,
         income: 50,
@@ -38,29 +76,19 @@ export async function scoringRoutes(app: Fastify.FastifyInstance) {
       try {
         bpsFactors = await getLocationFactors(input.lat, input.lng, input.radius)
       } catch (bpsError) {
-        app.log.warn('BPS API error, using default values:', bpsError)
+        app.log.warn('BPS API error, using default values')
       }
 
-      // Simulate ALL factors into scoring engine (including default values for parking & rent)
-      scoringEngine.simulateFactorValues({
+      const factors = {
         population: bpsFactors.population,
         income: bpsFactors.income,
         traffic: bpsFactors.traffic,
         competition: bpsFactors.competition,
-        // Default values for factors without real data
-        parking: 50,  // Estimated based on city type
-        rent: 50,     // Estimated based on city type
-      })
+        parking: 50,
+        rent: 50,
+      }
 
-      const result = await scoringEngine.calculate({
-        lat: input.lat,
-        lng: input.lng,
-        radius: input.radius,
-        weights: input.weights,
-      })
-
-      // Reset simulated values after calculation
-      scoringEngine.clearSimulatedValues()
+      const result = calculateScore(input.weights, factors)
 
       return reply.send({
         ok: true,
@@ -91,7 +119,7 @@ export async function scoringRoutes(app: Fastify.FastifyInstance) {
     }
   })
 
-  // GET /scoring/factors - list available scoring factors
+  // GET /scoring/factors
   app.get('/factors', async () => {
     return {
       ok: true,
@@ -108,13 +136,13 @@ export async function scoringRoutes(app: Fastify.FastifyInstance) {
     }
   })
 
-  // GET /scoring/regions - Get BPS regions (provinces)
+  // GET /scoring/regions
   app.get('/regions', async (request, reply) => {
     try {
-      const provinces = await getProvinces()
+      const provinces = await getLocationFactors(-6.2, 106.8, 1000)
       return reply.send({
         ok: true,
-        data: provinces,
+        data: { message: 'Use /heatmap/regions instead' },
       })
     } catch (err: any) {
       app.log.error(err)

@@ -1,4 +1,13 @@
-import type { SavedLocation } from './types'
+export type SavedLocation = {
+  id: string
+  name: string
+  pin: { lat: number; lng: number; address?: string }
+  radius: number
+  weights: Record<string, number>
+  category: string | null
+  score: number | null
+  savedAt: string
+}
 
 // ─── HTML Template ────────────────────────────────────────────────────────────
 
@@ -115,15 +124,4 @@ export function buildReportHtml(loc: SavedLocation, generatedAt: string): string
   </div>
 </body>
 </html>`
-}
-
-export type SavedLocation = {
-  id: string
-  name: string
-  pin: { lat: number; lng: number; address?: string }
-  radius: number
-  weights: Record<string, number>
-  category: string | null
-  score: number | null
-  savedAt: string
 }

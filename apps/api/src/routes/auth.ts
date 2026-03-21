@@ -46,11 +46,11 @@ export async function authRoutes(app: FastifyInstance) {
   app.post('/login', async (request, reply) => {
     try {
       const body = LoginSchema.parse(request.body)
-      app.log.info('Login attempt for:', body.email)
+      app.log.info({ email: body.email }, 'Login attempt')
       const result = await authService.login(body)
       return reply.send({ ok: true, data: result })
     } catch (err: any) {
-      app.log.error('Login error:', err)
+      app.log.error({ err }, 'Login error')
       if (err instanceof AuthError) {
         return reply.code(err.statusCode).send({ ok: false, error: err.code })
       }

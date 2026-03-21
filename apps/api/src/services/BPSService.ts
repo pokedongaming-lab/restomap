@@ -32,7 +32,7 @@ export type BPSDataPoint = {
 
 // ─── API Helpers ──────────────────────────────────────────────────────────
 
-async function bpsFetch<T>(endpoint: string, params: Record<string, string> = {}): Promise<T> {
+async function bpsFetch(endpoint: string, params: Record<string, string> = {}): Promise<any> {
   const url = new URL(`${BPS_API_BASE}${endpoint}`)
   url.searchParams.set('key', BPS_APP_KEY)
   Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v))
@@ -50,7 +50,7 @@ export async function getDomains(type: 'all' | 'prov' | 'kab' | 'kabbyprov' = 'a
   const params: Record<string, string> = { type }
   if (provId) params.prov = provId
   
-  const response = await bpsFetch<any>('/domain', params)
+  const response = await bpsFetch('/domain', params)
   return response.data?.[1] ?? []
 }
 
@@ -65,7 +65,7 @@ export async function getCities(provinceId: string): Promise<BPSDomain[]> {
 // ─── Subject Service ───────────────────────────────────────────────────────
 
 export async function getSubjects(domain: string = '0'): Promise<BPSSubject[]> {
-  const response = await bpsFetch<any>('/list/subject', {
+  const response = await bpsFetch('/list/subject', {
     model: 'subject',
     domain,
   })
@@ -81,11 +81,11 @@ export async function getStaticTables(
   const params: Record<string, string> = { page: String(page) }
   if (subjectId) params.sub_id = String(subjectId)
   
-  return bpsFetch<any>('/list/static-table', params)
+  return bpsFetch('/list/static-table', params)
 }
 
 export async function getStaticTableDetail(tableId: string): Promise<any> {
-  return bpsFetch<any>(`/detail/static-table/${tableId}`, {})
+  return bpsFetch(`/detail/static-table/${tableId}`, {})
 }
 
 // ─── Population Data ──────────────────────────────────────────────────────
