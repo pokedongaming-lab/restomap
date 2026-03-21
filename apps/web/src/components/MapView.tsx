@@ -8,10 +8,18 @@ export type MapPin = {
   address?: string
 }
 
+export type HeatmapFactors = {
+  population: number
+  traffic: number
+  income: number
+}
+
 type Props = {
   onPinChange?: (pin: MapPin | null) => void
   radius?: number
   initialCity?: string
+  heatmapLayers?: ('population' | 'traffic' | 'income')[]
+  heatmapData?: HeatmapFactors | null
 }
 
 const CITY_CENTERS: Record<string, [number, number]> = {
@@ -23,11 +31,28 @@ const CITY_CENTERS: Record<string, [number, number]> = {
   makassar: [-5.1477, 119.4327],
 }
 
-export default function MapView({ onPinChange, radius = 1000, initialCity = 'jakarta' }: Props) {
+// Color scale: blue (low) -> yellow (medium) -> red (high)
+function getHeatmapColor(value: number): string {
+  if (value >= 70) return '#EF4444'      // Red - high
+  if (value >= 40) return '#F59E0B'      // Yellow - medium
+  return '#3B82F6'                        // Blue - low
+}
+
+function getHeatmapOpacity(value: number): number {
+  return 0.15 + (value / 100) * 0.35     // 0.15 to 0.5
+}
+
+export default function MapView({ 
+  onPinChange, 
+  radius = 1000, 
+  initialCity = 'jakarta',
+  heatmapLayers = [],
+  heatmapData 
+}: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef       = useRef<any>(null)
   const markerRef    = useRef<any>(null)
-  const circleRef    = useRef<any>(null)
+  const circleRefs   = useRef<any[]>([])
   const initializedRef = useRef(false)
   const [address, setAddress] = useState('')
 
@@ -36,7 +61,6 @@ export default function MapView({ onPinChange, radius = 1000, initialCity = 'jak
     const detail = (e as CustomEvent).detail
     if (detail?.lat && detail?.lng && mapRef.current) {
       mapRef.current.setView([detail.lat, detail.lng], 14)
-      // Also move marker
       if (markerRef.current) {
         markerRef.current.setLatLng([detail.lat, detail.lng])
       }
@@ -50,8 +74,56 @@ export default function MapView({ onPinChange, radius = 1000, initialCity = 'jak
     }
   }, [handleFlyto])
 
+  // Update heatmap visualization when data changes
   useEffect(() => {
-    // Guard: only initialize once
+    if (!mapRef.current || !heatmapData) return
+    
+    // Clear existing heatmap circles
+    circleRefs.current.forEach(c => c.remove())
+    circleRefs.current = []
+
+    // Draw heatmap circles for each active layer
+    const center = markerRef.current?.getLatLng()
+    if (!center) return
+
+    const { lat, lng } = center
+
+    heatmapLayers.forEach(layer => {
+      const value = heatmapData[layer]
+      if (value === undefined) return
+
+      const color = getHeatmapColor(value)
+      const opacity = getHeatmapOpacity(value)
+
+      // Main radius circle
+      const mainCircle = (window as any).L.circle([lat, lng], {
+        radius,
+        color,
+        fillColor: color,
+        fillOpacity: opacity,
+        weight: 2,
+        dashArray: '5, 5',
+      }).addTo(mapRef.current)
+
+      // Inner circles for visual effect
+      for (let i = 1; i <= 3; i++) {
+        const innerRadius = radius * (i / 3)
+        const innerCircle = (window as any).L.circle([lat, lng], {
+          radius: innerRadius,
+          color,
+          fillColor: color,
+          fillOpacity: opacity * (1 - i * 0.2),
+          weight: 1,
+          opacity: 0.3,
+        }).addTo(mapRef.current)
+        circleRefs.current.push(innerCircle)
+      }
+
+      circleRefs.current.push(mainCircle)
+    })
+  }, [heatmapLayers, heatmapData, radius])
+
+  useEffect(() => {
     if (initializedRef.current) return
     if (!containerRef.current) return
     initializedRef.current = true
@@ -62,7 +134,6 @@ export default function MapView({ onPinChange, radius = 1000, initialCity = 'jak
     import('leaflet').then((mod) => {
       L = mod.default ?? mod
 
-      // Fix broken marker icons in Next.js
       delete L.Icon.Default.prototype._getIconUrl
       L.Icon.Default.mergeOptions({
         iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
@@ -82,24 +153,24 @@ export default function MapView({ onPinChange, radius = 1000, initialCity = 'jak
       map.on('click', async (e: any) => {
         const { lat, lng } = e.latlng
 
+        // Clear heatmap circles when clicking new location
+        circleRefs.current.forEach(c => c.remove())
+        circleRefs.current = []
+
         if (markerRef.current) {
           markerRef.current.setLatLng([lat, lng])
         } else {
           markerRef.current = L.marker([lat, lng]).addTo(map)
         }
 
-        if (circleRef.current) {
-          circleRef.current.setLatLng([lat, lng])
-          circleRef.current.setRadius(radius)
-        } else {
-          circleRef.current = L.circle([lat, lng], {
-            radius,
-            color: '#4F46E5',
-            fillColor: '#4F46E5',
-            fillOpacity: 0.08,
-            weight: 2,
-          }).addTo(map)
-        }
+        const radiusCircle = L.circle([lat, lng], {
+          radius,
+          color: '#4F46E5',
+          fillColor: '#4F46E5',
+          fillOpacity: 0.08,
+          weight: 2,
+        }).addTo(map)
+        circleRefs.current.push(radiusCircle)
 
         try {
           const res = await fetch(
@@ -121,19 +192,49 @@ export default function MapView({ onPinChange, radius = 1000, initialCity = 'jak
         mapRef.current.remove()
         mapRef.current = null
         markerRef.current = null
-        circleRef.current = null
+        circleRefs.current = []
         initializedRef.current = false
       }
     }
   }, [])
 
   useEffect(() => {
-    circleRef.current?.setRadius(radius)
+    if (circleRefs.current[0]) {
+      circleRefs.current[0].setRadius(radius)
+    }
   }, [radius])
 
   return (
     <div className="relative w-full h-full">
       <div ref={containerRef} className="w-full h-full rounded-lg" />
+      
+      {/* Heatmap legend */}
+      {heatmapLayers.length > 0 && heatmapData && (
+        <div className="absolute top-4 right-4 bg-white/90 backdrop-blur rounded-lg p-3 text-xs z-[1000] shadow-md">
+          <p className="font-semibold mb-2">Heatmap Legend</p>
+          <div className="space-y-1">
+            {heatmapLayers.map(layer => {
+              const value = heatmapData[layer]
+              const color = getHeatmapColor(value)
+              const labels: Record<string, string> = {
+                population: '👥 Kepadatan',
+                traffic: '🚗 Traffic',
+                income: '💰 Daya Beli'
+              }
+              return (
+                <div key={layer} className="flex items-center gap-2">
+                  <span 
+                    className="w-3 h-3 rounded-full" 
+                    style={{ backgroundColor: color }}
+                  />
+                  <span>{labels[layer]}: {value}</span>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
       {address && (
         <div className="absolute bottom-4 left-4 right-4 bg-white rounded-lg shadow-md px-4 py-2 text-sm text-gray-700 z-[1000] max-w-sm">
           <span className="font-medium text-indigo-600">📍 </span>
