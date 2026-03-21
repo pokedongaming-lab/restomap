@@ -8,6 +8,15 @@ export type MapPin = {
   address?: string
 }
 
+export type MapCompetitor = {
+  placeId: string
+  name: string
+  category: string
+  rating: number | null
+  lat: number
+  lng: number
+}
+
 export type HeatmapFactors = {
   population: number
   traffic: number
@@ -20,6 +29,8 @@ type Props = {
   initialCity?: string
   heatmapLayers?: ('population' | 'traffic' | 'income')[]
   heatmapData?: HeatmapFactors | null
+  competitors?: MapCompetitor[]
+  onCompetitorClick?: (competitor: MapCompetitor) => void
 }
 
 const CITY_CENTERS: Record<string, [number, number]> = {
@@ -47,12 +58,15 @@ export default function MapView({
   radius = 1000, 
   initialCity = 'jakarta',
   heatmapLayers = [],
-  heatmapData 
+  heatmapData,
+  competitors = [],
+  onCompetitorClick,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef       = useRef<any>(null)
   const markerRef    = useRef<any>(null)
   const circleRefs   = useRef<any[]>([])
+  const competitorMarkerRefs = useRef<any[]>([])
   const initializedRef = useRef(false)
   const [address, setAddress] = useState('')
 
@@ -73,6 +87,78 @@ export default function MapView({
       window.removeEventListener('restomap:flyto', handleFlyto)
     }
   }, [handleFlyto])
+
+  // Add competitor markers to map
+  useEffect(() => {
+    if (!mapRef.current || !competitors.length) return
+
+    // Remove existing competitor markers
+    if (competitorMarkerRefs.current) {
+      competitorMarkerRefs.current.forEach(m => m.remove())
+    }
+    competitorMarkerRefs.current = []
+
+    // Category emoji mapping
+    const categoryEmojis: Record<string, string> = {
+      coffee: '☕',
+      fastfood: '🍔',
+      indonesian: '🍛',
+      western: '🍔',
+      japanese: '🍣',
+      korean: '🍜',
+      chinese: '🥡',
+      bakery: '🍞',
+      seafood: '🦐',
+      ramen: '🍜',
+      restaurant: '🍽️',
+    }
+
+    // Add markers for each competitor
+    competitors.forEach(comp => {
+      const emoji = categoryEmojis[comp.category] || '🍽️'
+      
+      // Create custom icon with emoji
+      const icon = L.divIcon({
+        className: 'competitor-marker',
+        html: `<div style="
+          background: white;
+          border-radius: 50%;
+          width: 32px;
+          height: 32px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 18px;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+          border: 2px solid #4F46E5;
+        ">${emoji}</div>`,
+        iconSize: [32, 32],
+        iconAnchor: [16, 16],
+      })
+
+      const marker = L.marker([comp.lat, comp.lng], { icon })
+        .addTo(mapRef.current)
+        .bindPopup(`
+          <div style="min-width: 150px;">
+            <strong style="font-size: 14px;">${comp.name}</strong>
+            <br/>
+            <span style="color: #666; font-size: 12px;">${comp.category}</span>
+            ${comp.rating ? `<br/><span style="color: #F59E0B;">⭐ ${comp.rating}</span>` : ''}
+          </div>
+        `)
+        .on('click', () => {
+          onCompetitorClick?.(comp)
+        })
+
+      competitorMarkerRefs.current?.push(marker)
+    })
+
+    return () => {
+      if (competitorMarkerRefs.current) {
+        competitorMarkerRefs.current.forEach(m => m.remove())
+      }
+    }
+  }, [competitors, onCompetitorClick])
 
   // Update heatmap visualization when data changes
   useEffect(() => {

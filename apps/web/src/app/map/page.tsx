@@ -13,7 +13,7 @@ import GapCategoryPanel from '@/components/GapCategoryPanel'
 import OnboardingTour from '@/components/OnboardingTour'
 import { useSavedLocations } from '@/hooks/useSavedLocations'
 import { useHeatmap } from '@/hooks/useHeatmap'
-import type { MapPin } from '@/components/MapView'
+import type { MapPin, MapCompetitor } from '@/components/MapView'
 import type { Weights } from '@/hooks/useWeights'
 
 const MapView = dynamic(() => import('@/components/MapView'), {
@@ -35,6 +35,7 @@ export default function MapPage() {
   const [category, setCategory]     = useState<string | null>(null)
   const [heatmapLayers, setHeatmap] = useState<HeatmapLayer[]>([])
   const [saveMsg, setSaveMsg]       = useState<string | null>(null)
+  const [competitors, setCompetitors] = useState<MapCompetitor[]>([])
 
   const { locations, save, remove, isAtLimit, loaded } = useSavedLocations()
   const { loading: heatmapLoading, data: heatmapData, fetchHeatmapData } = useHeatmap()
@@ -66,6 +67,31 @@ export default function MapPage() {
       setTimeout(() => setSaveMsg(null), 3000)
     }
   }, [pin, radius, category, save])
+
+  // Fetch competitors when pin or radius changes
+  useEffect(() => {
+    if (!pin?.lat || !pin?.lng) return
+    
+    const fetchCompetitors = async () => {
+      try {
+        const params = new URLSearchParams({
+          lat: pin.lat.toString(),
+          lng: pin.lng.toString(),
+          radius: Math.min(radius * 2, 5000).toString(), // Larger radius for map markers
+          limit: '30',
+        })
+        const res = await fetch(`http://localhost:3001/competitors?${params}`)
+        const json = await res.json()
+        if (json.ok) {
+          setCompetitors(json.data.competitors)
+        }
+      } catch (e) {
+        console.error('Failed to fetch competitors:', e)
+      }
+    }
+    
+    fetchCompetitors()
+  }, [pin?.lat, pin?.lng, radius])
 
   const handleLoad = useCallback((loc: typeof locations[0]) => {
     setPin(loc.pin)
@@ -246,7 +272,7 @@ export default function MapPage() {
 
       {/* ── Map ─────────────────────────────────────────────────────── */}
       <main className="flex-1 relative z-0">
-        <MapView onPinChange={setPin} radius={radius} />
+        <MapView onPinChange={setPin} radius={radius} competitors={competitors} />
       </main>
 
     </div>
