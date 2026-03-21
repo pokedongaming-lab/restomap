@@ -47,6 +47,9 @@ export default function MapPage() {
 
   const handleCitySelect = useCallback((lat: number, lng: number, name?: string) => {
     console.log('Flying to:', lat, lng, name)
+    // Set the pin first
+    setPin({ lat, lng, address: name })
+    // Then fly to the location
     window.dispatchEvent(new CustomEvent('restomap:flyto', { detail: { lat, lng } }))
   }, [])
 
