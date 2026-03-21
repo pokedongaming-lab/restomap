@@ -1,5 +1,6 @@
 import Fastify from 'fastify'
 import { z } from 'zod'
+import { LocationScoringEngineImpl } from '@restomap/scoring'
 
 const WeightsSchema = z.object({
   population:  z.number().min(0).max(100),
@@ -11,20 +12,62 @@ const WeightsSchema = z.object({
 })
 
 const CalculateSchema = z.object({
-  lat:     z.number(),
-  lng:     z.number(),
+  lat:     z.number().min(-90).max(90),
+  lng:     z.number().min(-180).max(180),
   radius:  z.number().min(100).max(5000),
   weights: WeightsSchema,
 })
 
-export async function scoringRoutes(app: any) {
-  app.post('/calculate', async (request: any, reply: any) => {
+export async function scoringRoutes(app: Fastify.FastifyInstance) {
+  const scoringEngine = new LocationScoringEngineImpl()
+
+  // POST /scoring/calculate
+  app.post('/calculate', async (request, reply) => {
     try {
       const input = CalculateSchema.parse(request.body)
-      // TODO: wire to LocationScoringEngine in issue #14
-      return { ok: true, data: { total: 50, breakdown: input.weights, missing_factors: [], confidence: 'high' } }
-    } catch (err) {
-      return reply.code(400).send({ ok: false, error: 'Invalid input' })
+
+      const result = await scoringEngine.calculate({
+        lat: input.lat,
+        lng: input.lng,
+        radius: input.radius,
+        weights: input.weights,
+      })
+
+      return reply.send({
+        ok: true,
+        data: {
+          total: result.total,
+          breakdown: result.breakdown,
+          missing_factors: result.missing_factors,
+          confidence: result.confidence,
+        },
+      })
+    } catch (err: any) {
+      if (err.name === 'ZodError') {
+        return reply.code(400).send({ ok: false, error: 'VALIDATION_ERROR', details: err.errors })
+      }
+      if (err.message?.includes('Weights must sum to 100')) {
+        return reply.code(400).send({ ok: false, error: 'INVALID_WEIGHTS', message: err.message })
+      }
+      app.log.error(err)
+      return reply.code(500).send({ ok: false, error: 'INTERNAL_ERROR' })
+    }
+  })
+
+  // GET /scoring/factors - list available scoring factors
+  app.get('/factors', async () => {
+    return {
+      ok: true,
+      data: {
+        factors: [
+          { key: 'population', label: 'Kepadatan Penduduk', description: 'Density of population in area' },
+          { key: 'traffic', label: 'Traffic', description: 'Traffic density and accessibility' },
+          { key: 'income', label: 'Daya Beli', description: 'Average income in the area' },
+          { key: 'competition', label: 'Kompetitor', description: 'Number of competitors nearby' },
+          { key: 'parking', label: 'Parkir', description: 'Parking availability' },
+          { key: 'rent', label: 'Harga Sewa', description: 'Rental cost in the area' },
+        ],
+      },
     }
   })
 }
