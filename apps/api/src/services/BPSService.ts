@@ -183,22 +183,27 @@ export async function getLocationFactors(
   // In production, fetch real BPS data here based on domain_id
   // For now, return calculated values based on domain characteristics
   
-  const provinceIds = ['3100', '3200', '3300', '3400', '3500'] // Major cities (Jakarta, Bandung, Semarang, Surabaya, Medan)
-  const bigCityIds = ['3171', '3273', '3374', '3578', '3271'] // Jakarta Pusat, Bandung, Semarang, Surabaya, Medan
+  // Major province IDs (big cities)
+  const bigProvinces = ['3100', '3500'] // Jakarta, Surabaya
+  // Medium province IDs
+  const mediumProvinces = ['3200', '3300', '3400', '3600', '5100'] // Jawa Barat, Jawa Tengah, Yogyakarta, Banten, Bali
   
   let population = 50
   let income = 50
   let traffic = 50
   
-  if (bigCityIds.includes(domain.domain_id)) {
+  if (bigProvinces.includes(domain.domain_id)) {
+    // Jakarta, Surabaya - very high population and traffic
     population = 90
     income = 85
     traffic = 95
-  } else if (provinceIds.includes(domain.domain_id.substring(0, 2) + '00')) {
+  } else if (mediumProvinces.includes(domain.domain_id)) {
+    // Other major provinces
     population = 70
     income = 60
     traffic = 65
   } else {
+    // Other provinces - lower values
     population = 40
     income = 35
     traffic = 30
