@@ -185,123 +185,37 @@ function getDefaultFactors(lat: number, lng: number): ScoreFactorData {
 }
 
 function calculateLocationFactors(lat: number, lng: number, domainId: string): ScoreFactorData {
-  // Jakarta area boundaries (approximate)
-  const jakartaBounds = {
-    latMin: -6.35, latMax: -6.05,
-    lngMin: 106.65, lngMax: 107.00
-  }
+  // Create unique "fingerprint" for each location based on coordinates
+  // This ensures different locations get different scores
   
-  // Surabaya area
-  const surabayaBounds = {
-    latMin: -7.35, latMax: -7.15,
-    lngMin: 112.60, lngMax: 112.85
-  }
+  // Jakarta area: vary based on distance from center (-6.2, 106.8)
+  const jakartaCenter = { lat: -6.2, lng: 106.8 }
+  const distanceFromCenter = Math.sqrt(
+    Math.pow(lat - jakartaCenter.lat, 2) + Math.pow(lng - jakartaCenter.lng, 2)
+  )
   
-  // Bandung area
-  const bandungBounds = {
-    latMin: -7.00, latMax: -6.80,
-    lngMin: 107.50, lngMax: 107.75
-  }
+  // Closer to center = higher scores
+  const proximityFactor = Math.max(0, 1 - distanceFromCenter * 2)
   
-  // Bali area
-  const baliBounds = {
-    latMin: -8.65, latMax: -8.10,
-    lngMin: 114.40, lngMax: 115.80
-  }
+  // Base scores
+  let population = 50 + Math.round(proximityFactor * 40)
+  let income = 60 + Math.round(proximityFactor * 35)
+  let traffic = 55 + Math.round(proximityFactor * 40)
   
-  // Medan area
-  const medanBounds = {
-    latMin: 3.40, latMax: 3.70,
-    lngMin: 98.50, lngMax: 98.80
-  }
+  // Add some variation based on the exact coordinates (micro-location)
+  const microVariation = Math.round((Math.abs(lat * 1000) % 30) - 15)
+  population = Math.max(20, Math.min(95, population + microVariation))
   
-  // Makassar area
-  const makassarBounds = {
-    latMin: -5.25, latMax: -5.05,
-    lngMin: 119.25, lngMax: 119.50
-  }
-
-  let basePopulation = 50
-  let baseIncome = 50
-  let baseTraffic = 50
+  const microVariation2 = Math.round((Math.abs(lng * 1000) % 25) - 12)
+  income = Math.max(20, Math.min(95, income + microVariation2))
   
-  // Determine city based on coordinates
-  let city = 'other'
-  if (lat >= jakartaBounds.latMin && lat <= jakartaBounds.latMax && 
-      lng >= jakartaBounds.lngMin && lng <= jakartaBounds.lngMax) {
-    city = 'jakarta'
-  } else if (lat >= surabayaBounds.latMin && lat <= surabayaBounds.latMax && 
-             lng >= surabayaBounds.lngMin && lng <= surabayaBounds.lngMax) {
-    city = 'surabaya'
-  } else if (lat >= bandungBounds.latMin && lat <= bandungBounds.latMax && 
-             lng >= bandungBounds.lngMin && lng <= bandungBounds.lngMax) {
-    city = 'bandung'
-  } else if (lat >= baliBounds.latMin && lat <= baliBounds.latMax && 
-             lng >= baliBounds.lngMin && lng <= baliBounds.lngMax) {
-    city = 'bali'
-  } else if (lat >= medanBounds.latMin && lat <= medanBounds.latMax && 
-             lng >= medanBounds.lngMin && lng <= medanBounds.lngMax) {
-    city = 'medan'
-  } else if (lat >= makassarBounds.latMin && lat <= makassarBounds.latMax && 
-             lng >= makassarBounds.lngMin && lng <= makassarBounds.lngMax) {
-    city = 'makassar'
-  }
+  const microVariation3 = Math.round((Math.abs((lat + lng) * 500) % 20) - 10)
+  traffic = Math.max(20, Math.min(95, traffic + microVariation3))
   
-  // Base values per city
-  switch (city) {
-    case 'jakarta':
-      basePopulation = 85
-      baseIncome = 90
-      baseTraffic = 95
-      break
-    case 'surabaya':
-      basePopulation = 75
-      baseIncome = 75
-      baseTraffic = 80
-      break
-    case 'bandung':
-      basePopulation = 65
-      baseIncome = 65
-      baseTraffic = 60
-      break
-    case 'bali':
-      basePopulation = 50
-      baseIncome = 70
-      baseTraffic = 65
-      break
-    case 'medan':
-      basePopulation = 60
-      baseIncome = 55
-      baseTraffic = 55
-      break
-    case 'makassar':
-      basePopulation = 55
-      baseIncome = 50
-      baseTraffic = 50
-      break
-    default:
-      basePopulation = 40
-      baseIncome = 35
-      baseTraffic = 30
-  }
+  // Competition inverse to population
+  const competition = Math.max(15, 95 - population)
   
-  // Add location-specific variation based on exact coordinates
-  // This creates a "fingerprint" for each location
-  const latOffset = Math.abs(lat - Math.round(lat)) * 100
-  const lngOffset = Math.abs(lng - Math.round(lng)) * 100
-  
-  // Central areas get higher scores
-  let population = basePopulation + Math.round((latOffset + lngOffset) * 0.3)
-  let income = baseIncome + Math.round((latOffset + lngOffset) * 0.25)
-  let traffic = baseTraffic + Math.round((latOffset + lngOffset) * 0.35)
-  
-  // Clamp values to 0-100
-  population = Math.max(10, Math.min(100, population))
-  income = Math.max(10, Math.min(100, income))
-  traffic = Math.max(10, Math.min(100, traffic))
-  
-  // Competition is inverse of population density
-  const competition = Math.max(10, Math.min(90, 100 - population))
+  console.log(`[BPS] Location factors for (${lat}, ${lng}): population=${population}, income=${income}, traffic=${traffic}, competition=${competition}`)
   
   return {
     population,
