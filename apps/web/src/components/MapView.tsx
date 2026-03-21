@@ -205,8 +205,8 @@ export default function MapView({
   }, [radius])
 
   return (
-    <div className="relative w-full h-full">
-      <div ref={containerRef} className="w-full h-full rounded-lg" />
+    <div className="relative w-full h-full z-0">
+      <div ref={containerRef} className="w-full h-full rounded-lg z-0" />
       
       {/* Heatmap legend */}
       {heatmapLayers.length > 0 && heatmapData && (

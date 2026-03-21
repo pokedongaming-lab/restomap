@@ -245,7 +245,7 @@ export default function MapPage() {
       </aside>
 
       {/* ── Map ─────────────────────────────────────────────────────── */}
-      <main className="flex-1 relative">
+      <main className="flex-1 relative z-0">
         <MapView onPinChange={setPin} radius={radius} />
       </main>
 
