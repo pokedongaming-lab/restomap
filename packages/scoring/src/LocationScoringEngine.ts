@@ -31,6 +31,10 @@ export class LocationScoringEngineImpl implements LocationScoringEngine {
     this._simulatedValues = values
   }
 
+  clearSimulatedValues(): void {
+    this._simulatedValues = null
+  }
+
   simulateMissingFactors(factors: FactorKey[]): void {
     this._simulatedMissing = factors
   }

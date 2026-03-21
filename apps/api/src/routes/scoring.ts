@@ -48,6 +48,9 @@ export async function scoringRoutes(app: Fastify.FastifyInstance) {
         weights: input.weights,
       })
 
+      // Reset simulated values after calculation
+      scoringEngine.clearSimulatedValues()
+
       return reply.send({
         ok: true,
         data: {
