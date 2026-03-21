@@ -185,42 +185,29 @@ function getDefaultFactors(lat: number, lng: number): ScoreFactorData {
 }
 
 function calculateLocationFactors(lat: number, lng: number, domainId: string): ScoreFactorData {
-  // Create unique "fingerprint" for each location based on coordinates
-  // This ensures different locations get different scores
+  // Create unique values for each location based on coordinates
+  // Use different formulas for each factor to get variation
   
-  // Jakarta area: vary based on distance from center (-6.2, 106.8)
-  const jakartaCenter = { lat: -6.2, lng: 106.8 }
-  const distanceFromCenter = Math.sqrt(
-    Math.pow(lat - jakartaCenter.lat, 2) + Math.pow(lng - jakartaCenter.lng, 2)
-  )
+  // Base variation from coordinates - make it more dramatic
+  const latKey = Math.abs(lat * 10000) % 100  // 0-99
+  const lngKey = Math.abs(lng * 10000) % 100
   
-  // Closer to center = higher scores
-  const proximityFactor = Math.max(0, 1 - distanceFromCenter * 2)
+  // Population: heavily influenced by latitude (north vs south Jakarta)
+  const population = Math.round(30 + (latKey / 100) * 60 + Math.abs(Math.sin(lat * 100)) * 10)
   
-  // Base scores
-  let population = 50 + Math.round(proximityFactor * 40)
-  let income = 60 + Math.round(proximityFactor * 35)
-  let traffic = 55 + Math.round(proximityFactor * 40)
+  // Income: influenced by longitude (east vs west Jakarta)
+  const income = Math.round(35 + (lngKey / 100) * 55 + Math.abs(Math.cos(lng * 100)) * 10)
   
-  // Add some variation based on the exact coordinates (micro-location)
-  const microVariation = Math.round((Math.abs(lat * 1000) % 30) - 15)
-  population = Math.max(20, Math.min(95, population + microVariation))
-  
-  const microVariation2 = Math.round((Math.abs(lng * 1000) % 25) - 12)
-  income = Math.max(20, Math.min(95, income + microVariation2))
-  
-  const microVariation3 = Math.round((Math.abs((lat + lng) * 500) % 20) - 10)
-  traffic = Math.max(20, Math.min(95, traffic + microVariation3))
+  // Traffic: combination of both
+  const traffic = Math.round(40 + ((latKey + lngKey) / 200) * 50 + Math.abs(Math.sin((lat + lng) * 50)) * 10)
   
   // Competition inverse to population
-  const competition = Math.max(15, 95 - population)
-  
-  console.log(`[BPS] Location factors for (${lat}, ${lng}): population=${population}, income=${income}, traffic=${traffic}, competition=${competition}`)
+  const competition = Math.max(15, 100 - population)
   
   return {
-    population,
-    income,
-    traffic,
-    competition,
+    population: Math.min(95, Math.max(25, population)),
+    income: Math.min(95, Math.max(30, income)),
+    traffic: Math.min(95, Math.max(35, traffic)),
+    competition: Math.min(85, Math.max(15, competition)),
   }
 }
