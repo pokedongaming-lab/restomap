@@ -140,6 +140,11 @@ export default function ScoringPanel({ pin, radius, category, onSave }: Props) {
     <div className="space-y-3">
       <ScoreCircle score={result?.total ?? 0} loading={loading} />
 
+      {/* City Average Comparison */}
+      {result && (
+        <CityAverageCompare score={result.total} />
+      )}
+
       {/* Weight customizer — collapsed by default */}
       <button
         onClick={() => setShowWeights((v) => !v)}
@@ -193,6 +198,72 @@ export default function ScoringPanel({ pin, radius, category, onSave }: Props) {
       >
         Reset analisa
       </button>
+    </div>
+  )
+}
+
+// City Average Comparison Component
+function CityAverageCompare({ score }: { score: number }) {
+  const [comparison, setComparison] = useState<{
+    cityAverage: number
+    difference: number
+    comparison: string
+    message: string
+  } | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [selectedCity, setSelectedCity] = useState<string>('jakarta')
+
+  useEffect(() => {
+    setLoading(true)
+    fetch(`http://localhost:3001/city-average/compare?city=${selectedCity}&score=${score}`)
+      .then(r => r.json())
+      .then(json => {
+        if (json.ok) setComparison(json.data)
+      })
+      .catch(console.error)
+      .finally(() => setLoading(false))
+  }, [score, selectedCity])
+
+  if (loading || !comparison) return null
+
+  const badgeColor = comparison.comparison === 'above' 
+    ? 'bg-green-100 text-green-600' 
+    : comparison.comparison === 'below'
+      ? 'bg-red-100 text-red-500'
+      : 'bg-gray-100 text-gray-500'
+
+  return (
+    <div className="bg-gray-50 rounded-lg p-3 border border-gray-100">
+      <div className="flex items-center justify-between mb-2">
+        <p className="text-xs text-gray-500">Bandingkan dengan kota</p>
+        <select
+          value={selectedCity}
+          onChange={(e) => setSelectedCity(e.target.value)}
+          className="text-xs border border-gray-200 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-400"
+        >
+          <option value="jakarta">Jakarta</option>
+          <option value="surabaya">Surabaya</option>
+          <option value="bandung">Bandung</option>
+          <option value="bali">Bali</option>
+          <option value="medan">Medan</option>
+          <option value="makassar">Makassar</option>
+        </select>
+      </div>
+      
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-xs text-gray-400">Rata-rata {selectedCity.charAt(0).toUpperCase() + selectedCity.slice(1)}</p>
+          <p className="text-lg font-bold text-gray-600">{comparison.cityAverage}</p>
+        </div>
+        <div className="text-right">
+          <span className={`text-xs px-2 py-1 rounded-full ${badgeColor}`}>
+            {comparison.comparison === 'above' ? '⬆️ Di atas' : comparison.comparison === 'below' ? '⬇️ Di bawah' : '➡️ Sejajar'}
+          </span>
+          <p className="text-xs text-gray-400 mt-1">
+            {comparison.difference > 0 ? '+' : ''}{comparison.difference.toFixed(1)} poin
+          </p>
+        </div>
+      </div>
     </div>
   )
 }
