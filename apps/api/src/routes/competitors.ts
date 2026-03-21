@@ -119,12 +119,136 @@ function getCurrentBusyLevel(popularTimes: { [day: string]: number[] } | undefin
 
 // ─── Mock data fallback ───────────────────────────────────────────────────────
 
+// Real brand names commonly found in Indonesia
+const BRAND_DATA: Record<string, { names: string[]; ratings: number[]; priceLevels: number[] }> = {
+  coffee: {
+    names: [
+      'Starbucks', 'Starbucks Reserve', 'Kopi Kenangan', 'Kopi Janji Jiwa',
+      'Titik Temu', 'Common Grounds', 'Anomali Coffee', 'Goela Klapa',
+      'Seduh Kopi', 'Ombe Kofie', 'Frienz Coffee', 'Kopi Oey',
+      'Kopi Toko Djawa', 'Lewis & Carroll', 'Panama Coffee', 'Celsius Coffee'
+    ],
+    ratings: [4.2, 4.5, 4.3, 4.1, 4.4, 4.0, 4.3, 4.2, 4.1, 4.0, 3.9, 4.2, 3.8, 4.1, 4.0, 3.9],
+    priceLevels: [3, 3, 2, 2, 3, 3, 2, 2, 2, 2, 2, 2, 1, 3, 2, 2]
+  },
+  fastfood: {
+    names: [
+      'McDonald\'s', 'KFC', 'Burger King', 'Pizza Hut', 'Domino\'s Pizza',
+      'Texas Chicken', 'Wendy\'s', 'Subway', 'Popeyes', 'HokBen',
+      ' Yoshinoya', 'Sushi Hiro', 'Chatime', 'Mixue'
+    ],
+    ratings: [4.1, 4.0, 4.2, 3.9, 4.1, 4.0, 4.2, 3.8, 4.1, 4.0, 3.9, 4.1, 3.7, 4.3],
+    priceLevels: [2, 2, 3, 3, 3, 2, 3, 2, 2, 2, 2, 3, 2, 1]
+  },
+  indonesian: {
+    names: [
+      'Warung Kopi Limarasa', 'RM Sederhana', 'Warung Makan Bu Broto',
+      'Soto Ayu Ambengan', 'Rawon Setan', 'Nasi Goreng Mbok Rogue',
+      'Bakmi GM', 'Mie Aceh', 'Ayam Goreng Suharti', 'Pecel Lele',
+      'Warung Kopi', 'Bakso Solo', 'Sate Khas Senayan', 'Gudeg Yu Djum'
+    ],
+    ratings: [4.3, 4.0, 3.9, 4.4, 4.2, 4.1, 4.3, 4.1, 4.5, 4.0, 3.8, 4.2, 4.1, 4.3],
+    priceLevels: [1, 1, 1, 2, 2, 2, 2, 1, 2, 1, 1, 1, 2, 2]
+  },
+  western: {
+    names: [
+      'The Chicken King', 'Burger Local', 'Miller\'s', 'Parkit Steak',
+      'Woolloomooloo', 'Stout', 'Staco', 'Streets',
+      'St. Patrick\'s', 'Starry Night', 'Holy Crab', 'Stacks'
+    ],
+    ratings: [4.1, 4.2, 4.0, 4.3, 4.4, 4.1, 4.0, 3.9, 4.2, 4.1, 4.3, 4.0],
+    priceLevels: [2, 2, 3, 3, 4, 3, 3, 2, 3, 3, 3, 2]
+  },
+  japanese: {
+    names: [
+      'Sushi Tei', 'Sakura', 'Ramen Yama', 'Ichiban Sushi', 'Katsuya',
+      'Hokkaido', 'Ramen Kenkaku', 'Sushi Massao', 'Don Don',
+      'Matsuri', 'Torikago', 'Yoshinoya', 'Sushi Dong'
+    ],
+    ratings: [4.5, 4.3, 4.2, 4.4, 4.1, 4.3, 4.0, 4.2, 4.1, 4.0, 4.2, 3.9, 4.1],
+    priceLevels: [3, 3, 3, 3, 3, 3, 2, 3, 2, 2, 3, 2, 3]
+  },
+  korean: {
+    names: [
+      'Kkokkal', 'Seolleongtang', 'Shin Seoul', 'N韩国',
+      'Myeongdong', 'Seoul Kitchen', 'Koreatown', 'Jjigae',
+      'Bulgogi House', 'Kimchi Mama', 'Bibimbap', 'Korean Grill'
+    ],
+    ratings: [4.2, 4.3, 4.1, 4.0, 4.4, 4.2, 4.0, 4.1, 4.3, 4.0, 4.2, 3.9],
+    priceLevels: [3, 3, 2, 2, 3, 3, 2, 2, 3, 2, 2, 3]
+  },
+  chinese: {
+    names: [
+      'Imperial', 'Dim Sum', 'Peking House', 'Golden Dragon',
+      'Wong Sol', 'New Hong', 'Prawn Station', 'Bakmi ABC',
+      'Mie Goreng', 'Nasi Campur', 'Lo Mie', 'Cap Cay'
+    ],
+    ratings: [4.2, 4.1, 4.0, 4.3, 3.9, 4.0, 4.1, 3.8, 4.0, 3.9, 4.1, 4.0],
+    priceLevels: [3, 2, 3, 3, 2, 2, 2, 1, 2, 1, 2, 2]
+  },
+  bakery: {
+    names: [
+      'Bread Talk', 'Roti Canai', 'Lezzato', 'Bakerzin',
+      'Roti O', 'Holland Bakery', 'Bread House', 'Tokyo Lunch',
+      'Roti Canai Master', 'Donut Republic', 'Krispy Kreme', 'Dunkin\''
+    ],
+    ratings: [4.0, 4.1, 4.3, 4.2, 3.9, 4.1, 4.0, 3.8, 4.0, 4.2, 4.1, 3.9],
+    priceLevels: [2, 1, 2, 3, 1, 2, 2, 2, 1, 2, 2, 2]
+  },
+  seafood: {
+    names: [
+      'Pantai Dalam', 'Segar Laut', 'Kepiting Saus Padang',
+      'Kerang Rebus', 'Ikan Bakar', 'Ocean Fresh', 'Janji Laut',
+      'Nelayan', 'Bandeng Presto', 'Udang Besar', 'Sea Food'
+    ],
+    ratings: [4.2, 4.1, 4.4, 4.0, 4.3, 4.1, 4.0, 3.9, 4.2, 4.1, 4.0],
+    priceLevels: [3, 2, 3, 2, 3, 2, 2, 2, 2, 3, 2]
+  },
+  ramen: {
+    names: [
+      'Ramen Yama', 'Ramen Kenkaku', 'Ramen Ichiban', 'Ramen Miso',
+      'Ramen Nongshim', 'Ichiriku', 'Ramen House', 'Matsuri Ramen',
+      'Ramen Bar', 'Hakata', 'Ramen Jpon', 'Sapporo'
+    ],
+    ratings: [4.2, 4.3, 4.1, 4.0, 4.2, 4.1, 4.0, 4.3, 3.9, 4.2, 4.0, 4.1],
+    priceLevels: [3, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3]
+  }
+}
+
 function getMockCompetitors(lat: number, lng: number) {
-  return [
-    { placeId: 'mock_1', name: 'Warung Makan Pak Budi', category: 'indonesian', rating: 4.2, priceLevel: 1, address: 'Jl. Contoh No. 1', lat: lat + 0.002, lng: lng + 0.001, distance: 250, isOpen: true,  photoRef: null },
-    { placeId: 'mock_2', name: 'Kafe Menteng',          category: 'coffee',     rating: 4.5, priceLevel: 2, address: 'Jl. Contoh No. 2', lat: lat - 0.001, lng: lng + 0.003, distance: 420, isOpen: true,  photoRef: null },
-    { placeId: 'mock_3', name: 'Restoran Padang Jaya',  category: 'indonesian', rating: 3.9, priceLevel: 1, address: 'Jl. Contoh No. 3', lat: lat + 0.003, lng: lng - 0.002, distance: 580, isOpen: false, photoRef: null },
-    { placeId: 'mock_4', name: 'Pizza Corner',          category: 'western',    rating: 4.1, priceLevel: 2, address: 'Jl. Contoh No. 4', lat: lat - 0.002, lng: lng - 0.001, distance: 710, isOpen: true,  photoRef: null },
-    { placeId: 'mock_5', name: 'Sushi Tei',             category: 'japanese',   rating: 4.7, priceLevel: 3, address: 'Jl. Contoh No. 5', lat: lat + 0.004, lng: lng + 0.002, distance: 890, isOpen: true,  photoRef: null },
-  ]
+  const categories = ['coffee', 'fastfood', 'indonesian', 'western', 'japanese', 'korean', 'chinese', 'bakery', 'seafood', 'ramen']
+  const competitors: any[] = []
+  
+  // Generate 20 mock competitors across different categories
+  for (let i = 0; i < 20; i++) {
+    const category = categories[i % categories.length]
+    const brandData = BRAND_DATA[category]
+    
+    if (brandData) {
+      const nameIndex = i % brandData.names.length
+      const ratingIndex = i % brandData.ratings.length
+      const priceIndex = i % brandData.priceLevels.length
+      
+      // Random offset from center
+      const latOffset = (Math.random() - 0.5) * 0.01
+      const lngOffset = (Math.random() - 0.5) * 0.01
+      
+      competitors.push({
+        placeId: `mock_${i + 1}`,
+        name: brandData.names[nameIndex],
+        category,
+        rating: brandData.ratings[ratingIndex],
+        priceLevel: brandData.priceLevels[priceIndex],
+        address: `Jl. Contoh No. ${i + 1}, Jakarta`,
+        lat: lat + latOffset,
+        lng: lng + lngOffset,
+        distance: Math.round(Math.sqrt(latOffset * latOffset + lngOffset * lngOffset) * 111000),
+        isOpen: Math.random() > 0.2,
+        photoRef: null,
+      })
+    }
+  }
+  
+  // Sort by distance
+  return competitors.sort((a, b) => a.distance - b.distance)
 }
