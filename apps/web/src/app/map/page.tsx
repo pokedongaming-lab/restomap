@@ -39,9 +39,9 @@ export default function MapPage() {
     window.dispatchEvent(new CustomEvent('restomap:flyto', { detail: { lat, lng } }))
   }, [])
 
-  const handleSave = useCallback((score: number, weights: Weights) => {
+  const handleSave = useCallback(async (score: number, weights: Weights) => {
     if (!pin) return
-    const result = save(pin, radius, weights, category, score)
+    const result = await save(pin, radius, weights, category, score)
     if (result.ok) {
       setSaveMsg('✅ Lokasi tersimpan!')
       setTimeout(() => setSaveMsg(null), 2500)
