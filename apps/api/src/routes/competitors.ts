@@ -49,6 +49,38 @@ export async function competitorRoutes(app: FastifyInstance) {
       return reply.code(500).send({ ok: false, error: err.message })
     }
   })
+
+  // GET /competitors/:placeId/details - Get detailed info including opening hours
+  app.get('/competitors/:placeId/details', async (request, reply) => {
+    try {
+      const { placeId } = request.params as { placeId: string }
+
+      if (!service) {
+        return reply.send({
+          ok: true,
+          data: { 
+            placeId,
+            weekdayText: ['Senin: 08:00 - 22:00', 'Selasa: 08:00 - 22:00', 'Rabu: 08:00 - 22:00', 'Kamis: 08:00 - 22:00', 'Jumat: 08:00 - 23:00', 'Sabtu: 09:00 - 23:00', 'Minggu: 09:00 - 21:00'],
+            source: 'mock'
+          },
+        })
+      }
+
+      const openingHours = await service.getOpeningHours(placeId)
+
+      return reply.send({
+        ok: true,
+        data: {
+          placeId,
+          openingHours,
+          weekdayText: openingHours?.weekdayText ?? null,
+        },
+      })
+    } catch (error) {
+      request.log.error(error)
+      return reply.status(500).send({ ok: false, error: 'Failed to fetch details' })
+    }
+  })
 }
 
 // ─── Mock data fallback ───────────────────────────────────────────────────────

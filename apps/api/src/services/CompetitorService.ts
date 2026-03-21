@@ -14,6 +14,16 @@ export type Competitor = {
   distance:   number
   isOpen:     boolean | null
   photoRef:   string | null
+  // Peak hours data
+  openingHours?: {
+    periods: Array<{
+      open: { day: number; time: string }
+      close: { day: number; time: string }
+    }>
+    weekdayText: string[]
+  }
+  currentOpeningTime?: string
+  currentClosingTime?: string
 }
 
 export type CompetitorQuery = {
@@ -107,5 +117,66 @@ export class CompetitorService {
     if (types.includes('bakery'))        return 'bakery'
     if (types.includes('meal_takeaway')) return 'fastfood'
     return 'restaurant'
+  }
+
+  // Get detailed opening hours for a specific place (for peak hours)
+  async getOpeningHours(placeId: string): Promise<Competitor['openingHours'] | null> {
+    try {
+      const response = await this.client.placeDetails({
+        params: {
+          place_id: placeId,
+          fields: ['opening_hours'],
+          key: this.apiKey,
+        },
+      })
+
+      if (response.data.status !== 'OK' || !response.data.result?.opening_hours) {
+        return null
+      }
+
+      return {
+        periods: response.data.result.opening_hours.periods ?? [],
+        weekdayText: response.data.result.opening_hours.weekday_text ?? [],
+      }
+    } catch (error) {
+      console.error('Error fetching opening hours:', error)
+      return null
+    }
+  }
+
+  // Get current opening/closing time for a place
+  getCurrentHours(openingHours: Competitor['openingHours']): { open: string; close: string } | null {
+    if (!openingHours?.periods || openingHours.periods.length === 0) {
+      return null
+    }
+
+    const now = new Date()
+    const dayOfWeek = now.getDay() // 0 = Sunday
+    const timeString = `${now.getHours().toString().padStart(2, '0')}${now.getMinutes().toString().padStart(2, '0')}`
+
+    // Find today's periods
+    const todayPeriods = openingHours.periods.filter(
+      p => p.open?.day === dayOfWeek
+    )
+
+    if (todayPeriods.length === 0) {
+      return null
+    }
+
+    // If open now, find current period
+    for (const period of todayPeriods) {
+      const openTime = period.open?.time ?? '0000'
+      const closeTime = period.close?.time ?? '2359'
+
+      if (timeString >= openTime && timeString <= closeTime) {
+        return {
+          open: `${openTime.slice(0, 2)}:${openTime.slice(2)}`,
+          close: `${closeTime.slice(0, 2)}:${closeTime.slice(2)}`,
+        }
+      }
+    }
+
+    // Not currently open
+    return null
   }
 }

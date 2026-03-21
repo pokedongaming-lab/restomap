@@ -45,6 +45,9 @@ export default function CompetitorList({ lat, lng, radius, category, onHover }: 
   const [error, setError]             = useState<string | null>(null)
   const [sort, setSort]               = useState<SortKey>('distance')
   const [source, setSource]           = useState<string>('')
+  const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(null)
+  const [placeDetails, setPlaceDetails] = useState<{ weekdayText: string[] | null } | null>(null)
+  const [loadingDetails, setLoadingDetails] = useState(false)
 
   useEffect(() => {
     const controller = new AbortController()
@@ -72,6 +75,27 @@ export default function CompetitorList({ lat, lng, radius, category, onHover }: 
 
     return () => controller.abort()
   }, [lat, lng, radius, category])
+
+  const fetchPlaceDetails = async (placeId: string) => {
+    if (selectedPlaceId === placeId) {
+      setSelectedPlaceId(null)
+      setPlaceDetails(null)
+      return
+    }
+    setSelectedPlaceId(placeId)
+    setLoadingDetails(true)
+    try {
+      const res = await fetch(`http://localhost:3001/competitors/${placeId}/details`)
+      const json = await res.json()
+      if (json.ok) {
+        setPlaceDetails(json.data)
+      }
+    } catch (e) {
+      console.error('Error fetching place details:', e)
+    } finally {
+      setLoadingDetails(false)
+    }
+  }
 
   const sorted = [...competitors].sort((a, b) => {
     if (sort === 'distance') return a.distance - b.distance
@@ -132,7 +156,12 @@ export default function CompetitorList({ lat, lng, radius, category, onHover }: 
           key={c.placeId}
           onMouseEnter={() => onHover?.(c)}
           onMouseLeave={() => onHover?.(null)}
-          className="bg-white border border-gray-200 rounded-xl p-3 hover:border-indigo-200 transition-all cursor-default"
+          onClick={() => fetchPlaceDetails(c.placeId)}
+          className={`bg-white border rounded-xl p-3 transition-all cursor-pointer ${
+            selectedPlaceId === c.placeId 
+              ? 'border-indigo-500 ring-1 ring-indigo-200' 
+              : 'border-gray-200 hover:border-indigo-200'
+          }`}
         >
           <div className="flex items-start justify-between gap-2">
             <div className="flex-1 min-w-0">
@@ -159,6 +188,26 @@ export default function CompetitorList({ lat, lng, radius, category, onHover }: 
               <p className="text-xs text-gray-300 mt-0.5">{c.category}</p>
             </div>
           </div>
+
+          {/* Opening Hours - shown when selected */}
+          {selectedPlaceId === c.placeId && (
+            <div className="mt-3 pt-3 border-t border-gray-100">
+              {loadingDetails ? (
+                <p className="text-xs text-gray-400">Memuat jam operasional...</p>
+              ) : placeDetails?.weekdayText ? (
+                <div>
+                  <p className="text-xs font-medium text-gray-600 mb-1">🕐 Jam Operasional</p>
+                  <div className="text-xs text-gray-500 space-y-0.5">
+                    {placeDetails.weekdayText.map((day, i) => (
+                      <p key={i}>{day}</p>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <p className="text-xs text-gray-400">Jam operasional tidak tersedia</p>
+              )}
+            </div>
+          )}
         </div>
       ))}
     </div>
