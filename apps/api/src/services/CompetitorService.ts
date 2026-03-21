@@ -14,7 +14,7 @@ export type Competitor = {
   distance:   number
   isOpen:     boolean | null
   photoRef:   string | null
-  // Peak hours data
+  // Opening hours data
   openingHours?: {
     periods: Array<{
       open: { day: number; time: string }
@@ -22,8 +22,13 @@ export type Competitor = {
     }>
     weekdayText: string[]
   }
+  // Popular times / current busy level
   currentOpeningTime?: string
   currentClosingTime?: string
+  popularTimes?: {
+    // Day of week (0=Sunday) -> hourly busyness (0-100)
+    [day: string]: number[]
+  }
 }
 
 export type CompetitorQuery = {
@@ -178,5 +183,68 @@ export class CompetitorService {
 
     // Not currently open
     return null
+  }
+
+  // Generate popular times data based on category (simulates Google Popular Times)
+  // Real implementation would fetch from Google Places API
+  generatePopularTimes(category: string): Competitor['popularTimes'] {
+    // Typical busy patterns for F&B
+    const patterns: Record<string, number[]> = {
+      // Coffee: busy morning and afternoon
+      coffee: [
+        [10, 15, 20, 25, 30, 40, 55, 70, 85, 95, 90, 80, // 6AM-5PM
+         75, 80, 85, 90, 85, 70, 50, 35, 20, 10, 5, 5]   // 6PM-5AM
+      ],
+      // Restaurant: busy lunch and dinner
+      restaurant: [
+        [5, 5, 5, 10, 20, 35, 50, 65, 75, 70, 60, 50, // 6AM-5PM
+         45, 50, 60, 75, 90, 95, 90, 80, 60, 40, 20, 10] // 6PM-5AM
+      ],
+      // Fast food: consistent throughout day
+      fastfood: [
+        [20, 25, 30, 40, 50, 60, 65, 70, 75, 70, 65, 60,
+         55, 60, 65, 70, 75, 80, 75, 65, 55, 45, 35, 25]
+      ],
+      // Default pattern
+      default: [
+        [5, 5, 5, 10, 20, 35, 50, 65, 75, 70, 60, 50,
+         45, 50, 60, 70, 80, 85, 80, 70, 55, 35, 20, 10]
+      ],
+    }
+
+    const pattern = patterns[category] || patterns['default']
+    const popularTimes: { [day: string]: number[] } = {}
+    
+    // Generate for each day of week
+    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+    
+    dayNames.forEach((day, dayIndex) => {
+      const dailyPattern = [...pattern]
+      
+      // Weekend boost
+      if (dayIndex === 0 || dayIndex === 6) { // Sunday or Saturday
+        dailyPattern.forEach((_, hour) => {
+          if (hour >= 11 && hour <= 14) { // Lunch
+            dailyPattern[hour] = Math.min(100, dailyPattern[hour] + 15)
+          }
+          if (hour >= 18 && hour <= 21) { // Dinner
+            dailyPattern[hour] = Math.min(100, dailyPattern[hour] + 20)
+          }
+        })
+      }
+      
+      // Friday evening boost
+      if (dayIndex === 5) { // Friday
+        dailyPattern.forEach((_, hour) => {
+          if (hour >= 19 && hour <= 22) {
+            dailyPattern[hour] = Math.min(100, dailyPattern[hour] + 25)
+          }
+        })
+      }
+      
+      popularTimes[day] = dailyPattern
+    })
+
+    return popularTimes
   }
 }

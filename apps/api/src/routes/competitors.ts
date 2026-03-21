@@ -54,19 +54,25 @@ export async function competitorRoutes(app: FastifyInstance) {
   app.get('/competitors/:placeId/details', async (request, reply) => {
     try {
       const { placeId } = request.params as { placeId: string }
+      const { category } = request.query as { category?: string }
 
       if (!service) {
+        // Mock data with popular times
+        const mockPopularTimes = generateMockPopularTimes(category || 'restaurant')
         return reply.send({
           ok: true,
           data: { 
             placeId,
             weekdayText: ['Senin: 08:00 - 22:00', 'Selasa: 08:00 - 22:00', 'Rabu: 08:00 - 22:00', 'Kamis: 08:00 - 22:00', 'Jumat: 08:00 - 23:00', 'Sabtu: 09:00 - 23:00', 'Minggu: 09:00 - 21:00'],
+            popularTimes: mockPopularTimes,
+            currentBusyLevel: getCurrentBusyLevel(mockPopularTimes),
             source: 'mock'
           },
         })
       }
 
       const openingHours = await service.getOpeningHours(placeId)
+      const popularTimes = service.generatePopularTimes(category || 'restaurant')
 
       return reply.send({
         ok: true,
@@ -74,6 +80,8 @@ export async function competitorRoutes(app: FastifyInstance) {
           placeId,
           openingHours,
           weekdayText: openingHours?.weekdayText ?? null,
+          popularTimes,
+          currentBusyLevel: getCurrentBusyLevel(popularTimes),
         },
       })
     } catch (error) {
@@ -81,6 +89,32 @@ export async function competitorRoutes(app: FastifyInstance) {
       return reply.status(500).send({ ok: false, error: 'Failed to fetch details' })
     }
   })
+}
+
+// Helper to generate mock popular times
+function generateMockPopularTimes(category: string): { [day: string]: number[] } {
+  const service = new CompetitorService('mock')
+  return service.generatePopularTimes(category)
+}
+
+// Helper to get current busy level
+function getCurrentBusyLevel(popularTimes: { [day: string]: number[] } | undefined): string {
+  if (!popularTimes) return 'unknown'
+  
+  const now = new Date()
+  const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+  const currentDay = dayNames[now.getDay()]
+  const currentHour = now.getHours()
+  
+  const dayData = popularTimes[currentDay]
+  if (!dayData || !dayData[currentHour]) return 'unknown'
+  
+  const level = dayData[currentHour]
+  if (level >= 80) return 'very_busy'
+  if (level >= 60) return 'busy'
+  if (level >= 40) return 'moderate'
+  if (level >= 20) return 'quiet'
+  return 'very_quiet'
 }
 
 // ─── Mock data fallback ───────────────────────────────────────────────────────

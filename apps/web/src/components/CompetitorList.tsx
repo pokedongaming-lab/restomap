@@ -46,7 +46,11 @@ export default function CompetitorList({ lat, lng, radius, category, onHover }: 
   const [sort, setSort]               = useState<SortKey>('distance')
   const [source, setSource]           = useState<string>('')
   const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(null)
-  const [placeDetails, setPlaceDetails] = useState<{ weekdayText: string[] | null } | null>(null)
+  const [placeDetails, setPlaceDetails] = useState<{
+    weekdayText: string[] | null
+    popularTimes?: { [day: string]: number[] }
+    currentBusyLevel?: string
+  } | null>(null)
   const [loadingDetails, setLoadingDetails] = useState(false)
 
   useEffect(() => {
@@ -76,7 +80,7 @@ export default function CompetitorList({ lat, lng, radius, category, onHover }: 
     return () => controller.abort()
   }, [lat, lng, radius, category])
 
-  const fetchPlaceDetails = async (placeId: string) => {
+  const fetchPlaceDetails = async (placeId: string, competitorCategory?: string) => {
     if (selectedPlaceId === placeId) {
       setSelectedPlaceId(null)
       setPlaceDetails(null)
@@ -85,7 +89,10 @@ export default function CompetitorList({ lat, lng, radius, category, onHover }: 
     setSelectedPlaceId(placeId)
     setLoadingDetails(true)
     try {
-      const res = await fetch(`http://localhost:3001/competitors/${placeId}/details`)
+      const params = new URLSearchParams()
+      if (competitorCategory) params.append('category', competitorCategory)
+      const url = `http://localhost:3001/competitors/${placeId}/details${params.toString() ? '?' + params : ''}`
+      const res = await fetch(url)
       const json = await res.json()
       if (json.ok) {
         setPlaceDetails(json.data)
@@ -156,7 +163,7 @@ export default function CompetitorList({ lat, lng, radius, category, onHover }: 
           key={c.placeId}
           onMouseEnter={() => onHover?.(c)}
           onMouseLeave={() => onHover?.(null)}
-          onClick={() => fetchPlaceDetails(c.placeId)}
+          onClick={() => fetchPlaceDetails(c.placeId, c.category)}
           className={`bg-white border rounded-xl p-3 transition-all cursor-pointer ${
             selectedPlaceId === c.placeId 
               ? 'border-indigo-500 ring-1 ring-indigo-200' 
@@ -205,6 +212,28 @@ export default function CompetitorList({ lat, lng, radius, category, onHover }: 
                 </div>
               ) : (
                 <p className="text-xs text-gray-400">Jam operasional tidak tersedia</p>
+              )}
+
+              {/* Current Busy Level */}
+              {placeDetails?.currentBusyLevel && placeDetails.currentBusyLevel !== 'unknown' && (
+                <div className="mt-3 pt-3 border-t border-gray-100">
+                  <p className="text-xs font-medium text-gray-600 mb-2">📈 Tingkat Keramaian Saat Ini</p>
+                  <div className="flex items-center gap-2">
+                    <div className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      placeDetails.currentBusyLevel === 'very_busy' ? 'bg-red-100 text-red-600' :
+                      placeDetails.currentBusyLevel === 'busy' ? 'bg-orange-100 text-orange-600' :
+                      placeDetails.currentBusyLevel === 'moderate' ? 'bg-yellow-100 text-yellow-600' :
+                      placeDetails.currentBusyLevel === 'quiet' ? 'bg-green-100 text-green-600' :
+                      'bg-gray-100 text-gray-600'
+                    }`}>
+                      {placeDetails.currentBusyLevel === 'very_busy' ? '🔴 Sangat Ramai' :
+                       placeDetails.currentBusyLevel === 'busy' ? '🟠 Ramai' :
+                       placeDetails.currentBusyLevel === 'moderate' ? '🟡 Sedang' :
+                       placeDetails.currentBusyLevel === 'quiet' ? '🟢 Sepi' :
+                       '⚪ Tidak Ada Data'}
+                    </div>
+                  </div>
+                </div>
               )}
             </div>
           )}
