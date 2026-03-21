@@ -37,6 +37,7 @@ export type CompetitorQuery = {
   radius:   number
   category: string | null
   maxResults?: number
+  keyword?: string
 }
 
 // ─── Category → Places type mapping ──────────────────────────────────────────
@@ -78,7 +79,8 @@ export class CompetitorService {
 
   async findNearby(query: CompetitorQuery): Promise<Competitor[]> {
     const type = query.category ? (CATEGORY_TYPES[query.category] ?? 'restaurant') : 'restaurant'
-    const keyword = query.category ?? undefined
+    // Use keyword if provided (for brand search), otherwise use category
+    const keyword = query.keyword ?? query.category ?? undefined
 
     const response = await this.client.placesNearby({
       params: {

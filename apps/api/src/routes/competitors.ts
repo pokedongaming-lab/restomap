@@ -5,9 +5,10 @@ import { CompetitorService } from '../services/CompetitorService'
 const QuerySchema = z.object({
   lat:      z.coerce.number(),
   lng:      z.coerce.number(),
-  radius:   z.coerce.number().min(100).max(5000),
+  radius:   z.coerce.number().min(100).max(10000),
   category: z.string().optional(),
-  limit:    z.coerce.number().min(1).max(20).optional(),
+  limit:    z.coerce.number().min(1).max(50).optional(),
+  brand:    z.string().optional(), // Search for specific brand
 })
 
 export async function competitorRoutes(app: FastifyInstance) {
@@ -37,6 +38,7 @@ export async function competitorRoutes(app: FastifyInstance) {
         radius:     query.radius,
         category:   query.category ?? null,
         maxResults: query.limit ?? 20,
+        keyword:    query.brand ?? undefined,
       })
 
       return reply.send({
