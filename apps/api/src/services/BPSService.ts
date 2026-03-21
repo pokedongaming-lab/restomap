@@ -107,15 +107,46 @@ const INCOME_VARS = {
 
 // ─── Helper: Get Regency/City ID from Coordinates ───────────────────────
 
+// Indonesia province rough coordinates (center points)
+const PROVINCE_COORDS: Record<string, { lat: number; lng: number; name: string }> = {
+  '3100': { lat: -6.2088, lng: 106.8456, name: 'DKI Jakarta' },
+  '3200': { lat: -6.9149, lng: 107.6099, name: 'Jawa Barat' },
+  '3300': { lat: -7.5755, lng: 110.8243, name: 'Jawa Tengah' },
+  '3400': { lat: -7.7956, lng: 110.3695, name: 'DI Yogyakarta' },
+  '3500': { lat: -7.5361, lng: 112.2528, name: 'Jawa Timur' },
+  '3600': { lat: -6.4058, lng: 106.0642, name: 'Banten' },
+  '5100': { lat: -8.4095, lng: 115.1889, name: 'Bali' },
+  '1200': { lat: 3.5950, lng: 98.6722, name: 'Sumatera Utara' },
+  // Add more as needed
+}
+
+function calculateDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  // Simple Euclidean distance (not accurate for geodetic, but good enough for rough matching)
+  return Math.sqrt(Math.pow(lat2 - lat1, 2) + Math.pow(lng2 - lng1, 2))
+}
+
 export async function findNearestDomain(lat: number, lng: number): Promise<BPSDomain | null> {
-  // Indonesia bounding box approximation
-  // This is a simple implementation - in production, use proper geo-matching
+  // Find nearest province based on coordinates
+  let nearestProvince = null
+  let minDistance = Infinity
   
-  const provinces = await getProvinces()
-  
-  // For now, return first province as placeholder
-  // Real implementation would use reverse geocoding
-  return provinces[0] ?? null
+  for (const [provinceId, coords] of Object.entries(PROVINCE_COORDS)) {
+    const distance = calculateDistance(lat, lng, coords.lat, coords.lng)
+    if (distance < minDistance) {
+      minDistance = distance
+      nearestProvince = provinceId
+    }
+  }
+
+  if (!nearestProvince) {
+    return null
+  }
+
+  return {
+    domain_id: nearestProvince,
+    domain_name: PROVINCE_COORDS[nearestProvince].name,
+    domain_url: `https://${PROVINCE_COORDS[nearestProvince].name.toLowerCase().replace(/\s/g, '')}.bps.go.id`,
+  }
 }
 
 // ─── Score Factor Data ───────────────────────────────────────────────────

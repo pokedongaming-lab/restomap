@@ -94,9 +94,23 @@ export default function MapView({ onPinChange, radius = 1000, initialCity = 'jak
           onPinChange?.({ lat, lng })
         }
       })
+
+      // Listen for flyto events from city search
+      const handleFlyto = (e: Event) => {
+        const detail = (e as CustomEvent).detail
+        if (detail?.lat && detail?.lng) {
+          map.setView([detail.lat, detail.lng], 14)
+          // Also move marker
+          if (markerRef.current) {
+            markerRef.current.setLatLng([detail.lat, detail.lng])
+          }
+        }
+      }
+      window.addEventListener('restomap:flyto', handleFlyto)
     })
 
     return () => {
+      window.removeEventListener('restomap:flyto', handleFlyto)
       if (mapRef.current) {
         mapRef.current.remove()
         mapRef.current = null

@@ -45,7 +45,8 @@ export default function MapPage() {
     }
   }, [pin, radius, fetchHeatmapData])
 
-  const handleCitySelect = useCallback((lat: number, lng: number) => {
+  const handleCitySelect = useCallback((lat: number, lng: number, name?: string) => {
+    console.log('Flying to:', lat, lng, name)
     window.dispatchEvent(new CustomEvent('restomap:flyto', { detail: { lat, lng } }))
   }, [])
 
