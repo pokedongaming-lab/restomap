@@ -47,10 +47,9 @@ export default function HeatmapToggle({ active, onChange }: Props) {
           )
         })}
       </div>
-      {active.length > 0 && (
-        <p className="text-xs text-amber-600 mt-1.5 bg-amber-50 rounded px-2 py-1">
-          ⚠️ Data heatmap nyata tersedia setelah issue #13 (BPS ingestion) selesai.
-          Tampilan ini adalah preview UI.
+      {active.length > 0 && data && (
+        <p className="text-xs text-green-600 mt-1.5 bg-green-50 rounded px-2 py-1">
+          ✅ Data heatmap dari BPS Indonesia berhasil dimuat!
         </p>
       )}
     </div>

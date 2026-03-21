@@ -7,6 +7,7 @@ import { scoringRoutes } from './routes/scoring'
 import { reportRoutes } from './routes/reports'
 import { competitorRoutes } from './routes/competitors'
 import { savedLocationsRoutes } from './routes/locations'
+import { heatmapRoutes } from './routes/heatmap'
 
 async function start() {
   const app = Fastify({ logger: true })
@@ -25,6 +26,7 @@ async function start() {
   await app.register(reportRoutes,     { prefix: '/reports' })
   await app.register(competitorRoutes)
   await app.register(savedLocationsRoutes)
+  await app.register(heatmapRoutes)
 
   const port = Number(process.env.PORT ?? 3001)
   await app.listen({ port, host: '0.0.0.0' })
