@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import dynamic from 'next/dynamic'
 import CitySearch from '@/components/CitySearch'
 import RadiusSelector from '@/components/RadiusSelector'
