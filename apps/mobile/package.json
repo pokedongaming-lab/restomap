@@ -11,8 +11,10 @@
     "lint": "eslint src"
   },
   "dependencies": {
+    "@react-native-async-storage/async-storage": "^3.0.1",
     "@restomap/common": "workspace:*",
     "expo": "~51.0.0",
+    "expo-constants": "^55.0.9",
     "expo-router": "~3.5.0",
     "expo-status-bar": "~1.12.0",
     "react": "18.2.0",

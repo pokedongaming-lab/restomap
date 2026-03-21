@@ -1,13 +1,32 @@
-import { Stack } from 'expo-router'
-import { StatusBar } from 'expo-status-bar'
+import { Tabs } from 'expo-router'
 
-export default function RootLayout() {
+export default function Layout() {
   return (
-    <>
-      <Stack>
-        <Stack.Screen name="index" options={{ title: 'RestoMap' }} />
-      </Stack>
-      <StatusBar style="auto" />
-    </>
+    <Tabs>
+      <Tabs.Screen 
+        name="index" 
+        options={{
+          title: 'Peta',
+          tabBarIcon: () => '🗺️',
+          headerShown: false,
+        }}
+      />
+      <Tabs.Screen 
+        name="saved" 
+        options={{
+          title: 'Tersimpan',
+          tabBarIcon: () => '💾',
+          headerShown: false,
+        }}
+      />
+      <Tabs.Screen 
+        name="profile" 
+        options={{
+          title: 'Profil',
+          tabBarIcon: () => '👤',
+          headerShown: false,
+        }}
+      />
+    </Tabs>
   )
 }
