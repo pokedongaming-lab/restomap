@@ -28,7 +28,18 @@ export async function scoringRoutes(app: Fastify.FastifyInstance) {
       const input = CalculateSchema.parse(request.body)
 
       // Get real data from BPS API for population/income factors
-      const bpsFactors = await getLocationFactors(input.lat, input.lng, input.radius)
+      let bpsFactors = {
+        population: 50,
+        income: 50,
+        traffic: 50,
+        competition: 50,
+      }
+      
+      try {
+        bpsFactors = await getLocationFactors(input.lat, input.lng, input.radius)
+      } catch (bpsError) {
+        app.log.warn('BPS API error, using default values:', bpsError)
+      }
 
       // Simulate ALL factors into scoring engine (including default values for parking & rent)
       scoringEngine.simulateFactorValues({

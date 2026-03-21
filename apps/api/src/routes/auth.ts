@@ -18,9 +18,11 @@ const LoginSchema = z.object({
 })
 
 export async function authRoutes(app: FastifyInstance) {
+  const jwtSecret = process.env.JWT_SECRET ?? 'dev-secret-change-in-production'
+  
   const authService = new AuthService(
     prisma,
-    process.env.JWT_SECRET ?? 'dev-secret-change-in-production',
+    jwtSecret,
   )
 
   // POST /auth/register
@@ -44,9 +46,11 @@ export async function authRoutes(app: FastifyInstance) {
   app.post('/login', async (request, reply) => {
     try {
       const body = LoginSchema.parse(request.body)
+      app.log.info('Login attempt for:', body.email)
       const result = await authService.login(body)
       return reply.send({ ok: true, data: result })
-    } catch (err) {
+    } catch (err: any) {
+      app.log.error('Login error:', err)
       if (err instanceof AuthError) {
         return reply.code(err.statusCode).send({ ok: false, error: err.code })
       }
