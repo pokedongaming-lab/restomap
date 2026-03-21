@@ -40,7 +40,14 @@ export default function MapPage() {
   const { locations, save, remove, isAtLimit, loaded } = useSavedLocations()
   const { loading: heatmapLoading, data: heatmapData, fetchHeatmapData } = useHeatmap()
 
-  // Fetch heatmap data when pin changes
+  // Fetch heatmap data when pin or radius changes (if layers are active)
+  useEffect(() => {
+    if (pin && heatmapLayers.length > 0) {
+      fetchHeatmapData(pin.lat, pin.lng, radius)
+    }
+  }, [pin?.lat, pin?.lng, radius, heatmapLayers.length, fetchHeatmapData])
+
+  // Fetch heatmap data when heatmap layers change
   const handleHeatmapChange = useCallback((layers: HeatmapLayer[]) => {
     setHeatmap(layers)
     if (layers.length > 0 && pin) {
