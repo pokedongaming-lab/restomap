@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 
 export type FactorKey = 'population' | 'traffic' | 'income' | 'competition' | 'parking' | 'rent'
 
@@ -49,10 +49,53 @@ export const DEFAULT_PRESETS: Preset[] = [
   },
 ]
 
+// Load custom presets from localStorage
+function loadCustomPresets(): Preset[] {
+  if (typeof window === 'undefined') return []
+  try {
+    const saved = localStorage.getItem('restomap:custom_presets')
+    return saved ? JSON.parse(saved) : []
+  } catch {
+    return []
+  }
+}
+
+// Save custom presets to localStorage
+function saveCustomPresets(presets: Preset[]) {
+  if (typeof window === 'undefined') return
+  localStorage.setItem('restomap:custom_presets', JSON.stringify(presets))
+}
+
 // ─── Hook ─────────────────────────────────────────────────────────────────────
 
 export function useWeights(initial: Weights = DEFAULT_PRESETS[3].weights) {
   const [weights, setWeights] = useState<Weights>(initial)
+  const [customPresets, setCustomPresets] = useState<Preset[]>([])
+
+  // Load custom presets on mount
+  useEffect(() => {
+    setCustomPresets(loadCustomPresets())
+  }, [])
+
+  // Get all presets (default + custom)
+  const getAllPresets = useCallback(() => {
+    return [...DEFAULT_PRESETS, ...customPresets]
+  }, [customPresets])
+
+  // Save current weights as new preset
+  const saveAsPreset = useCallback((name: string) => {
+    const newPreset: Preset = { name, weights: { ...weights } }
+    const updated = [...customPresets, newPreset]
+    setCustomPresets(updated)
+    saveCustomPresets(updated)
+  }, [weights, customPresets])
+
+  // Delete custom preset
+  const deletePreset = useCallback((name: string) => {
+    const updated = customPresets.filter(p => p.name !== name)
+    setCustomPresets(updated)
+    saveCustomPresets(updated)
+  }, [customPresets])
 
   // When one factor changes, redistribute the delta proportionally across others
   const setFactor = useCallback((key: FactorKey, newValue: number) => {
@@ -100,5 +143,14 @@ export function useWeights(initial: Weights = DEFAULT_PRESETS[3].weights) {
 
   const total = ALL_FACTORS.reduce((s, f) => s + weights[f], 0)
 
-  return { weights, setFactor, applyPreset, total }
+  return { 
+    weights, 
+    setFactor, 
+    applyPreset, 
+    total,
+    getAllPresets,
+    saveAsPreset,
+    deletePreset,
+    customPresets,
+  }
 }

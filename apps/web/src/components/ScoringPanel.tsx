@@ -47,7 +47,7 @@ function ScoreCircle({ score, loading }: { score: number; loading: boolean }) {
 }
 
 export default function ScoringPanel({ pin, radius, category, onSave }: Props) {
-  const { weights, setFactor, applyPreset, total } = useWeights()
+  const { weights, setFactor, applyPreset, total, getAllPresets, saveAsPreset, deletePreset } = useWeights()
   const [result, setResult]   = useState<ScoringResult | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError]     = useState<string | null>(null)
@@ -121,6 +121,9 @@ export default function ScoringPanel({ pin, radius, category, onSave }: Props) {
             total={total}
             onFactorChange={setFactor}
             onPresetApply={handlePreset}
+            getAllPresets={getAllPresets}
+            onSavePreset={saveAsPreset}
+            onDeletePreset={deletePreset}
           />
         )}
         <button

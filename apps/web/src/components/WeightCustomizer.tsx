@@ -15,13 +15,29 @@ type Props = {
   total: number
   onFactorChange: (key: keyof Weights, value: number) => void
   onPresetApply: (preset: Preset) => void
+  getAllPresets: () => Preset[]
+  onSavePreset: (name: string) => void
+  onDeletePreset?: (name: string) => void
 }
 
-export default function WeightCustomizer({ weights, total, onFactorChange, onPresetApply }: Props) {
+export default function WeightCustomizer({ 
+  weights, 
+  total, 
+  onFactorChange, 
+  onPresetApply,
+  getAllPresets,
+  onSavePreset,
+  onDeletePreset,
+}: Props) {
   const [open, setOpen]             = useState(false)
   const [customName, setCustomName] = useState('')
-  const [presets, setPresets]       = useState<Preset[]>(DEFAULT_PRESETS)
+  const [presets, setPresets]       = useState<Preset[]>(getAllPresets())
   const [activePreset, setActive]   = useState('Default')
+
+  // Refresh presets when they change
+  const refreshPresets = () => {
+    setPresets(getAllPresets())
+  }
 
   const handlePreset = (preset: Preset) => {
     setActive(preset.name)
@@ -30,14 +46,23 @@ export default function WeightCustomizer({ weights, total, onFactorChange, onPre
 
   const saveCustomPreset = () => {
     if (!customName.trim()) return
-    const newPreset: Preset = { name: customName.trim(), weights: { ...weights } }
-    setPresets((p) => [...p, newPreset])
-    setActive(newPreset.name)
+    onSavePreset(customName.trim())
+    setActive(customName.trim())
     setCustomName('')
     setOpen(false)
+    refreshPresets()
+  }
+
+  const handleDeletePreset = (name: string, e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (onDeletePreset) {
+      onDeletePreset(name)
+      refreshPresets()
+    }
   }
 
   const isValid = Math.abs(total - 100) <= 1
+  const defaultPresetNames = DEFAULT_PRESETS.map(p => p.name)
 
   return (
     <div className="space-y-3">
@@ -57,6 +82,14 @@ export default function WeightCustomizer({ weights, total, onFactorChange, onPre
               }`}
             >
               {p.name}
+              {!defaultPresetNames.includes(p.name) && onDeletePreset && (
+                <span 
+                  onClick={(e) => handleDeletePreset(p.name, e)}
+                  className="ml-1 text-red-400 hover:text-red-600"
+                >
+                  ×
+                </span>
+              )}
             </button>
           ))}
           <button
