@@ -1,6 +1,6 @@
 import Fastify from 'fastify'
 import { z } from 'zod'
-import { LocationScoringEngineImpl } from '@restomap/scoring'
+import { LocationScoringEngineImpl } from '../../../../packages/scoring/src/index'
 
 const WeightsSchema = z.object({
   population:  z.number().min(0).max(100),
