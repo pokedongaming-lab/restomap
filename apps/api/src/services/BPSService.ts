@@ -117,7 +117,7 @@ const PROVINCE_COORDS: Record<string, { lat: number; lng: number; name: string }
   '3600': { lat: -6.4058, lng: 106.0642, name: 'Banten' },
   '5100': { lat: -8.4095, lng: 115.1889, name: 'Bali' },
   '1200': { lat: 3.5950, lng: 98.6722, name: 'Sumatera Utara' },
-  // Add more as needed
+  '7100': { lat: 1.4927, lng: 124.8419, name: 'Sulawesi Utara' }, // Makassar
 }
 
 function calculateDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
@@ -186,7 +186,7 @@ export async function getLocationFactors(
   // Major province IDs (big cities)
   const bigProvinces = ['3100', '3500'] // Jakarta, Surabaya
   // Medium province IDs
-  const mediumProvinces = ['3200', '3300', '3400', '3600', '5100'] // Jawa Barat, Jawa Tengah, Yogyakarta, Banten, Bali
+  const mediumProvinces = ['3200', '3300', '3400', '3600', '5100', '7100'] // Jawa Barat, Jawa Tengah, Yogyakarta, Banten, Bali, Sulawesi Utara
   
   let population = 50
   let income = 50
