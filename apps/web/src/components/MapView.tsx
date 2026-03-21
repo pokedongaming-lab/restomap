@@ -107,17 +107,24 @@ export default function MapView({ onPinChange, radius = 1000, initialCity = 'jak
         }
       }
       window.addEventListener('restomap:flyto', handleFlyto)
+
+      // Store cleanup function
+      const cleanup = () => {
+        window.removeEventListener('restomap:flyto', handleFlyto)
+        if (mapRef.current) {
+          mapRef.current.remove()
+          mapRef.current = null
+          markerRef.current = null
+          circleRef.current = null
+          initializedRef.current = false
+        }
+      }
+
+      return cleanup
     })
 
     return () => {
-      window.removeEventListener('restomap:flyto', handleFlyto)
-      if (mapRef.current) {
-        mapRef.current.remove()
-        mapRef.current = null
-        markerRef.current = null
-        circleRef.current = null
-        initializedRef.current = false
-      }
+      cleanup()
     }
   }, [])
 
