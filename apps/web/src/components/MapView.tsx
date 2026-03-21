@@ -162,50 +162,67 @@ export default function MapView({
 
   // Update heatmap visualization when data changes
   useEffect(() => {
-    if (!mapRef.current || !heatmapData) return
+    if (!mapRef.current) return
     
-    // Clear existing heatmap circles
+    // Clear existing heatmap layers
     circleRefs.current.forEach(c => c.remove())
     circleRefs.current = []
 
-    // Draw heatmap circles for each active layer
-    const center = markerRef.current?.getLatLng()
-    if (!center) return
+    // If no heatmap data, return
+    if (!heatmapData || heatmapLayers.length === 0) return
 
-    const { lat, lng } = center
+    // Get center from marker or use default
+    let centerLat = -6.2
+    let centerLng = 106.8
+    
+    if (markerRef.current) {
+      const markerPos = markerRef.current.getLatLng()
+      centerLat = markerPos.lat
+      centerLng = markerPos.lng
+    }
 
+    // Create heatmap overlay using gradient circles
     heatmapLayers.forEach(layer => {
       const value = heatmapData[layer]
       if (value === undefined) return
 
-      const color = getHeatmapColor(value)
-      const opacity = getHeatmapOpacity(value)
-
-      // Main radius circle
-      const mainCircle = (window as any).L.circle([lat, lng], {
-        radius,
-        color,
-        fillColor: color,
-        fillOpacity: opacity,
-        weight: 2,
-        dashArray: '5, 5',
-      }).addTo(mapRef.current)
-
-      // Inner circles for visual effect
-      for (let i = 1; i <= 3; i++) {
-        const innerRadius = radius * (i / 3)
-        const innerCircle = (window as any).L.circle([lat, lng], {
-          radius: innerRadius,
-          color,
-          fillColor: color,
-          fillOpacity: opacity * (1 - i * 0.2),
-          weight: 1,
-          opacity: 0.3,
-        }).addTo(mapRef.current)
-        circleRefs.current.push(innerCircle)
+      // Color based on layer type and value
+      let color: string
+      if (layer === 'income') {
+        color = value >= 70 ? '#22C55E' : value >= 40 ? '#EAB308' : '#3B82F6'
+      } else {
+        color = value >= 70 ? '#EF4444' : value >= 40 ? '#F59E0B' : '#3B82F6'
       }
 
-      circleRefs.current.push(mainCircle)
+      const opacity = 0.15 + (value / 100) * 0.25
+
+      // Draw concentric circles with decreasing opacity for heatmap effect
+      const layers = 8
+      for (let i = layers; i >= 1; i--) {
+        const r = (radius * i) / layers
+        const layerOpacity = opacity * (1 - (i / layers) * 0.7)
+        
+        const circle = (window as any).L.circle([centerLat, centerLng], {
+          radius: r,
+          color: color,
+          fillColor: color,
+          fillOpacity: layerOpacity,
+          weight: 0,
+          className: 'heatmap-layer',
+        }).addTo(mapRef.current)
+        
+        circleRefs.current.push(circle)
+      }
+
+      // Add a subtle center glow
+      const centerGlow = (window as any).L.circle([centerLat, centerLng], {
+        radius: radius * 0.3,
+        color: color,
+        fillColor: color,
+        fillOpacity: opacity * 0.5,
+        weight: 0,
+      }).addTo(mapRef.current)
+      circleRefs.current.push(centerGlow)
     })
   }, [heatmapLayers, heatmapData, radius])
 
