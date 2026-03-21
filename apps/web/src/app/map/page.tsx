@@ -10,6 +10,7 @@ import ScoringPanel from '@/components/ScoringPanel'
 import SavedLocationsList from '@/components/SavedLocationsList'
 import CompetitorList from '@/components/CompetitorList'
 import { useSavedLocations } from '@/hooks/useSavedLocations'
+import { useHeatmap } from '@/hooks/useHeatmap'
 import type { MapPin } from '@/components/MapView'
 import type { Weights } from '@/hooks/useWeights'
 
@@ -34,6 +35,15 @@ export default function MapPage() {
   const [saveMsg, setSaveMsg]       = useState<string | null>(null)
 
   const { locations, save, remove, isAtLimit, loaded } = useSavedLocations()
+  const { loading: heatmapLoading, data: heatmapData, fetchHeatmapData } = useHeatmap()
+
+  // Fetch heatmap data when pin changes
+  const handleHeatmapChange = useCallback((layers: HeatmapLayer[]) => {
+    setHeatmap(layers)
+    if (layers.length > 0 && pin) {
+      fetchHeatmapData(pin.lat, pin.lng, radius)
+    }
+  }, [pin, radius, fetchHeatmapData])
 
   const handleCitySelect = useCallback((lat: number, lng: number) => {
     window.dispatchEvent(new CustomEvent('restomap:flyto', { detail: { lat, lng } }))
@@ -112,7 +122,12 @@ export default function MapPage() {
 
               <CategoryFilter value={category} onChange={setCategory} />
               <RadiusSelector value={radius} onChange={setRadius} />
-              <HeatmapToggle active={heatmapLayers} onChange={setHeatmap} />
+              <HeatmapToggle 
+                active={heatmapLayers} 
+                onChange={handleHeatmapChange}
+                data={heatmapData}
+                loading={heatmapLoading}
+              />
 
               <div className="border-t border-gray-100" />
 
