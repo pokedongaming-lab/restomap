@@ -1,6 +1,7 @@
 import Fastify from 'fastify'
 import { z } from 'zod'
 import { LocationScoringEngineImpl } from '../../../../packages/scoring/src/index'
+import { getLocationFactors, getProvinces, getDomains } from '../services/BPSService'
 
 const WeightsSchema = z.object({
   population:  z.number().min(0).max(100),
@@ -26,6 +27,17 @@ export async function scoringRoutes(app: Fastify.FastifyInstance) {
     try {
       const input = CalculateSchema.parse(request.body)
 
+      // Get real data from BPS API for population/income factors
+      const bpsFactors = await getLocationFactors(input.lat, input.lng, input.radius)
+
+      // Simulate BPS data into scoring engine
+      scoringEngine.simulateFactorValues({
+        population: bpsFactors.population,
+        income: bpsFactors.income,
+        traffic: bpsFactors.traffic,
+        competition: bpsFactors.competition,
+      })
+
       const result = await scoringEngine.calculate({
         lat: input.lat,
         lng: input.lng,
@@ -40,6 +52,12 @@ export async function scoringRoutes(app: Fastify.FastifyInstance) {
           breakdown: result.breakdown,
           missing_factors: result.missing_factors,
           confidence: result.confidence,
+          source: {
+            population: 'bps_api',
+            income: 'bps_api',
+            traffic: 'estimated',
+            competition: 'google_places',
+          },
         },
       })
     } catch (err: any) {
@@ -60,14 +78,28 @@ export async function scoringRoutes(app: Fastify.FastifyInstance) {
       ok: true,
       data: {
         factors: [
-          { key: 'population', label: 'Kepadatan Penduduk', description: 'Density of population in area' },
-          { key: 'traffic', label: 'Traffic', description: 'Traffic density and accessibility' },
-          { key: 'income', label: 'Daya Beli', description: 'Average income in the area' },
-          { key: 'competition', label: 'Kompetitor', description: 'Number of competitors nearby' },
-          { key: 'parking', label: 'Parkir', description: 'Parking availability' },
-          { key: 'rent', label: 'Harga Sewa', description: 'Rental cost in the area' },
+          { key: 'population', label: 'Kepadatan Penduduk', description: 'Density of population in area (来自 BPS Indonesia)', source: 'bps' },
+          { key: 'traffic', label: 'Traffic', description: 'Traffic density and accessibility', source: 'estimated' },
+          { key: 'income', label: 'Daya Beli', description: 'Average income in the area (来自 BPS Indonesia)', source: 'bps' },
+          { key: 'competition', label: 'Kompetitor', description: 'Number of competitors nearby', source: 'google_places' },
+          { key: 'parking', label: 'Parkir', description: 'Parking availability', source: 'estimated' },
+          { key: 'rent', label: 'Harga Sewa', description: 'Rental cost in the area', source: 'estimated' },
         ],
       },
+    }
+  })
+
+  // GET /scoring/regions - Get BPS regions (provinces)
+  app.get('/regions', async (request, reply) => {
+    try {
+      const provinces = await getProvinces()
+      return reply.send({
+        ok: true,
+        data: provinces,
+      })
+    } catch (err: any) {
+      app.log.error(err)
+      return reply.code(500).send({ ok: false, error: 'Failed to fetch regions' })
     }
   })
 }
