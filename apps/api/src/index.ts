@@ -11,7 +11,7 @@ async function start() {
   const app = Fastify({ logger: true })
 
   await app.register(cors, {
-    origin: process.env.WEB_URL ?? 'http://localhost:3000',
+    origin: true, // Allow all origins for development
   })
 
   await app.register(jwt, {
