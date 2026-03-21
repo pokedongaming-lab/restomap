@@ -1,0 +1,13 @@
+{
+  "lat": -6.2088,
+  "lng": 106.8456,
+  "radius": 1000,
+  "weights": {
+    "population": 20,
+    "traffic": 20,
+    "income": 20,
+    "competition": 20,
+    "parking": 10,
+    "rent": 10
+  }
+}
