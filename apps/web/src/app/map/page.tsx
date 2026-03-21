@@ -9,6 +9,7 @@ import HeatmapToggle from '@/components/HeatmapToggle'
 import ScoringPanel from '@/components/ScoringPanel'
 import SavedLocationsList from '@/components/SavedLocationsList'
 import CompetitorList from '@/components/CompetitorList'
+import OnboardingTour from '@/components/OnboardingTour'
 import { useSavedLocations } from '@/hooks/useSavedLocations'
 import { useHeatmap } from '@/hooks/useHeatmap'
 import type { MapPin } from '@/components/MapView'
@@ -77,6 +78,7 @@ export default function MapPage() {
 
   return (
     <div className="flex h-screen bg-gray-50">
+      <OnboardingTour />
 
       {/* ── Sidebar ─────────────────────────────────────────────────── */}
       <aside className="w-96 flex flex-col bg-white shadow-md z-10">
