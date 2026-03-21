@@ -83,6 +83,17 @@ export default function ScoringPanel({ pin, radius, category, onSave }: Props) {
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current) }
   }, [weights, analyze])
 
+  // Auto-recalculate when pin changes
+  useEffect(() => {
+    if (pin?.lat && pin?.lng) {
+      // Reset result to trigger re-analysis
+      setResult(null)
+      if (hasAnalyzed.current) {
+        analyze(weights)
+      }
+    }
+  }, [pin?.lat, pin?.lng, pin?.address])
+
   const handleAnalyze = () => {
     hasAnalyzed.current = true
     analyze(weights)
