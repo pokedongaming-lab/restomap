@@ -53,9 +53,9 @@ function getHeatmapOpacity(value: number): number {
   return 0.15 + (value / 100) * 0.35     // 0.15 to 0.5
 }
 
-export default function MapView({ 
-  onPinChange, 
-  radius = 1000, 
+export default function MapView({
+  onPinChange,
+  radius = 1000,
   initialCity = 'jakarta',
   heatmapLayers = [],
   heatmapData,
@@ -118,7 +118,7 @@ export default function MapView({
     // Add markers for each competitor
     competitors.forEach(comp => {
       const emoji = categoryEmojis[comp.category] || '🍽️'
-      
+
       // Create custom icon with emoji
       const icon = L.divIcon({
         className: 'competitor-marker',
@@ -165,9 +165,9 @@ export default function MapView({
   // Update heatmap visualization when data changes
   useEffect(() => {
     console.log('[Heatmap] Effect triggered:', { heatmapData, heatmapLayers, radius, hasMap: !!mapRef.current })
-    
+
     if (!mapRef.current) return
-    
+
     // Clear existing heatmap layers
     circleRefs.current.forEach(c => c.remove())
     circleRefs.current = []
@@ -177,13 +177,13 @@ export default function MapView({
       console.log('[Heatmap] Skipping - no data or layers')
       return
     }
-    
+
     console.log('[Heatmap] Drawing circles for:', heatmapLayers, 'with data:', heatmapData)
 
     // Get center from marker or use default
     let centerLat = -6.2
     let centerLng = 106.8
-    
+
     if (markerRef.current) {
       const markerPos = markerRef.current.getLatLng()
       centerLat = markerPos.lat
@@ -198,43 +198,37 @@ export default function MapView({
       // Color based on layer type and value
       let color: string
       if (layer === 'income') {
-        color = value >= 70 ? '#22C55E' : value >= 40 ? '#EAB308' : '#3B82F6'
+        color = '#22C55E' // Green for income
+      } else if (layer === 'traffic') {
+        color = '#F59E0B' // Orange for traffic
       } else {
-        color = value >= 70 ? '#EF4444' : value >= 40 ? '#F59E0B' : '#3B82F6'
+        color = '#EF4444' // Red for population
       }
 
-      const opacity = 0.15 + (value / 100) * 0.25
-
-      // Draw single solid circle with gradient effect
-      // Use larger radius multiplier for better visibility
-      const heatmapRadius = radius * 1.5
+      // Use radius directly from prop (in meters for Leaflet)
+      const circleRadius = radius * 1.5
+      
+      // Create a custom overlay pane on top of everything
+      const paneName = `heatmap-${layer}`
+      let pane = mapRef.current.getPane(paneName)
+      if (!pane) {
+        pane = mapRef.current.createPane(paneName)
+        pane.style.zIndex = '500' // Above markers
+      }
       
       const circle = (window as any).L.circle([centerLat, centerLng], {
-        radius: heatmapRadius,
+        radius: circleRadius,
         color: color,
         fillColor: color,
-        fillOpacity: 0.5,
-        weight: 3,
+        fillOpacity: 0.6,
+        weight: 4,
         className: 'heatmap-layer',
       }).addTo(mapRef.current)
       
-      // Bring to front
       circle.bringToFront()
-      
       circleRefs.current.push(circle)
-
-      // Add inner glow for more visible effect
-      const innerCircle = (window as any).L.circle([centerLat, centerLng], {
-        radius: heatmapRadius * 0.6,
-        color: color,
-        fillColor: color,
-        fillOpacity: 0.65,
-        weight: 0,
-      }).addTo(mapRef.current)
-      innerCircle.bringToFront()
-      circleRefs.current.push(innerCircle)
     })
-    
+
     console.log('[Heatmap] Circles drawn:', circleRefs.current.length)
   }, [heatmapLayers, heatmapData, radius])
 
@@ -322,7 +316,7 @@ export default function MapView({
   return (
     <div className="relative w-full h-full z-0">
       <div ref={containerRef} className="w-full h-full rounded-lg z-0" />
-      
+
       {/* Heatmap legend */}
       {heatmapLayers.length > 0 && heatmapData && (
         <div className="absolute top-4 right-4 bg-white/90 backdrop-blur rounded-lg p-3 text-xs z-[1000] shadow-md">
@@ -338,8 +332,8 @@ export default function MapView({
               }
               return (
                 <div key={layer} className="flex items-center gap-2">
-                  <span 
-                    className="w-3 h-3 rounded-full" 
+                  <span
+                    className="w-3 h-3 rounded-full"
                     style={{ backgroundColor: color }}
                   />
                   <span>{labels[layer]}: {value}</span>
