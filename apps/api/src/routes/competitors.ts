@@ -132,8 +132,8 @@ export async function competitorRoutes(app: FastifyInstance) {
         const centerLat = parseFloat(lat)
         const centerLng = parseFloat(lng)
         
-        // Try SERP API for brand search
-        serpResults = await searchBrand(keyword, 'Indonesia', 'Indonesia')
+        // Try SERP API for brand search with proper location
+        serpResults = await searchPlaces(keyword, 'Indonesia', 30)
         
         if (serpResults.length > 0) {
           // Convert SERP results to competitor format
