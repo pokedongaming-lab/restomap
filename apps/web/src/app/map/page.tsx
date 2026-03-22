@@ -43,6 +43,7 @@ export default function MapPage() {
   const [competitors, setCompetitors] = useState<MapCompetitor[]>([])
   const [brandQuery, setBrandQuery] = useState<string | null>(null)
   const [bpsData, setBpsData] = useState<{ population: number; income: number; traffic: number; competition: number } | null>(null)
+  const [showVoronoi, setShowVoronoi] = useState(false)
 
   const { locations, save, remove, isAtLimit, loaded } = useSavedLocations()
   const { loading: heatmapLoading, data: heatmapData, fetchHeatmapData } = useHeatmap()
@@ -367,7 +368,9 @@ export default function MapPage() {
       <main id="map-container" className="flex-1 relative z-0">
         <MapView 
           onPinChange={setPin} 
-          radius={radius} 
+          radius={radius}
+          competitors={competitors}
+          showVoronoi={showVoronoi} 
           competitors={competitors}
           heatmapLayers={heatmapLayers}
           heatmapData={heatmapData?.factors ?? null}

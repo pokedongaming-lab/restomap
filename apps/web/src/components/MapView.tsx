@@ -31,6 +31,7 @@ type Props = {
   heatmapData?: HeatmapFactors | null
   competitors?: MapCompetitor[]
   onCompetitorClick?: (competitor: MapCompetitor) => void
+  showVoronoi?: boolean
 }
 
 const CITY_CENTERS: Record<string, [number, number]> = {
@@ -58,6 +59,7 @@ export default function MapView({
   radius = 1000,
   initialCity = 'jakarta',
   heatmapLayers = [],
+  showVoronoi = false,
   heatmapData,
   competitors = [],
   onCompetitorClick,
@@ -295,6 +297,61 @@ export default function MapView({
       circleRefs.current[0].setRadius(radius)
     }
   }, [radius])
+
+  // Render Voronoi polygons
+  useEffect(() => {
+    if (!mapRef.current || !competitors || competitors.length === 0) return
+    
+    // Remove existing Voronoi polygons
+    if ((window as any).voronoiLayers) {
+      (window as any).voronoiLayers.forEach((layer: any) => layer.remove())
+      (window as any).voronoiLayers = []
+    }
+    
+    if (!showVoronoi) return
+    
+    const L = (window as any).L
+    const voronoiLayers: any[] = []
+    const colors = [
+      '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7',
+      '#DDA0DD', '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E9'
+    ]
+    
+    // Get center and bounds
+    const center = mapRef.current.getCenter()
+    const radiusDeg = radius / 111000
+    
+    // Create simple Voronoi-like regions (circles around each competitor)
+    // This is lighter than full Voronoi computation
+    competitors.forEach((comp, idx) => {
+      // Calculate influence radius (smaller = more spread out)
+      const influenceRadius = Math.max(200, radius / Math.sqrt(competitors.length))
+      
+      const circle = L.circle([comp.lat, comp.lng], {
+        radius: influenceRadius,
+        fillColor: colors[idx % colors.length],
+        fillOpacity: 0.2,
+        color: colors[idx % colors.length],
+        weight: 1,
+        opacity: 0.6,
+      }).addTo(mapRef.current)
+      
+      // Add popup with competitor info
+      circle.bindPopup(`
+        <div class="text-sm">
+          <strong>${comp.name}</strong><br/>
+          Rating: ${comp.rating || 'N/A'}<br/>
+          Catchment Area
+        </div>
+      `)
+      
+      voronoiLayers.push(circle)
+    })
+    
+    // Store for cleanup
+    ;(window as any).voronoiLayers = voronoiLayers
+    
+  }, [competitors, showVoronoi, radius])
 
   return (
     <div className="relative w-full h-full z-0">
