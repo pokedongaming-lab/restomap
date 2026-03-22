@@ -94,39 +94,67 @@ function getCategoryFrequency(category: string | null | undefined): number {
 }
 
 // Estimate SAM (Serviceable Addressable Market) - population in radius
-function estimateSAM(lat: number, lng: number, radiusMeters: number): number {
-  const baseDensity = 15000 // Jakarta avg
-  
-  const centralJakarta = lat >= -6.22 && lat <= -6.18 && lng >= 106.81 && lng <= 106.84
-  const southJakarta = lat < -6.23
-  const densityMultiplier = centralJakarta ? 3 : southJakarta ? 1.5 : 2
-  
+function estimateSAM(lat: number, lng: number, radiusMeters: number, bpsScore?: number): number {
   const radiusKm = radiusMeters / 1000
   const areaKm2 = Math.PI * radiusKm * radiusKm
   
+  // Use BPS population score if available (0-100)
+  // Scale: BPS 50 = 15000/km², BPS 80 = 25000/km²
+  let densityMultiplier = 2
+  if (bpsScore) {
+    densityMultiplier = 1 + (bpsScore / 50) // 1.5x to 2.5x
+  } else {
+    // Fallback to location-based
+    const centralJakarta = lat >= -6.22 && lat <= -6.18 && lng >= 106.81 && lng <= 106.84
+    const southJakarta = lat < -6.23
+    densityMultiplier = centralJakarta ? 3 : southJakarta ? 1.5 : 2
+  }
+  
+  const baseDensity = 15000
   return Math.round(areaKm2 * baseDensity * densityMultiplier)
 }
 
 // Estimate SOM (Serviceable Obtainable Market) after competition
-// SOM = SAM × Penetration Rate
-// Penetration decreases with more competitors AND larger radius
-function estimateSOM(sam: number, competitorCount: number, radiusMeters: number): { som: number; penetration: number; effectiveCompetitors: number } {
+// Key insight: a single restaurant can realistically only capture 1-3% of the addressable market
+// More competitors + larger area = much less market share
+function estimateSOM(sam: number, competitorCount: number, radiusMeters: number, bpsCompetition?: number): { 
+  som: number; 
+  penetration: number; 
+  effectiveCompetitors: number 
+} {
   const radiusKm = radiusMeters / 1000
   
-  // Assume hidden competitors scale with area (not just visible ones)
-  // More area = more hidden competitors to compete with
-  const hiddenCompetitorFactor = Math.round(radiusKm * 2) // e.g., 5km = 10 hidden competitors
-  const effectiveCompetitors = competitorCount + hiddenCompetitorFactor
+  // Hidden competitors: for every km², assume ~5 hidden competitors not in Google
+  const hiddenCompetitors = Math.round(radiusKm * radiusKm * 5)
   
-  // Base penetration: 5% in small area
-  // Decreases significantly with more competitors
-  // In 1km: base 5%, each competitor reduces by 0.3%
-  // In 10km: base 2%, each competitor reduces by 0.5%
-  const basePenetration = radiusKm <= 2 ? 0.05 : radiusKm <= 5 ? 0.03 : 0.02
-  const competitorPenalty = Math.min(basePenetration - 0.005, effectiveCompetitors * (radiusKm <= 2 ? 0.003 : 0.005))
-  const penetration = Math.max(0.005, basePenetration - competitorPenalty)
+  // Total competitors = visible + hidden
+  const totalCompetitors = competitorCount + hiddenCompetitors
+  
+  // Realistic max penetration: even with 0 competitors, max ~5%
+  // With each competitor, penetration drops faster
+  let basePenetration = 0.05 // 5% max
+  
+  // BPS competition score (0-100) reduces penetration: BPS 80 = 20% reduction
+  if (bpsCompetition) {
+    basePenetration = basePenetration * (1 - (bpsCompetition / 200))
+  }
+  
+  // Competitor penalty: more competitors = exponential drop
+  // 10 competitors in 1km = ~1% penetration
+  // 50 competitors in 5km = ~0.5% penetration
+  const competitorPenalty = Math.min(
+    basePenetration - 0.002,
+    totalCompetitors * 0.001 * (radiusKm / 2) // penalty scales with area
+  )
+  
+  const penetration = Math.max(0.002, basePenetration - competitorPenalty) // min 0.2%
   
   return {
+    som: Math.round(sam * penetration),
+    penetration: Math.round(penetration * 100),
+    effectiveCompetitors: totalCompetitors,
+  }
+}
     som: Math.round(sam * penetration),
     penetration: Math.round(penetration * 100),
     effectiveCompetitors,
@@ -159,28 +187,28 @@ export default function RevenuePotential(props: Props) {
   useEffect(() => {
     setLoading(true)
     
-    // Use BPS data if available, otherwise fallback to calculation
-    const bpsPopulation = bpsData?.population ?? 50
+    // Use BPS data if available
+    const bpsPopulation = bpsData?.population
     const bpsIncome = bpsData?.income ?? 50
     const bpsTraffic = bpsData?.traffic ?? 50
-    const bpsCompetition = bpsData?.competition ?? 50
+    const bpsCompetition = bpsData?.competition
     
     const incomeData = getIncomeLevel(lat, lng)
     const categorySpend = getCategorySpend(props.category)
     const avgSpend = Math.round(categorySpend * incomeData.multiplier)
     const visitFrequency = getCategoryFrequency(props.category)
     
-    // TAM: Total hypothethical market (all people who like this category)
-    // Use BPS population score if available
-    const basePopulation = bpsData ? (bpsPopulation / 100) * 200000 : 100000 // Scale BPS score to population
-    const sam = estimateSAM(lat, lng, radius)
+    // SAM = population in radius based on BPS or location
+    const sam = estimateSAM(lat, lng, radius, bpsPopulation)
     const tam = Math.round(sam / 0.3) // TAM = SAM / 0.3
     
-    // Use BPS competition data combined with visible competitors
-    const effectiveCompetitors = competitorCount + Math.round(bpsCompetition * 2)
-    
-    // SOM after competition - include radius for larger area penalty
-    const { som, penetration } = estimateSOM(sam, effectiveCompetitors, radius)
+    // SOM after competition - use BPS competition score
+    const { som, penetration, effectiveCompetitors: totalSaingan } = estimateSOM(
+      sam, 
+      competitorCount, 
+      radius,
+      bpsCompetition
+    )
     
     // Monthly visits = SOM × visit frequency
     const monthlyVisits = Math.round(som * visitFrequency)
@@ -205,17 +233,22 @@ export default function RevenuePotential(props: Props) {
       return 70
     })()
     
+    // Realistic cap: a single restaurant in Jakarta rarely makes > Rp 500M/month
+    // Most make Rp 50-200M/month
+    const realisticMax = 500000000
+    const cappedRevenue = Math.min(estimatedRevenue, realisticMax)
+    
     const result: RevenueData = {
       tam,
       sam,
       som,
       penetration,
-      effectiveCompetitors,
+      effectiveCompetitors: totalSaingan,
       traffic,
       incomeLevel: incomeData.level,
       avgSpend,
       monthlyVisits,
-      estimatedRevenue,
+      estimatedRevenue: cappedRevenue,
       competitorCount,
     }
     
