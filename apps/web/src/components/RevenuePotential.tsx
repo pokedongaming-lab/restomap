@@ -187,6 +187,11 @@ type RevenueData = {
   monthlyVisits: number
   estimatedRevenue: number
   competitorCount: number
+  // BPS factors for transparency
+  bpsPopulation: number
+  bpsIncome: number
+  bpsTraffic: number
+  bpsCompetition: number
 }
 
 export default function RevenuePotential(props: Props) {
@@ -204,22 +209,37 @@ export default function RevenuePotential(props: Props) {
       ? (CATEGORY_PENETRATION[props.category.toLowerCase()] ?? 0.15) 
       : 0.15
     
-    // Get location-based adjustments
+    // Get BPS/Heatmap factors - these modify the base calculations
+    const bpsPopulation = bpsData?.population ?? 50  // 0-100 score
+    const bpsIncome = bpsData?.income ?? 50         // 0-100 score
+    const bpsTraffic = bpsData?.traffic ?? 50       // 0-100 score
+    const bpsCompetition = bpsData?.competition ?? 50
+    
+    // Calculate SAM - base population modified by density score
+    const baseSAM = estimateSAM(lat, lng, radius, null)
+    // BPS population (kepadatan) affects effective population
+    // Higher density = more potential customers reachable
+    const densityFactor = 0.5 + (bpsPopulation / 100)  // 0.5 to 1.5
+    const sam = Math.round(baseSAM * densityFactor)
+    const tam = Math.round(sam / 0.3)
+    
+    // Calculate ARPU - base spend modified by income/buying power
     const incomeData = getIncomeLevel(lat, lng)
-    const avgSpend = Math.round(categorySpend * incomeData.multiplier) // Adjust by income
+    // BPS income (daya beli) further adjusts
+    const incomeFactor = (bpsIncome / 50) * incomeData.multiplier  // 0.5 to 2x
+    const avgSpend = Math.round(categorySpend * Math.max(0.5, Math.min(2, incomeFactor)))
     
-    // Calculate SAM based on population in radius (using location, not BPS)
-    const sam = estimateSAM(lat, lng, radius, null)
-    const tam = Math.round(sam / 0.3) // TAM = SAM / 0.3
+    // Calculate effective penetration
+    // BPS competition reduces penetration significantly
+    const competitionFactor = Math.max(0.3, 1 - (bpsCompetition / 150))  // 30% to 100%
+    // BPS traffic increases penetration (more people = more customers)
+    const trafficFactor = Math.max(0.7, 0.7 + (bpsTraffic / 200))  // 70% to 120%
     
-    // Calculate SOM with category-based penetration
-    // BPS competition is additional factor
-    const bpsCompetition = bpsData?.competition
-    let effectivePenetration = categoryPenetration
+    let effectivePenetration = categoryPenetration * competitionFactor * trafficFactor
     
-    // Reduce penetration if BPS shows high competition
-    if (bpsCompetition && bpsCompetition > 60) {
-      effectivePenetration = effectivePenetration * 0.7 // 30% reduction
+    // Also reduce penetration if BPS shows high competition
+    if (bpsCompetition > 60) {
+      effectivePenetration = effectivePenetration * 0.7
     }
     
     // Hidden competitors based on area - ALWAYS assume hidden competitors exist
@@ -300,6 +320,10 @@ export default function RevenuePotential(props: Props) {
       monthlyVisits,
       estimatedRevenue: cappedRevenue,
       competitorCount,
+      bpsPopulation: bpsPopulation,
+      bpsIncome: bpsIncome,
+      bpsTraffic: bpsTraffic,
+      bpsCompetition,
     }
     
     setData(result)
@@ -404,6 +428,29 @@ export default function RevenuePotential(props: Props) {
         </p>
       </div>
 
+      {/* BPS Factors */}
+      <div className="bg-white/70 rounded-lg p-2 text-xs space-y-1">
+        <p className="font-medium text-gray-600 border-b pb-1">Faktor Lokasi (BPS)</p>
+        <div className="grid grid-cols-2 gap-1">
+          <div className="flex justify-between">
+            <span className="text-gray-500">Kepadatan:</span>
+            <span className={`font-medium ${data.bpsPopulation > 60 ? 'text-green-600' : data.bpsPopulation > 40 ? 'text-yellow-600' : 'text-red-600'}`}>{data.bpsPopulation}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-500">Daya Beli:</span>
+            <span className={`font-medium ${data.bpsIncome > 60 ? 'text-green-600' : data.bpsIncome > 40 ? 'text-yellow-600' : 'text-red-600'}`}>{data.bpsIncome}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-500">Traffic:</span>
+            <span className={`font-medium ${data.bpsTraffic > 60 ? 'text-green-600' : data.bpsTraffic > 40 ? 'text-yellow-600' : 'text-red-600'}`}>{data.bpsTraffic}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-500">Kompetisi:</span>
+            <span className={`font-medium ${data.bpsCompetition < 40 ? 'text-green-600' : data.bpsCompetition < 60 ? 'text-yellow-600' : 'text-red-600'}`}>{data.bpsCompetition}</span>
+          </div>
+        </div>
+      </div>
+
       {/* Competition Impact */}
       <div className="bg-white/70 rounded-lg p-2 text-xs">
         <div className="flex justify-between">
@@ -420,9 +467,10 @@ export default function RevenuePotential(props: Props) {
         </div>
       </div>
 
-      {/* Formula Reference */}
-      <div className="text-xs text-gray-400 text-center pt-1 border-t border-indigo-100">
-        <p>Revenue = SOM ({formatNumber(data.som)}) × Frekuensi ({getCategoryFrequency(props.category)}x) × ARPU (Rp {data.avgSpend.toLocaleString('id-ID')})</p>
+      {/* Note about other factors */}
+      <div className="text-xs text-gray-400 bg-gray-50 rounded p-2">
+        <p className="font-medium text-gray-500">⚠️ Faktor lain (tidak termasuk):</p>
+        <p className="mt-1">Jumlah kursi, kualitas chef, brand, jam operasional, marketing, aksesibilitas, delivery</p>
       </div>
     </div>
   )
