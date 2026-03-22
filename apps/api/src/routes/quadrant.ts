@@ -1,4 +1,5 @@
 import type { FastifyInstance } from 'fastify'
+import { getLocationFactors } from '../services/BPSService'
 
 /**
  * Quadrant Analysis: Rating vs User Reviews
@@ -198,6 +199,8 @@ export async function quadrantRoutes(app: FastifyInstance) {
               medianReviews
             )
           })),
+          // BPS factors for location context
+          bpsFactors: await getLocationFactors(parseFloat(lat), parseFloat(lng), parseInt(radius)),
           source: service ? 'google_places' : 'mock'
         }
       }

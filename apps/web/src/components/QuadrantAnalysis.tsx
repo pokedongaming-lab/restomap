@@ -17,6 +17,12 @@ type QuadrantData = {
     strategy: string
     competitors: any[]
   }>
+  bpsFactors?: {
+    population: number
+    income: number
+    traffic: number
+    competition: number
+  }
 }
 
 type Props = {
@@ -24,6 +30,36 @@ type Props = {
   lng: number
   radius: number
   category?: string | null
+}
+
+// Smart recommendation based on BPS factors
+function getBPSRecommendation(bps: { population: number; income: number; traffic: number; competition: number }): string {
+  const scores = []
+  
+  // Population/Density score (higher = more customers)
+  if (bps.population > 60) scores.push('Kepadatan tinggi (+)')
+  else if (bps.population < 40) scores.push('Kepadatan rendah (-)')
+  
+  // Income score (higher = higher spend)
+  if (bps.income > 60) scores.push('Daya beli tinggi (+)')
+  else if (bps.income < 40) scores.push('Daya beli rendah (-)')
+  
+  // Traffic score (higher = more foot traffic)
+  if (bps.traffic > 60) scores.push('Traffic tinggi (+)')
+  else if (bps.traffic < 40) scores.push('Traffic rendah (-)')
+  
+  // Competition (lower = less competition)
+  if (bps.competition < 40) scores.push('Kompetisi rendah (+)')
+  else if (bps.competition > 60) scores.push('Kompetisi tinggi (-)')
+  
+  // Overall assessment
+  const positive = scores.filter(s => s.includes('(+)')).length
+  const negative = scores.filter(s => s.includes('(-)')).length
+  
+  if (positive >= 3) return 'Area sangat potensial! Segera bertindak.'
+  if (positive > negative) return 'Area cukup potensial, layak dipertimbangkan.'
+  if (negative > positive) return 'Area kurang potensial, perlu hati-hati.'
+  return 'Area netral, perlu analisis lebih lanjut.'
 }
 
 export default function QuadrantAnalysis({ lat, lng, radius, category }: Props) {
@@ -141,6 +177,36 @@ export default function QuadrantAnalysis({ lat, lng, radius, category }: Props) 
             <p className="text-xs text-gray-500">Median Reviews</p>
           </div>
         </div>
+
+        {/* BPS Factors Analysis */}
+        {data.bpsFactors && (
+          <div className="bg-blue-50 rounded-lg p-3 mb-3">
+            <p className="text-xs font-semibold text-blue-700 mb-2">📊 Analisis Lokasi (BPS)</p>
+            <div className="grid grid-cols-4 gap-2 text-center">
+              <div className={`p-2 rounded ${data.bpsFactors.population > 60 ? 'bg-green-100' : data.bpsFactors.population > 40 ? 'bg-yellow-100' : 'bg-red-100'}`}>
+                <p className="text-lg font-bold">{data.bpsFactors.population}</p>
+                <p className="text-xs">Kepadatan</p>
+              </div>
+              <div className={`p-2 rounded ${data.bpsFactors.income > 60 ? 'bg-green-100' : data.bpsFactors.income > 40 ? 'bg-yellow-100' : 'bg-red-100'}`}>
+                <p className="text-lg font-bold">{data.bpsFactors.income}</p>
+                <p className="text-xs">Daya Beli</p>
+              </div>
+              <div className={`p-2 rounded ${data.bpsFactors.traffic > 60 ? 'bg-green-100' : data.bpsFactors.traffic > 40 ? 'bg-yellow-100' : 'bg-red-100'}`}>
+                <p className="text-lg font-bold">{data.bpsFactors.traffic}</p>
+                <p className="text-xs">Traffic</p>
+              </div>
+              <div className={`p-2 rounded ${data.bpsFactors.competition < 40 ? 'bg-green-100' : data.bpsFactors.competition < 60 ? 'bg-yellow-100' : 'bg-red-100'}`}>
+                <p className="text-lg font-bold">{data.bpsFactors.competition}</p>
+                <p className="text-xs">Kompetisi</p>
+              </div>
+            </div>
+            {/* Smart Recommendation based on BPS */}
+            <div className="mt-2 p-2 bg-white/70 rounded text-xs">
+              <p className="font-semibold">💡 Rekomendasi:</p>
+              <p>{getBPSRecommendation(data.bpsFactors)}</p>
+            </div>
+          </div>
+        )}
 
         {/* Quadrant Cards */}
         <div className="grid grid-cols-2 gap-2">
