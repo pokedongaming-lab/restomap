@@ -91,14 +91,15 @@ export default function BrandSearch({ lat, lng, onSelectBrand }: Props) {
       
       {/* Quick Brand Buttons */}
       <div className="mt-2">
-        <p className="text-xs text-gray-400 mb-1">Quick:</p>
+        <p className="text-xs text-gray-400 mb-1">Brand populer:</p>
         <div className="flex flex-wrap gap-1">
           {quickBrands.map((brand, i) => (
             <button
               key={i}
+              type="button"
               onClick={() => handleSelect(brand)}
-              className="px-2 py-1 text-xs bg-gray-100 hover:bg-indigo-100 rounded transition-colors"
-              title={brand.name}
+              className="px-2 py-1 text-xs bg-gray-100 hover:bg-purple-100 hover:text-purple-700 rounded transition-colors border border-gray-200"
+              title={`Cari ${brand.name}`}
             >
               {brand.emoji} {brand.name.split(' ')[0]}
             </button>
