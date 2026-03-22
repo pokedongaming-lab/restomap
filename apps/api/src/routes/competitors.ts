@@ -1,13 +1,14 @@
 import type { FastifyInstance } from 'fastify'
 import { z } from 'zod'
 import { CompetitorService } from '../services/CompetitorService'
+import { getLocationFactors } from '../services/BPSService'
 
 const QuerySchema = z.object({
   lat:      z.coerce.number(),
   lng:      z.coerce.number(),
   radius:   z.coerce.number().min(100).max(20000),
   category: z.string().optional(),
-  limit:    z.coerce.number().min(1).max(50).optional(),
+  limit:    z.coerce.number().min(1).max(200).optional(), // Increased to get all competitors
   brand:    z.string().optional(), // Search for specific brand
 })
 
@@ -41,9 +42,17 @@ export async function competitorRoutes(app: FastifyInstance) {
         keyword:    query.brand ?? undefined,
       })
 
+      // Get BPS data for this location
+      const bpsData = await getLocationFactors(query.lat, query.lng, query.radius)
+      
       return reply.send({
         ok: true,
-        data: { competitors, total: competitors.length, source: 'google_places' },
+        data: { 
+          competitors, 
+          total: competitors.length, 
+          source: 'google_places',
+          bps: bpsData,
+        },
       })
 
     } catch (err: any) {
