@@ -12,13 +12,14 @@ import CompetitorList from '@/components/CompetitorList'
 import GapCategoryPanel from '@/components/GapCategoryPanel'
 import QuadrantAnalysis from '@/components/QuadrantAnalysis'
 import BrandSearch from '@/components/BrandSearch'
+import GoogleMapView from '@/components/GoogleMapView'
 import OnboardingTour from '@/components/OnboardingTour'
 import { useSavedLocations } from '@/hooks/useSavedLocations'
 import { useHeatmap } from '@/hooks/useHeatmap'
 import type { MapPin, MapCompetitor } from '@/components/MapView'
 import type { Weights } from '@/hooks/useWeights'
 
-const MapView = dynamic(() => import('@/components/MapView'), {
+const MapView = dynamic(() => import('@/components/GoogleMapView'), {
   ssr: false,
   loading: () => (
     <div className="w-full h-full flex items-center justify-center bg-gray-100">
