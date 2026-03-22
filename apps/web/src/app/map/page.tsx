@@ -14,7 +14,7 @@ import GapCategoryPanel from '@/components/GapCategoryPanel'
 import QuadrantAnalysis from '@/components/QuadrantAnalysis'
 import BrandSearch from '@/components/BrandSearch'
 import RevenuePotential from '@/components/RevenuePotential'
-import VoronoiAnalysis from '@/components/VoronoiAnalysis'
+
 import CannibalAnalysis from '@/components/CannibalAnalysis'
 import GoogleMapView from '@/components/GoogleMapView'
 import OnboardingTour from '@/components/OnboardingTour'
@@ -45,7 +45,7 @@ export default function MapPage() {
   const [competitors, setCompetitors] = useState<MapCompetitor[]>([])
   const [brandQuery, setBrandQuery] = useState<string | null>(null)
   const [bpsData, setBpsData] = useState<{ population: number; income: number; traffic: number; competition: number } | null>(null)
-  const [showVoronoi, setShowVoronoi] = useState(false)
+
 
   const { locations, save, remove, isAtLimit, loaded } = useSavedLocations()
   const { loading: heatmapLoading, data: heatmapData, fetchHeatmapData } = useHeatmap()
@@ -202,20 +202,6 @@ export default function MapPage() {
               <CategoryPreset value={category} onChange={(c) => { setCategory(c); setBrandQuery(null); }} />
               <RadiusSelector value={radius} onChange={setRadius} />
               
-              {/* Voronoi Toggle */}
-              {pin && competitors.length > 0 && (
-                <button
-                  onClick={() => setShowVoronoi(!showVoronoi)}
-                  className={`w-full py-2 px-3 rounded-lg text-sm font-medium transition-all ${
-                    showVoronoi
-                      ? 'bg-purple-600 text-white'
-                      : 'bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100'
-                  }`}
-                >
-                  🎯 Voronoi {showVoronoi ? 'ON' : 'OFF'}
-                </button>
-              )}
-              
               <div id="heatmap-toggle">
                 <HeatmapToggle 
                   active={heatmapLayers} 
@@ -329,16 +315,6 @@ export default function MapPage() {
                   
                   <div className="border-t border-gray-100 my-4" />
                   
-                  <VoronoiAnalysis
-                    lat={pin.lat}
-                    lng={pin.lng}
-                    radius={radius}
-                    category={category}
-                    competitors={competitors}
-                  />
-                  
-                  <div className="border-t border-gray-100 my-4" />
-                  
                   <CannibalAnalysis
                     lat={pin.lat}
                     lng={pin.lng}
@@ -396,8 +372,7 @@ export default function MapPage() {
         <MapView 
           onPinChange={setPin} 
           radius={radius}
-          competitors={competitors}
-          showVoronoi={showVoronoi} 
+          competitors={competitors} 
           competitors={competitors}
           heatmapLayers={heatmapLayers}
           heatmapData={heatmapData?.factors ?? null}
