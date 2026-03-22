@@ -75,7 +75,7 @@ export default function MapPage() {
     }
   }, [pin, radius, category, save])
 
-  // Fetch competitors when pin or radius changes
+  // Fetch competitors when pin, radius, or category changes
   useEffect(() => {
     if (!pin?.lat || !pin?.lng) return
     
@@ -87,6 +87,10 @@ export default function MapPage() {
           radius: Math.min(radius * 2, 5000).toString(), // Larger radius for map markers
           limit: '30',
         })
+        // Add category filter
+        if (category) {
+          params.set('category', category)
+        }
         const res = await fetch(`http://localhost:3001/competitors?${params}`)
         const json = await res.json()
         if (json.ok) {
@@ -98,7 +102,7 @@ export default function MapPage() {
     }
     
     fetchCompetitors()
-  }, [pin?.lat, pin?.lng, radius])
+  }, [pin?.lat, pin?.lng, radius, category])
 
   const handleLoad = useCallback((loc: typeof locations[0]) => {
     setPin(loc.pin)
