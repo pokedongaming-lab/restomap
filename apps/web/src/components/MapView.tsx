@@ -62,8 +62,6 @@ export default function MapView({
   competitors = [],
   onCompetitorClick,
 }: Props) {
-  // Debug: log props
-  console.log('[MapView] Props:', { heatmapLayers, heatmapData, radius })
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef       = useRef<any>(null)
   const markerRef    = useRef<any>(null)
@@ -164,8 +162,6 @@ export default function MapView({
 
   // Update heatmap visualization when data changes
   useEffect(() => {
-    console.log('[Heatmap] Effect triggered:', { heatmapData, heatmapLayers, radius, hasMap: !!mapRef.current })
-
     if (!mapRef.current) return
 
     // Clear existing heatmap layers
@@ -174,11 +170,8 @@ export default function MapView({
 
     // If no heatmap data, return
     if (!heatmapData || heatmapLayers.length === 0) {
-      console.log('[Heatmap] Skipping - no data or layers')
       return
     }
-
-    console.log('[Heatmap] Drawing circles for:', heatmapLayers, 'with data:', heatmapData)
 
     // Get center from marker or use default
     let centerLat = -6.2
@@ -207,7 +200,7 @@ export default function MapView({
 
       // Use CircleMarker for better visibility (radius in pixels)
       const pixelRadius = layer === 'population' ? 80 : layer === 'traffic' ? 70 : 60
-      
+
       const circleMarker = (window as any).L.circleMarker([centerLat, centerLng], {
         radius: pixelRadius,
         fillColor: color,
@@ -216,12 +209,10 @@ export default function MapView({
         fillOpacity: 0.5,
         opacity: 1,
       }).addTo(mapRef.current)
-      
+
       circleMarker.bringToFront()
       circleRefs.current.push(circleMarker)
     })
-
-    console.log('[Heatmap] Circles drawn:', circleRefs.current.length)
   }, [heatmapLayers, heatmapData, radius])
 
   useEffect(() => {

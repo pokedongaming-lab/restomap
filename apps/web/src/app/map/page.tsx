@@ -31,9 +31,6 @@ type Tab = 'analisa' | 'kompetitor' | 'tersimpan'
 export default function MapPage() {
   const [tab, setTab]               = useState<Tab>('analisa')
   const [radius, setRadius]         = useState(1000)
-  
-  // Debug: show radius in console
-  console.log('[MapPage] Current radius state:', radius)
   const [pin, setPin]               = useState<MapPin | null>(null)
   const [category, setCategory]     = useState<string | null>(null)
   const [heatmapLayers, setHeatmap] = useState<HeatmapLayer[]>([])
@@ -126,7 +123,6 @@ export default function MapPage() {
             <span className="text-white text-sm font-bold">R</span>
           </div>
           <span className="font-bold text-gray-800 text-lg">RestoMap</span>
-          <span className="ml-auto text-xs bg-red-100 text-red-600 px-2 py-1 rounded">DEBUG: {radius}m</span>
         </div>
 
         {/* Tabs */}
@@ -283,7 +279,6 @@ export default function MapPage() {
 
       {/* ── Map ─────────────────────────────────────────────────────── */}
       <main className="flex-1 relative z-0">
-        {console.log('[MapPage] Rendering MapView with radius:', radius)}
         <MapView 
           onPinChange={setPin} 
           radius={radius} 
