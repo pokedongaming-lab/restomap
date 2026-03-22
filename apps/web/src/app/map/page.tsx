@@ -19,7 +19,7 @@ import { useHeatmap } from '@/hooks/useHeatmap'
 import type { MapPin, MapCompetitor } from '@/components/MapView'
 import type { Weights } from '@/hooks/useWeights'
 
-const MapView = dynamic(() => import('@/components/GoogleMapView'), {
+const MapView = dynamic(() => import('@/components/MapView'), {
   ssr: false,
   loading: () => (
     <div className="w-full h-full flex items-center justify-center bg-gray-100">
