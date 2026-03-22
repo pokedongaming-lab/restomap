@@ -72,6 +72,93 @@ const CATEGORY_PENETRATION: Record<string, number> = {
   default: 0.15,
 }
 
+// Area type detection based on coordinates (simplified for Jakarta)
+function detectAreaType(lat: number, lng: number): { type: string; score: number; description: string } {
+  // Jakarta area type detection (simplified - in real app would use reverse geocoding)
+  
+  // Central Jakarta (CBD/Office)
+  const isCBD = lat >= -6.22 && lat <= -6.18 && lng >= 106.81 && lng <= 106.84
+  
+  // Government areas (around Jakarta government complex)
+  const isGovernment = lat >= -6.17 && lat <= -6.15 && lng >= 106.81 && lng <= 106.83
+  
+  // Residential areas (South Jakarta, North Jakarta outskirts)
+  const isResidential = lat < -6.23 || lat > -6.1
+  
+  // Mall areas (major malls coordinates)
+  const mallAreas = [
+    { lat: -6.2088, lng: 106.8456 }, // SCBD
+    { lat: -6.1753, lng: 106.8234 }, // Grand Indonesia
+    { lat: -6.2251, lng: 106.6491 }, // AEON Jakarta
+  ]
+  const isMall = mallAreas.some(m => 
+    Math.abs(lat - m.lat) < 0.015 && Math.abs(lng - m.lng) < 0.015
+  )
+  
+  // University areas
+  const uniAreas = [
+    { lat: -6.2003, lng: 106.8611 }, // UI Salemba
+    { lat: -6.3635, lng: 106.8328 }, // IPB
+    { lat: -6.9149, lng: 107.6099 }, // UPI
+  ]
+  const isUniversity = uniAreas.some(u => 
+    Math.abs(lat - u.lat) < 0.02 && Math.abs(lng - u.lng) < 0.02
+  )
+  
+  if (isMall) return { type: 'mall', score: 85, description: 'Mall & Shopping Center' }
+  if (isCBD || isGovernment) return { type: 'office', score: 75, description: 'Perkantoran & Pemerintahan' }
+  if (isUniversity) return { type: 'education', score: 60, description: 'Kampus & Edukasi' }
+  if (isResidential) return { type: 'residential', score: 50, description: 'Perumahan & Residential' }
+  
+  return { type: 'mixed', score: 60, description: 'Area Campuran' }
+}
+
+// Area type multipliers for revenue calculation
+const AREA_TYPE_MULTIPLIERS = {
+  office: {
+    peakHours: [11, 12, 13, 17, 18, 19], // Lunch and after work
+    weekdayBoost: 1.3,      // Higher on weekdays
+    weekendDrop: 0.4,       // Much lower on weekends
+    avgSpend: 1.2,         // Higher spend (office workers)
+    frequency: 0.8,         // Less frequent (once per day max)
+  },
+  government: {
+    peakHours: [11, 12, 13],
+    weekdayBoost: 1.2,
+    weekendDrop: 0.3,
+    avgSpend: 0.9,
+    frequency: 0.7,
+  },
+  residential: {
+    peakHours: [7, 8, 12, 13, 18, 19, 20],
+    weekdayBoost: 0.9,
+    weekendBoost: 1.4,      // Higher on weekends
+    avgSpend: 0.8,
+    frequency: 1.2,         // More frequent (nearby)
+  },
+  mall: {
+    peakHours: [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20],
+    weekdayBoost: 0.8,
+    weekendBoost: 1.5,
+    avgSpend: 1.3,         // Higher spend (shopping + food)
+    frequency: 0.6,         // Less frequent
+  },
+  education: {
+    peakHours: [11, 12, 13, 14],
+    weekdayBoost: 1.2,
+    weekendDrop: 0.2,
+    avgSpend: 0.6,         // Students = lower spend
+    frequency: 1.0,
+  },
+  mixed: {
+    peakHours: [12, 13, 18, 19, 20],
+    weekdayBoost: 1.0,
+    weekendBoost: 1.1,
+    avgSpend: 1.0,
+    frequency: 1.0,
+  },
+}
+
 // Get income level based on location
 function getIncomeLevel(lat: number, lng: number): { level: string; multiplier: number } {
   const southJakarta = lat < -6.25
@@ -192,6 +279,9 @@ type RevenueData = {
   bpsIncome: number
   bpsTraffic: number
   bpsCompetition: number
+  areaType: string
+  areaDescription: string
+  areaScore: number
 }
 
 export default function RevenuePotential(props: Props) {
@@ -201,6 +291,10 @@ export default function RevenuePotential(props: Props) {
 
   useEffect(() => {
     setLoading(true)
+    
+    // Detect area type
+    const areaType = detectAreaType(lat, lng)
+    const areaMultiplier = AREA_TYPE_MULTIPLIERS[areaType.type as keyof typeof AREA_TYPE_MULTIPLIERS] ?? AREA_TYPE_MULTIPLIERS.mixed
     
     // Get category-specific data (PRIMARY)
     const categorySpend = getCategorySpend(props.category)
@@ -324,6 +418,9 @@ export default function RevenuePotential(props: Props) {
       bpsIncome: bpsIncome,
       bpsTraffic: bpsTraffic,
       bpsCompetition,
+      areaType: areaType.type,
+      areaDescription: areaType.description,
+      areaScore: areaType.score,
     }
     
     setData(result)
@@ -379,6 +476,12 @@ export default function RevenuePotential(props: Props) {
       <div className="bg-white/70 rounded-lg p-2 text-center">
         <p className="font-semibold text-indigo-700">{getCategoryLabel(props.category)}</p>
         <p className="text-xs text-gray-400">ARPU: Rp {data.avgSpend.toLocaleString('id-ID')}/kunjungan • {data.monthlyVisits > 0 ? `${Math.round(data.monthlyVisits / data.som * 100)}x` : '0x'} per bulan</p>
+      </div>
+
+      {/* Area Type */}
+      <div className={`rounded-lg p-2 text-center ${data.areaScore > 70 ? 'bg-blue-100' : data.areaScore > 50 ? 'bg-yellow-100' : 'bg-gray-100'}`}>
+        <p className="text-xs font-semibold">{data.areaDescription}</p>
+        <p className="text-xs text-gray-500">Skor Area: {data.areaScore}/100</p>
       </div>
 
       {/* TAM SAM SOM Visualization */}
