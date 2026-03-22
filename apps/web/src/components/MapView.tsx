@@ -162,6 +162,8 @@ export default function MapView({
 
   // Update heatmap visualization when data changes
   useEffect(() => {
+    console.log('[Heatmap] Effect triggered:', { heatmapData, heatmapLayers, radius, hasMap: !!mapRef.current })
+    
     if (!mapRef.current) return
     
     // Clear existing heatmap layers
@@ -169,7 +171,12 @@ export default function MapView({
     circleRefs.current = []
 
     // If no heatmap data, return
-    if (!heatmapData || heatmapLayers.length === 0) return
+    if (!heatmapData || heatmapLayers.length === 0) {
+      console.log('[Heatmap] Skipping - no data or layers')
+      return
+    }
+    
+    console.log('[Heatmap] Drawing circles for:', heatmapLayers, 'with data:', heatmapData)
 
     // Get center from marker or use default
     let centerLat = -6.2
