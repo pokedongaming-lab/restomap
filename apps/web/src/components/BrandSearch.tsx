@@ -43,23 +43,53 @@ export default function BrandSearch({ lat, lng, onSelectBrand }: Props) {
   
   const quickBrands = famousBrands.slice(0, 10) // First 10 for quick buttons
 
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSearch = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const q = e.target.value
     setQuery(q)
     
     if (q.length >= 2) {
-      const filtered = famousBrands.filter(b => 
+      // First show local matches
+      const localFiltered = famousBrands.filter(b => 
         b.name.toLowerCase().includes(q.toLowerCase())
       )
-      setResults(filtered)
+      setResults(localFiltered)
+      
+      // Then search Google Places API
+      setLoading(true)
+      try {
+        const res = await fetch(
+          `http://localhost:3001/competitors/search?lat=${lat}&lng=${lng}&radius=50000&keyword=${encodeURIComponent(q)}`
+        )
+        const json = await res.json()
+        if (json.ok && json.data?.competitors) {
+          // Merge API results with local results
+          const apiBrands = json.data.competitors.map((c: any) => ({
+            name: c.name,
+            category: 'search',
+            emoji: '📍',
+            placeId: c.placeId
+          }))
+          // Combine but prioritize unique names
+          const combined = [...localFiltered]
+          apiBrands.forEach((b: any) => {
+            if (!combined.some(x => x.name === b.name)) {
+              combined.push(b)
+            }
+          })
+          setResults(combined.slice(0, 15))
+        }
+      } catch (err) {
+        console.error('Search error:', err)
+      }
+      setLoading(false)
     } else {
       setResults([])
     }
   }
 
   const handleSelect = (brand: any) => {
+    // Don't clear query - let the parent handle it
     onSelectBrand(brand)
-    setQuery('')
     setResults([])
   }
 
@@ -89,17 +119,22 @@ export default function BrandSearch({ lat, lng, onSelectBrand }: Props) {
         </div>
       )}
       
-      {/* Quick Brand Buttons */}
+      {/* Quick Brand Buttons - search directly on click */}
       <div className="mt-2">
-        <p className="text-xs text-gray-400 mb-1">Brand populer:</p>
+        <p className="text-xs text-gray-400 mb-1">Brand populer (klik untuk cari):</p>
         <div className="flex flex-wrap gap-1">
           {quickBrands.map((brand, i) => (
             <button
               key={i}
               type="button"
-              onClick={() => handleSelect(brand)}
+              onClick={() => {
+                // Directly search for this brand in API
+                onSelectBrand({ name: brand.name, category: brand.category })
+                setQuery('')
+                setResults([])
+              }}
               className="px-2 py-1 text-xs bg-gray-100 hover:bg-purple-100 hover:text-purple-700 rounded transition-colors border border-gray-200"
-              title={`Cari ${brand.name}`}
+              title={`Cari ${brand.name} di area ini`}
             >
               {brand.emoji} {brand.name.split(' ')[0]}
             </button>
