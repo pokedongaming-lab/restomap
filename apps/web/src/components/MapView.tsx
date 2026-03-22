@@ -196,33 +196,31 @@ export default function MapView({
 
       const opacity = 0.15 + (value / 100) * 0.25
 
-      // Draw concentric circles with decreasing opacity for heatmap effect
-      const layers = 8
-      for (let i = layers; i >= 1; i--) {
-        const r = (radius * i) / layers
-        const layerOpacity = opacity * (1 - (i / layers) * 0.7)
-        
-        const circle = (window as any).L.circle([centerLat, centerLng], {
-          radius: r,
-          color: color,
-          fillColor: color,
-          fillOpacity: layerOpacity,
-          weight: 0,
-          className: 'heatmap-layer',
-        }).addTo(mapRef.current)
-        
-        circleRefs.current.push(circle)
-      }
-
-      // Add a subtle center glow
-      const centerGlow = (window as any).L.circle([centerLat, centerLng], {
-        radius: radius * 0.3,
+      // Draw single solid circle with gradient effect
+      // Use larger radius multiplier for better visibility
+      const heatmapRadius = radius * 1.5
+      
+      const circle = (window as any).L.circle([centerLat, centerLng], {
+        radius: heatmapRadius,
         color: color,
         fillColor: color,
-        fillOpacity: opacity * 0.5,
+        fillOpacity: 0.35,
+        weight: 2,
+        dashArray: '5, 5',
+        className: 'heatmap-layer',
+      }).addTo(mapRef.current)
+      
+      circleRefs.current.push(circle)
+
+      // Add inner glow for more visible effect
+      const innerCircle = (window as any).L.circle([centerLat, centerLng], {
+        radius: heatmapRadius * 0.6,
+        color: color,
+        fillColor: color,
+        fillOpacity: 0.5,
         weight: 0,
       }).addTo(mapRef.current)
-      circleRefs.current.push(centerGlow)
+      circleRefs.current.push(innerCircle)
     })
   }, [heatmapLayers, heatmapData, radius])
 
