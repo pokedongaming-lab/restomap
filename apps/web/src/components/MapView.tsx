@@ -211,11 +211,13 @@ export default function MapView({
         radius: heatmapRadius,
         color: color,
         fillColor: color,
-        fillOpacity: 0.35,
-        weight: 2,
-        dashArray: '5, 5',
+        fillOpacity: 0.5,
+        weight: 3,
         className: 'heatmap-layer',
       }).addTo(mapRef.current)
+      
+      // Bring to front
+      circle.bringToFront()
       
       circleRefs.current.push(circle)
 
@@ -224,11 +226,14 @@ export default function MapView({
         radius: heatmapRadius * 0.6,
         color: color,
         fillColor: color,
-        fillOpacity: 0.5,
+        fillOpacity: 0.65,
         weight: 0,
       }).addTo(mapRef.current)
+      innerCircle.bringToFront()
       circleRefs.current.push(innerCircle)
     })
+    
+    console.log('[Heatmap] Circles drawn:', circleRefs.current.length)
   }, [heatmapLayers, heatmapData, radius])
 
   useEffect(() => {
