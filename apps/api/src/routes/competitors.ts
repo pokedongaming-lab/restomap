@@ -28,7 +28,7 @@ export async function competitorRoutes(app: FastifyInstance) {
         // Return mock data if no API key
         return reply.send({
           ok: true,
-          data: { competitors: getMockCompetitors(query.lat, query.lng), source: 'mock' },
+          data: { competitors: getMockCompetitors(query.lat, query.lng, query.category), source: 'mock' },
         })
       }
 
@@ -217,14 +217,20 @@ const BRAND_DATA: Record<string, { names: string[]; ratings: number[]; priceLeve
   }
 }
 
-function getMockCompetitors(lat: number, lng: number) {
-  const categories = ['coffee', 'fastfood', 'indonesian', 'western', 'japanese', 'korean', 'chinese', 'bakery', 'seafood', 'ramen']
+function getMockCompetitors(lat: number, lng: number, category?: string) {
+  const allCategories = ['coffee', 'fastfood', 'indonesian', 'western', 'japanese', 'korean', 'chinese', 'bakery', 'seafood', 'ramen']
+  
+  // Filter to selected category or use all
+  const categories = category ? [category, ...allCategories.filter(c => c !== category)] : allCategories
   const competitors: any[] = []
   
-  // Generate 20 mock competitors across different categories
-  for (let i = 0; i < 20; i++) {
-    const category = categories[i % categories.length]
-    const brandData = BRAND_DATA[category]
+  // Generate competitors based on selected category
+  const totalToGenerate = category ? 8 : 20
+  for (let i = 0; i < totalToGenerate; i++) {
+    const cat = categories[i % categories.length]
+    const brandData = BRAND_DATA[cat]
+    
+    if (brandData) {
     
     if (brandData) {
       const nameIndex = i % brandData.names.length
@@ -238,7 +244,7 @@ function getMockCompetitors(lat: number, lng: number) {
       competitors.push({
         placeId: `mock_${i + 1}`,
         name: brandData.names[nameIndex],
-        category,
+        category: cat,
         rating: brandData.ratings[ratingIndex],
         priceLevel: brandData.priceLevels[priceIndex],
         address: `Jl. Contoh No. ${i + 1}, Jakarta`,
