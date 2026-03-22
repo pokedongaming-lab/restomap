@@ -190,16 +190,12 @@ export default function MapView({
 
       // Color based on layer type - distinct colors for each
       let color: string
-      let blendMode = 'normal'
       if (layer === 'income') {
         color = '#10B981' // Emerald green
-        blendMode = 'multiply'
       } else if (layer === 'traffic') {
         color = '#F59E0B' // Amber orange
-        blendMode = 'screen'
       } else {
         color = '#3B82F6' // Blue
-        blendMode = 'overlay'
       }
 
       // Use Circle with radius in meters (proper geographic scaling)
@@ -214,10 +210,6 @@ export default function MapView({
         opacity: 0.9,
       }).addTo(mapRef.current)
       
-      // Apply blend mode via CSS
-      if ((circle as any)._path) {
-        (circle as any)._path.style.mixBlendMode = blendMode
-
       circle.bringToFront()
       circleRefs.current.push(circle)
     })
