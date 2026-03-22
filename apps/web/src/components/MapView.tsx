@@ -105,9 +105,9 @@ export default function MapView({
       indonesian: '🍛',
       western: '🥩',
       japanese: '🍣',
-      korean: '🍜',
+      korean: '🥘',
       chinese: '🥡',
-      bakery: '🍞',
+      bakery: '🧁',
       seafood: '🦐',
       ramen: '🍜',
       restaurant: '🍽️',
@@ -188,14 +188,18 @@ export default function MapView({
       const value = heatmapData[layer]
       if (value === undefined) return
 
-      // Color based on layer type
+      // Color based on layer type - distinct colors for each
       let color: string
+      let blendMode = 'normal'
       if (layer === 'income') {
-        color = '#22C55E' // Green
+        color = '#10B981' // Emerald green
+        blendMode = 'multiply'
       } else if (layer === 'traffic') {
-        color = '#F59E0B' // Orange
+        color = '#F59E0B' // Amber orange
+        blendMode = 'screen'
       } else {
-        color = '#EF4444' // Red
+        color = '#3B82F6' // Blue
+        blendMode = 'overlay'
       }
 
       // Use Circle with radius in meters (proper geographic scaling)
@@ -206,9 +210,13 @@ export default function MapView({
         fillColor: color,
         color: color,
         weight: 3,
-        fillOpacity: 0.4,
-        opacity: 0.8,
+        fillOpacity: 0.35,
+        opacity: 0.9,
       }).addTo(mapRef.current)
+      
+      // Apply blend mode via CSS
+      if ((circle as any)._path) {
+        (circle as any)._path.style.mixBlendMode = blendMode
 
       circle.bringToFront()
       circleRefs.current.push(circle)

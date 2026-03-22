@@ -37,7 +37,7 @@ export default function HeatmapToggle({ active, onChange, data, loading }: Props
     if (active.includes(layer)) {
       onChange(active.filter((l) => l !== layer))
     } else {
-      onChange([...active, layer])
+      onChange([layer])
     }
   }
 
