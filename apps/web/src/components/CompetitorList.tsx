@@ -22,6 +22,7 @@ type Props = {
   lng:      number
   radius:   number
   category: string | null
+  brandQuery?: string | null
   onHover?: (competitor: Competitor | null) => void
 }
 
@@ -40,7 +41,7 @@ function StarRating({ rating }: { rating: number | null }) {
   )
 }
 
-export default function CompetitorList({ lat, lng, radius, category, onHover }: Props) {
+export default function CompetitorList({ lat, lng, radius, category, brandQuery, onHover }: Props) {
   const [competitors, setCompetitors] = useState<Competitor[]>([])
   const [loading, setLoading]         = useState(false)
   const [error, setError]             = useState<string | null>(null)
@@ -64,6 +65,7 @@ export default function CompetitorList({ lat, lng, radius, category, onHover }: 
       lng:    lng.toString(),
       radius: radius.toString(),
       ...(category ? { category } : {}),
+      ...(brandQuery ? { brand: brandQuery } : {}),
     })
 
     fetch(`http://localhost:3001/competitors?${params}`, { signal: controller.signal })

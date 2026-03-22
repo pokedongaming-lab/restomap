@@ -249,9 +249,19 @@ export default function MapPage() {
                 <>
                   <div>
                     <p className="text-xs text-gray-500 mb-2 font-medium uppercase tracking-wide">
-                      Filter kategori
+                      Filter brand/kategori
                     </p>
-                    <CategoryFilter value={category} onChange={setCategory} />
+                    {pin && (
+                      <BrandSearch 
+                        lat={pin.lat} 
+                        lng={pin.lng} 
+                        onSelectBrand={(brand) => {
+                          setBrandQuery(brand.name)
+                          setCategory(null)
+                        }}
+                      />
+                    )}
+                    <CategoryFilter value={category} onChange={(c) => { setCategory(c); setBrandQuery(null); }} />
                   </div>
                   <RadiusSelector value={radius} onChange={setRadius} />
                   <div className="border-t border-gray-100" />
@@ -261,6 +271,7 @@ export default function MapPage() {
                       lng={pin.lng}
                       radius={radius}
                       category={category}
+                      brandQuery={brandQuery}
                     />
                   </div>
                   <div className="border-t border-gray-100 my-4" />
