@@ -81,11 +81,34 @@ export async function searchPlaces(
   }
 }
 
-// Alternative: Search for specific brand
+// Alternative: Search for specific brand - more specific queries
 export async function searchBrand(
   brandName: string,
   city: string,
   country: string = 'Indonesia'
 ): Promise<SerpResult[]> {
-  return searchPlaces(`${brandName} ${city}`, `${city}, ${country}`, 20)
+  // Try multiple search variations for better results
+  const queries = [
+    `${brandName} ${city}`, // "KFC Manila"
+    `${brandName} restaurant ${city}`, // "KFC restaurant Manila"
+    `${brandName} ${city} Indonesia`, // "KFC Manila Indonesia"
+  ]
+  
+  for (const query of queries) {
+    const results = await searchPlaces(query, `${city}, ${country}`, 20)
+    if (results.length > 0) {
+      // Filter to only include results matching the brand name
+      const brandLower = brandName.toLowerCase()
+      const filtered = results.filter(r => 
+        r.title?.toLowerCase().includes(brandLower) ||
+        r.address?.toLowerCase().includes(brandLower)
+      )
+      if (filtered.length > 0) {
+        return filtered
+      }
+      return results // Return all if filter results in 0
+    }
+  }
+  
+  return []
 }
