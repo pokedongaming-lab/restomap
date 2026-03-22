@@ -18,6 +18,7 @@ type RevenueData = {
   incomeLevel: string
   avgSpend: number
   estimatedRevenue: number
+  monthlyVisitors: number
   competitorCount: number
   competitionFactor: number
   marketShare: number
@@ -79,7 +80,6 @@ function getCategorySpend(category: string | null | undefined): number {
 
 function estimatePopulation(lat: number, lng: number, radiusMeters: number): number {
   // Jakarta population density ~ 15,000 per km² average
-  // But varies by area
   const baseDensity = 15000
   
   // Adjust based on location
@@ -91,6 +91,42 @@ function estimatePopulation(lat: number, lng: number, radiusMeters: number): num
   const areaKm2 = Math.PI * radiusKm * radiusKm
   
   return Math.round(areaKm2 * baseDensity * densityMultiplier)
+}
+
+// Realistic visitor estimation - not all population visits
+function estimateVisitors(population: number, radiusMeters: number, category: string | null | undefined): number {
+  const radiusKm = radiusMeters / 1000
+  
+  // Distance decay: people prefer closer places
+  // Base visit rate decreases with distance
+  let distanceFactor: number
+  if (radiusKm <= 1) {
+    distanceFactor = 0.15 // 15% of population in 1km visits
+  } else if (radiusKm <= 2) {
+    distanceFactor = 0.08 // 8% in 2km
+  } else if (radiusKm <= 5) {
+    distanceFactor = 0.03 // 3% in 5km
+  } else {
+    distanceFactor = 0.01 // 1% in 10km+
+  }
+  
+  // Category frequency - how often people visit per month
+  const categoryFrequency: Record<string, number> = {
+    coffee: 8,      // 8x/month
+    bakery: 4,     // 4x/month  
+    fastfood: 5,   // 5x/month
+    indonesian: 12, // 12x/month (daily/wk)
+    western: 3,    // 3x/month
+    japanese: 4,   // 4x/month
+    korean: 3,
+    chinese: 4,
+    seafood: 2,
+    ramen: 4,
+    italian: 2,
+  }
+  const monthlyVisits = categoryFrequency[category?.toLowerCase() ?? ''] ?? 4
+  
+  return Math.round(population * distanceFactor * monthlyVisits)
 }
 
 function estimateTraffic(lat: number, lng: number): number {
@@ -134,7 +170,6 @@ export default function RevenuePotential(props: Props) {
     const competitorCount = props.competitorCount ?? 0
     
     // Competition factor: more competitors = less market share
-    // Base: 1 competitor = 50% market share, 10 competitors = 10% market share
     let competitionFactor = 1
     if (competitorCount > 0) {
       competitionFactor = Math.max(0.1, 1 - (competitorCount * 0.08))
@@ -143,11 +178,12 @@ export default function RevenuePotential(props: Props) {
     // Market share calculation
     const marketShare = Math.round(competitionFactor * 100)
     
-    // Revenue formula: population × (traffic/100) × avgSpend × conversionRate × 30 days × market share
-    // Conversion rate: % of population that visits per day
-    const conversionRate = 0.03 // 3% daily conversion (more realistic)
-    const dailyVisitors = population * conversionRate * (traffic / 100)
-    const estimatedRevenue = Math.round(dailyVisitors * avgSpend * 30 * competitionFactor)
+    // Realistic visitor estimation
+    const monthlyVisitors = estimateVisitors(population, radius, props.category)
+    const adjustedVisitors = Math.round(monthlyVisitors * competitionFactor)
+    
+    // Revenue: visitors × avg spend
+    const estimatedRevenue = adjustedVisitors * avgSpend
     
     const result: RevenueData = {
       population,
@@ -157,6 +193,7 @@ export default function RevenuePotential(props: Props) {
       incomeLevel: incomeData.level,
       avgSpend,
       estimatedRevenue,
+      monthlyVisitors: adjustedVisitors,
       competitorCount,
       competitionFactor,
       marketShare,
@@ -214,7 +251,7 @@ export default function RevenuePotential(props: Props) {
           {formatCurrency(data.estimatedRevenue)}
         </p>
         <p className="text-xs text-gray-400">
-          {formatCurrency(Math.round(data.estimatedRevenue / 30))}/hari
+          {formatCurrency(Math.round(data.estimatedRevenue / 30))}/hari • {Math.round(data.estimatedRevenue / data.avgSpend)} pengunjung/bulan
         </p>
       </div>
       
