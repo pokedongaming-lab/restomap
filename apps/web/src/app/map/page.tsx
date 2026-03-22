@@ -12,6 +12,7 @@ import CompetitorList from '@/components/CompetitorList'
 import GapCategoryPanel from '@/components/GapCategoryPanel'
 import QuadrantAnalysis from '@/components/QuadrantAnalysis'
 import BrandSearch from '@/components/BrandSearch'
+import RevenuePotential from '@/components/RevenuePotential'
 import GoogleMapView from '@/components/GoogleMapView'
 import OnboardingTour from '@/components/OnboardingTour'
 import { useSavedLocations } from '@/hooks/useSavedLocations'
@@ -202,20 +203,30 @@ export default function MapPage() {
 
               <div className="border-t border-gray-100" />
 
-              {/* Pin info */}
+              {/* Pin info & Revenue Potential */}
               {pin ? (
-                <div className="bg-indigo-50 rounded-xl p-3 border border-indigo-100">
-                  <p className="text-xs font-medium text-indigo-600 uppercase tracking-wide mb-1">
-                    Lokasi dipilih
-                  </p>
-                  <p className="text-sm text-gray-700 mb-1 line-clamp-2">
-                    {pin.address ?? 'Lokasi dipilih'}
-                  </p>
-                  <div className="flex gap-3 text-xs text-gray-400">
-                    <span>📍 {pin.lat.toFixed(5)}</span>
-                    <span>{pin.lng.toFixed(5)}</span>
+                <>
+                  <div className="bg-indigo-50 rounded-xl p-3 border border-indigo-100">
+                    <p className="text-xs font-medium text-indigo-600 uppercase tracking-wide mb-1">
+                      Lokasi dipilih
+                    </p>
+                    <p className="text-sm text-gray-700 mb-1 line-clamp-2">
+                      {pin.address ?? 'Lokasi dipilih'}
+                    </p>
+                    <div className="flex gap-3 text-xs text-gray-400">
+                      <span>📍 {pin.lat.toFixed(5)}</span>
+                      <span>{pin.lng.toFixed(5)}</span>
+                    </div>
                   </div>
-                </div>
+                  
+                  {/* Revenue Potential */}
+                  <RevenuePotential 
+                    lat={pin.lat} 
+                    lng={pin.lng} 
+                    radius={radius}
+                    category={category}
+                  />
+                </>
               ) : (
                 <div className="bg-gray-50 rounded-xl p-4 border border-dashed border-gray-200 text-center">
                   <p className="text-gray-400 text-sm">Klik peta untuk memilih lokasi</p>
