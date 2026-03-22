@@ -46,12 +46,14 @@ export async function searchPlaces(
 
     const results: SerpResult[] = []
     
-    if (response.data?.place_results) {
-      const places = Array.isArray(response.data.place_results) 
-        ? response.data.place_results 
-        : [response.data.place_results]
+    // Check local_results.places (the correct path)
+    const localData = response.data?.local_results
+    const places = localData?.places || localData
+    
+    if (places) {
+      const placeArray = Array.isArray(places) ? places : [places]
       
-      places.forEach((place: any, idx: number) => {
+      placeArray.forEach((place: any, idx: number) => {
         results.push({
           place_id: place.place_id,
           position: idx + 1,

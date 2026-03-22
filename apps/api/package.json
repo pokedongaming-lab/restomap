@@ -25,6 +25,8 @@
     "@restomap/common": "workspace:*",
     "@sparticuz/chromium-min": "^143.0.4",
     "argon2": "^0.44.0",
+    "axios": "^1.13.6",
+    "dotenv": "^17.3.1",
     "fastify": "^4.27.0",
     "ioredis": "^5.10.0",
     "jsonwebtoken": "^9.0.3",
