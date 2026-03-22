@@ -247,8 +247,6 @@ export default function RevenuePotential(props: Props) {
     const traffic = (() => {
       if (bpsData?.traffic) return bpsData.traffic
       
-      const centralJakarta = lat >= -6.22 && lat <= -6.18 && lng >= 106.81 && lng <= 106.84
-      const centralJakarta = lat >= -6.22 && lat <= -6.18 && lng >= 106.81 && lng <= 106.84
       const mainRoads = [
         { lat: -6.2, lng: 106.82 },
         { lat: -6.18, lng: 106.83 },
