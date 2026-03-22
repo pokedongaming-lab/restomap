@@ -222,19 +222,23 @@ export default function RevenuePotential(props: Props) {
       effectivePenetration = effectivePenetration * 0.7 // 30% reduction
     }
     
-    // Reduce penetration based on visible competitors
+    // Reduce penetration based on total competitors (visible + hidden)
+    // Use minimum of 3 competitors for realistic calculation
+    const effectiveCompetitors = Math.max(3, totalSaingan)
     const competitorPenalty = Math.min(
       effectivePenetration * 0.5,
-      competitorCount * 0.015 * effectivePenetration
+      effectiveCompetitors * 0.015 * effectivePenetration
     )
     const finalPenetration = Math.max(0.02, effectivePenetration - competitorPenalty)
     
     const som = Math.round(sam * finalPenetration)
     const penetration = Math.round(finalPenetration * 100)
     
-    // Hidden competitors based on area
+    // Hidden competitors based on area - ALWAYS assume hidden competitors exist
+    // Even if 0 visible, there are always hidden competitors
     const radiusKm = radius / 1000
-    const hiddenCompetitors = Math.round(radiusKm * radiusKm * 5)
+    // Minimum hidden competitors based on area (even in empty areas, there are unregistered businesses)
+    const hiddenCompetitors = Math.max(5, Math.round(radiusKm * radiusKm * 8))
     const totalSaingan = competitorCount + hiddenCompetitors
     
     // Monthly visits = SOM × visit frequency
