@@ -2,6 +2,14 @@ import { Client, PlacesNearbyRanking } from '@googlemaps/google-maps-services-js
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
+export type Review = {
+  authorName: string
+  rating: number
+  text: string
+  relativeTimeDescription: string
+  publishAt: string
+}
+
 export type Competitor = {
   placeId:    string
   name:       string
@@ -185,6 +193,36 @@ export class CompetitorService {
 
     // Not currently open
     return null
+  }
+
+  // Get reviews for a specific place
+  async getReviews(placeId: string, maxResults: number = 10): Promise<Review[]> {
+    try {
+      const response = await this.client.placeDetails({
+        params: {
+          place_id: placeId,
+          fields: ['reviews'],
+          key: this.apiKey,
+        },
+      })
+
+      if (response.data.status !== 'OK' || !response.data.result?.reviews) {
+        return []
+      }
+
+      const reviews = response.data.result.reviews.slice(0, maxResults)
+      
+      return reviews.map(review => ({
+        authorName: review.author_name ?? 'Anonymous',
+        rating: review.rating ?? 0,
+        text: review.text ?? '',
+        relativeTimeDescription: review.relative_time_description ?? '',
+        publishAt: review.publish_time ?? '',
+      }))
+    } catch (error) {
+      console.error('Error fetching reviews:', error)
+      return []
+    }
   }
 
   // Generate popular times data based on category (simulates Google Popular Times)

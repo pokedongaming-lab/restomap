@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import SentimentAnalysis from './SentimentAnalysis'
 
 type Competitor = {
   placeId:    string
@@ -235,6 +236,11 @@ export default function CompetitorList({ lat, lng, radius, category, onHover }: 
                   </div>
                 </div>
               )}
+
+              {/* Sentiment Analysis */}
+              <div className="mt-3 pt-3 border-t border-gray-100">
+                <SentimentAnalysis placeId={c.placeId} placeName={c.name} />
+              </div>
             </div>
           )}
         </div>
