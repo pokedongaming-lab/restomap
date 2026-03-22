@@ -198,20 +198,20 @@ export default function MapView({
         color = '#EF4444' // Red
       }
 
-      // Use CircleMarker for better visibility (radius in pixels)
-      const pixelRadius = layer === 'population' ? 80 : layer === 'traffic' ? 70 : 60
-
-      const circleMarker = (window as any).L.circleMarker([centerLat, centerLng], {
-        radius: pixelRadius,
+      // Use Circle with radius in meters (proper geographic scaling)
+      const circleRadius = radius * 1.5
+      
+      const circle = (window as any).L.circle([centerLat, centerLng], {
+        radius: circleRadius,
         fillColor: color,
         color: color,
         weight: 3,
-        fillOpacity: 0.5,
-        opacity: 1,
+        fillOpacity: 0.4,
+        opacity: 0.8,
       }).addTo(mapRef.current)
 
-      circleMarker.bringToFront()
-      circleRefs.current.push(circleMarker)
+      circle.bringToFront()
+      circleRefs.current.push(circle)
     })
   }, [heatmapLayers, heatmapData, radius])
 
