@@ -14,6 +14,7 @@ import QuadrantAnalysis from '@/components/QuadrantAnalysis'
 import BrandSearch from '@/components/BrandSearch'
 import RevenuePotential from '@/components/RevenuePotential'
 import VoronoiAnalysis from '@/components/VoronoiAnalysis'
+import CannibalAnalysis from '@/components/CannibalAnalysis'
 import GoogleMapView from '@/components/GoogleMapView'
 import OnboardingTour from '@/components/OnboardingTour'
 import { useSavedLocations } from '@/hooks/useSavedLocations'
@@ -328,6 +329,16 @@ export default function MapPage() {
                   <div className="border-t border-gray-100 my-4" />
                   
                   <VoronoiAnalysis
+                    lat={pin.lat}
+                    lng={pin.lng}
+                    radius={radius}
+                    category={category}
+                    competitors={competitors}
+                  />
+                  
+                  <div className="border-t border-gray-100 my-4" />
+                  
+                  <CannibalAnalysis
                     lat={pin.lat}
                     lng={pin.lng}
                     radius={radius}
