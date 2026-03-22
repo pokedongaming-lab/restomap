@@ -8,6 +8,12 @@ type Props = {
   radius: number
   category?: string | null
   competitorCount?: number
+  bpsData?: {
+    population: number
+    income: number
+    traffic: number
+    competition: number
+  } | null
 }
 
 // TAM: Total Addressable Market (all coffee lovers globally - tidak realistis)
@@ -146,12 +152,18 @@ type RevenueData = {
 }
 
 export default function RevenuePotential(props: Props) {
-  const { lat, lng, radius, competitorCount = 0 } = props
+  const { lat, lng, radius, competitorCount = 0, bpsData } = props
   const [data, setData] = useState<RevenueData | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     setLoading(true)
+    
+    // Use BPS data if available, otherwise fallback to calculation
+    const bpsPopulation = bpsData?.population ?? 50
+    const bpsIncome = bpsData?.income ?? 50
+    const bpsTraffic = bpsData?.traffic ?? 50
+    const bpsCompetition = bpsData?.competition ?? 50
     
     const incomeData = getIncomeLevel(lat, lng)
     const categorySpend = getCategorySpend(props.category)
@@ -159,12 +171,16 @@ export default function RevenuePotential(props: Props) {
     const visitFrequency = getCategoryFrequency(props.category)
     
     // TAM: Total hypothethical market (all people who like this category)
-    // Assume 30% of population likes this category
+    // Use BPS population score if available
+    const basePopulation = bpsData ? (bpsPopulation / 100) * 200000 : 100000 // Scale BPS score to population
     const sam = estimateSAM(lat, lng, radius)
     const tam = Math.round(sam / 0.3) // TAM = SAM / 0.3
     
+    // Use BPS competition data combined with visible competitors
+    const effectiveCompetitors = competitorCount + Math.round(bpsCompetition * 2)
+    
     // SOM after competition - include radius for larger area penalty
-    const { som, penetration, effectiveCompetitors } = estimateSOM(sam, competitorCount, radius)
+    const { som, penetration } = estimateSOM(sam, effectiveCompetitors, radius)
     
     // Monthly visits = SOM × visit frequency
     const monthlyVisits = Math.round(som * visitFrequency)
@@ -172,8 +188,8 @@ export default function RevenuePotential(props: Props) {
     // Revenue = monthly visits × average spend
     const estimatedRevenue = monthlyVisits * avgSpend
     
-    // Traffic score
-    const traffic = (() => {
+    // Traffic score - use BPS if available
+    const traffic = bpsData ? bpsTraffic : (() => {
       const centralJakarta = lat >= -6.22 && lat <= -6.18 && lng >= 106.81 && lng <= 106.84
       const mainRoads = [
         { lat: -6.2, lng: 106.82 },

@@ -41,6 +41,7 @@ export default function MapPage() {
   const [saveMsg, setSaveMsg]       = useState<string | null>(null)
   const [competitors, setCompetitors] = useState<MapCompetitor[]>([])
   const [brandQuery, setBrandQuery] = useState<string | null>(null)
+  const [bpsData, setBpsData] = useState<{ population: number; income: number; traffic: number; competition: number } | null>(null)
 
   const { locations, save, remove, isAtLimit, loaded } = useSavedLocations()
   const { loading: heatmapLoading, data: heatmapData, fetchHeatmapData } = useHeatmap()
@@ -90,7 +91,7 @@ export default function MapPage() {
           lat: pin.lat.toString(),
           lng: pin.lng.toString(),
           radius: Math.min(radius * 2, 10000).toString(), // Larger radius for brand search
-          limit: '50',
+          limit: '150', // Get all competitors
         })
         // Add category filter
         if (category) {
@@ -104,6 +105,10 @@ export default function MapPage() {
         const json = await res.json()
         if (json.ok) {
           setCompetitors(json.data.competitors)
+          // Use BPS data from API
+          if (json.data.bps) {
+            setBpsData(json.data.bps)
+          }
         }
       } catch (e) {
         console.error('Failed to fetch competitors:', e)
@@ -226,6 +231,7 @@ export default function MapPage() {
                     radius={radius}
                     category={category}
                     competitorCount={competitors.length}
+                    bpsData={bpsData}
                   />
                 </>
               ) : (
