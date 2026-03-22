@@ -14,23 +14,34 @@ export default function BrandSearch({ lat, lng, onSelectBrand }: Props) {
   const [loading, setLoading] = useState(false)
 
   const famousBrands = [
+    // Quick access brands (shown as buttons)
     { name: 'Starbucks', category: 'coffee', emoji: '☕' },
     { name: 'Kopi Kenangan', category: 'coffee', emoji: '☕' },
-    { name: 'Kopi Janji Jiwa', category: 'coffee', emoji: '☕' },
-    { name: 'Chatime', category: 'coffee', emoji: '☕' },
     { name: 'Mixue', category: 'coffee', emoji: '☕' },
     { name: "McDonald's", category: 'fastfood', emoji: '🍔' },
     { name: 'KFC', category: 'fastfood', emoji: '🍔' },
     { name: 'Burger King', category: 'fastfood', emoji: '🍔' },
     { name: 'Pizza Hut', category: 'fastfood', emoji: '🍕' },
     { name: "Domino's Pizza", category: 'fastfood', emoji: '🍕' },
-    { name: 'Subway', category: 'fastfood', emoji: '🥪' },
     { name: 'HokBen', category: 'japanese', emoji: '🍣' },
     { name: 'Sushi Tei', category: 'japanese', emoji: '🍣' },
+    // All brands (for search)
+    { name: 'Chatime', category: 'coffee', emoji: '☕' },
+    { name: 'Kopi Janji Jiwa', category: 'coffee', emoji: '☕' },
+    { name: 'Tea 77', category: 'coffee', emoji: '☕' },
+    { name: 'Subway', category: 'fastfood', emoji: '🥪' },
+    { name: 'Wendys', category: 'fastfood', emoji: '🍔' },
+    { name: 'Texas Chicken', category: 'fastfood', emoji: '🍗' },
+    { name: 'Popeyes', category: 'fastfood', emoji: '🍗' },
     { name: 'Bakmi GM', category: 'indonesian', emoji: '🍜' },
     { name: 'Solaria', category: 'indonesian', emoji: '🍛' },
+    { name: 'A&W', category: 'fastfood', emoji: '🍔' },
     { name: 'Pizza Milano', category: 'italian', emoji: '🍕' },
+    { name: 'Excelso', category: 'coffee', emoji: '☕' },
+    { name: 'Tanamera', category: 'coffee', emoji: '☕' },
   ]
+  
+  const quickBrands = famousBrands.slice(0, 10) // First 10 for quick buttons
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const q = e.target.value
@@ -77,6 +88,23 @@ export default function BrandSearch({ lat, lng, onSelectBrand }: Props) {
           ))}
         </div>
       )}
+      
+      {/* Quick Brand Buttons */}
+      <div className="mt-2">
+        <p className="text-xs text-gray-400 mb-1">Quick:</p>
+        <div className="flex flex-wrap gap-1">
+          {quickBrands.map((brand, i) => (
+            <button
+              key={i}
+              onClick={() => handleSelect(brand)}
+              className="px-2 py-1 text-xs bg-gray-100 hover:bg-indigo-100 rounded transition-colors"
+              title={brand.name}
+            >
+              {brand.emoji} {brand.name.split(' ')[0]}
+            </button>
+          ))}
+        </div>
+      </div>
     </div>
   )
 }
