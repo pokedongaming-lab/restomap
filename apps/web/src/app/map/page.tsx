@@ -13,6 +13,7 @@ import GapCategoryPanel from '@/components/GapCategoryPanel'
 import QuadrantAnalysis from '@/components/QuadrantAnalysis'
 import BrandSearch from '@/components/BrandSearch'
 import RevenuePotential from '@/components/RevenuePotential'
+import VoronoiAnalysis from '@/components/VoronoiAnalysis'
 import GoogleMapView from '@/components/GoogleMapView'
 import OnboardingTour from '@/components/OnboardingTour'
 import { useSavedLocations } from '@/hooks/useSavedLocations'
@@ -306,6 +307,16 @@ export default function MapPage() {
                     lng={pin.lng}
                     radius={radius}
                     category={category}
+                  />
+                  
+                  <div className="border-t border-gray-100 my-4" />
+                  
+                  <VoronoiAnalysis
+                    lat={pin.lat}
+                    lng={pin.lng}
+                    radius={radius}
+                    category={category}
+                    competitors={competitors}
                   />
                 </>
               ) : (
