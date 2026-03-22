@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic'
 import CitySearch from '@/components/CitySearch'
 import RadiusSelector from '@/components/RadiusSelector'
 import CategoryFilter from '@/components/CategoryFilter'
+import CategoryPreset from '@/components/CategoryPreset'
 import HeatmapToggle from '@/components/HeatmapToggle'
 import ScoringPanel from '@/components/ScoringPanel'
 import SavedLocationsList from '@/components/SavedLocationsList'
@@ -198,7 +199,7 @@ export default function MapPage() {
                 </div>
               )}
 
-              <CategoryFilter value={category} onChange={(c) => { setCategory(c); setBrandQuery(null); }} />
+              <CategoryPreset value={category} onChange={(c) => { setCategory(c); setBrandQuery(null); }} />
               <RadiusSelector value={radius} onChange={setRadius} />
               
               {/* Voronoi Toggle */}
@@ -297,7 +298,7 @@ export default function MapPage() {
                         }}
                       />
                     )}
-                    <CategoryFilter value={category} onChange={(c) => { setCategory(c); setBrandQuery(null); }} />
+                    <CategoryPreset value={category} onChange={(c) => { setCategory(c); setBrandQuery(null); }} />
                   </div>
                   <RadiusSelector value={radius} onChange={setRadius} />
                   <div className="border-t border-gray-100" />
