@@ -199,6 +199,21 @@ export default function MapPage() {
 
               <CategoryFilter value={category} onChange={(c) => { setCategory(c); setBrandQuery(null); }} />
               <RadiusSelector value={radius} onChange={setRadius} />
+              
+              {/* Voronoi Toggle */}
+              {pin && competitors.length > 0 && (
+                <button
+                  onClick={() => setShowVoronoi(!showVoronoi)}
+                  className={`w-full py-2 px-3 rounded-lg text-sm font-medium transition-all ${
+                    showVoronoi
+                      ? 'bg-purple-600 text-white'
+                      : 'bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100'
+                  }`}
+                >
+                  🎯 Voronoi {showVoronoi ? 'ON' : 'OFF'}
+                </button>
+              )}
+              
               <div id="heatmap-toggle">
                 <HeatmapToggle 
                   active={heatmapLayers} 
