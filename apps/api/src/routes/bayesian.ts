@@ -27,31 +27,39 @@ function calculateBayesianRating(
   prior: number, 
   confidenceWeight: number = 30
 ): { bayesianRating: number; confidence: string; ratingChange: number } {
-  if (rating === null) {
-    return { bayesianRating: prior, confidence: 'very_low', ratingChange: 0 }
-  }
-
-  // Bayesian average formula
-  const bayesianRating = ((rating * reviewCount) + (prior * confidenceWeight)) / (reviewCount + confidenceWeight)
+  // Ensure we have valid numbers
+  const n = reviewCount || 0
+  const r = rating ?? prior
+  const m = confidenceWeight
+  
+  // Bayesian average formula: weighted average of rating and prior
+  // Weight by number of reviews (n) vs confidence weight (m)
+  const bayesianRating = ((r * n) + (prior * m)) / (n + m)
+  
+  // Round to 2 decimal places
+  const roundedBayesian = Math.round(bayesianRating * 100) / 100
+  
+  // Calculate change from original
+  const ratingChange = rating !== null 
+    ? Math.round((roundedBayesian - rating) * 100) / 100 
+    : 0
   
   // Determine confidence based on review count
   let confidence: string
-  if (reviewCount >= 200) {
+  if (n >= 200) {
     confidence = 'very_high'
   } else if (reviewCount >= 150) {
     confidence = 'high'
   } else if (reviewCount >= 100) {
     confidence = 'medium'
-  } else if (reviewCount >= 50) {
+  } else if (n >= 50) {
     confidence = 'low'
   } else {
     confidence = 'very_low'
   }
 
-  const ratingChange = Math.round((bayesianRating - rating) * 100) / 100
-
   return {
-    bayesianRating: Math.round(bayesianRating * 100) / 100,
+    bayesianRating: roundedBayesian,
     confidence,
     ratingChange
   }
