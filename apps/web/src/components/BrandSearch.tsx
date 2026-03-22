@@ -127,11 +127,28 @@ export default function BrandSearch({ lat, lng, onSelectBrand }: Props) {
             <button
               key={i}
               type="button"
-              onClick={() => {
-                // Directly search for this brand in API
-                onSelectBrand({ name: brand.name, category: brand.category })
-                setQuery('')
+              onClick={async () => {
+                // Clear and search directly
                 setResults([])
+                setLoading(true)
+                try {
+                  const res = await fetch(
+                    `http://localhost:3001/competitors/search?lat=${lat}&lng=${lng}&radius=50000&keyword=${encodeURIComponent(brand.name)}`
+                  )
+                  const json = await res.json()
+                  if (json.ok && json.data?.competitors) {
+                    // Directly trigger parent with the search results
+                    onSelectBrand({ name: brand.name, category: brand.category })
+                  } else {
+                    // Even if no results, still trigger
+                    onSelectBrand({ name: brand.name, category: brand.category })
+                  }
+                } catch (err) {
+                  console.error('Search error:', err)
+                  // Still trigger even on error
+                  onSelectBrand({ name: brand.name, category: brand.category })
+                }
+                setLoading(false)
               }}
               className="px-2 py-1 text-xs bg-gray-100 hover:bg-purple-100 hover:text-purple-700 rounded transition-colors border border-gray-200"
               title={`Cari ${brand.name} di area ini`}
