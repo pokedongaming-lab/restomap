@@ -2,6 +2,7 @@ import type { FastifyInstance } from 'fastify'
 import { z } from 'zod'
 import { CompetitorService } from '../services/CompetitorService'
 import { getLocationFactors } from '../services/BPSService'
+import { searchBrand, searchPlaces } from '../services/SerpService'
 
 const QuerySchema = z.object({
   lat:      z.coerce.number(),
@@ -124,51 +125,58 @@ export async function competitorRoutes(app: FastifyInstance) {
 
       // Real Google Places search - try multiple approaches for better results
       let results: any[] = []
+      let serpResults: any[] = []
       
-      // Try 1: Direct keyword search
+      // Try SERP API first for brand search (more reliable)
       if (keyword) {
-        results = await service.findNearby({
-          lat: parseFloat(lat),
-          lng: parseFloat(lng),
-          radius: parseInt(radius || '5000'),
-          category: type || null,
-          keyword: keyword,
-          maxResults: 20
-        })
+        const centerLat = parseFloat(lat)
+        const centerLng = parseFloat(lng)
         
-        // Try 2: If no results, try with type instead of keyword
-        if (results.length === 0) {
+        // Try SERP API for brand search
+        serpResults = await searchBrand(keyword, 'Indonesia', 'Indonesia')
+        
+        if (serpResults.length > 0) {
+          // Convert SERP results to competitor format
+          serpResults = serpResults
+            .filter((r: any) => r.lat && r.lng)
+            .map((r: any, idx: number) => {
+              const distance = Math.sqrt(
+                Math.pow((r.lat - centerLat) * 111000, 2) +
+                Math.pow((r.lng - centerLng) * 111000 * Math.cos(centerLat * Math.PI / 180), 2)
+              )
+              return {
+                placeId: r.place_id || `serp_${idx}`,
+                name: r.title,
+                category: type || keyword.toLowerCase(),
+                rating: r.rating || null,
+                priceLevel: r.price_range ? r.price_range.length : null,
+                address: r.address,
+                lat: r.lat,
+                lng: r.lng,
+                distance: Math.round(distance),
+                isOpen: r.operating_hours ? true : null,
+                photoRef: r.image,
+                userRatingsTotal: r.reviews || 0,
+                source: 'serp'
+              }
+            })
+            .filter((r: any) => r.distance <= parseInt(radius || '50000'))
+            .sort((a: any, b: any) => a.distance - b.distance)
+        }
+        
+        // Also try Google Places as backup
+        if (serpResults.length === 0) {
           results = await service.findNearby({
             lat: parseFloat(lat),
             lng: parseFloat(lng),
             radius: parseInt(radius || '5000'),
             category: type || null,
-            keyword: undefined,
-            maxResults: 30
-          })
-          
-          // Filter results that contain the keyword
-          if (keyword && results.length > 0) {
-            const keywordLower = keyword.toLowerCase()
-            results = results.filter((r: any) => 
-              r.name?.toLowerCase().includes(keywordLower) ||
-              r.address?.toLowerCase().includes(keywordLower)
-            )
-          }
-        }
-        
-        // Try 3: If still no results, search broader category
-        if (results.length === 0) {
-          results = await service.findNearby({
-            lat: parseFloat(lat),
-            lng: parseFloat(lng),
-            radius: parseInt(radius || '10000'), // Larger radius
-            category: 'cafe', // Try cafe category
             keyword: keyword,
             maxResults: 20
           })
         }
       } else {
+        // Regular search without keyword
         results = await service.findNearby({
           lat: parseFloat(lat),
           lng: parseFloat(lng),
@@ -179,12 +187,15 @@ export async function competitorRoutes(app: FastifyInstance) {
         })
       }
 
+      // Use SERP results if available, otherwise Google Places
+      const finalResults = serpResults.length > 0 ? serpResults : results
+
       return reply.send({
         ok: true,
         data: { 
-          competitors: results, 
-          total: results.length,
-          source: 'google_places' 
+          competitors: finalResults, 
+          total: finalResults.length,
+          source: serpResults.length > 0 ? 'serp_api' : 'google_places' 
         },
       })
 
