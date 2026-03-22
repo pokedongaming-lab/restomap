@@ -7,6 +7,7 @@ type Props = {
   lng: number
   radius: number
   category?: string | null
+  competitorCount?: number
 }
 
 type RevenueData = {
@@ -17,7 +18,9 @@ type RevenueData = {
   incomeLevel: string
   avgSpend: number
   estimatedRevenue: number
-  conversionRate: number
+  competitorCount: number
+  competitionFactor: number
+  marketShare: number
 }
 
 // Simulated income level data based on Jakarta neighborhoods
@@ -84,7 +87,8 @@ function estimateTraffic(lat: number, lng: number): number {
   return 70
 }
 
-export default function RevenuePotential({ lat, lng, radius }: Props) {
+export default function RevenuePotential(props: Props) {
+  const { lat, lng, radius, competitorCount = 0 } = props
   const [data, setData] = useState<RevenueData | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -96,11 +100,24 @@ export default function RevenuePotential({ lat, lng, radius }: Props) {
     const traffic = estimateTraffic(lat, lng)
     const incomeData = getIncomeLevel(lat, lng)
     
-    // Revenue formula: population × (traffic/100) × avgSpend × conversionRate × 30 days
+    // Get competitor count (passed from parent or estimate)
+    const competitorCount = props.competitorCount ?? 0
+    
+    // Competition factor: more competitors = less market share
+    // Base: 1 competitor = 50% market share, 10 competitors = 10% market share
+    let competitionFactor = 1
+    if (competitorCount > 0) {
+      competitionFactor = Math.max(0.1, 1 - (competitorCount * 0.08))
+    }
+    
+    // Market share calculation
+    const marketShare = Math.round(competitionFactor * 100)
+    
+    // Revenue formula: population × (traffic/100) × avgSpend × conversionRate × 30 days × market share
     // Conversion rate: % of population that visits per day
-    const conversionRate = 0.05 // 5% daily conversion
+    const conversionRate = 0.03 // 3% daily conversion (more realistic)
     const dailyVisitors = population * conversionRate * (traffic / 100)
-    const estimatedRevenue = Math.round(dailyVisitors * incomeData.avgSpend * 30)
+    const estimatedRevenue = Math.round(dailyVisitors * incomeData.avgSpend * 30 * competitionFactor)
     
     const result: RevenueData = {
       population,
@@ -110,12 +127,14 @@ export default function RevenuePotential({ lat, lng, radius }: Props) {
       incomeLevel: incomeData.level,
       avgSpend: incomeData.avgSpend,
       estimatedRevenue,
-      conversionRate: conversionRate * 100,
+      competitorCount,
+      competitionFactor,
+      marketShare,
     }
     
     setData(result)
     setLoading(false)
-  }, [lat, lng, radius])
+  }, [lat, lng, radius, props.competitorCount])
 
   if (loading) {
     return (
@@ -169,14 +188,26 @@ export default function RevenuePotential({ lat, lng, radius }: Props) {
           <p className="font-semibold text-gray-800">{data.incomeLevel}</p>
         </div>
         <div className="bg-white/70 rounded-lg p-2">
-          <p className="text-xs text-gray-500">Avg Spend</p>
-          <p className="font-semibold text-gray-800">Rp {data.avgSpend.toLocaleString('id-ID')}</p>
+          <p className="text-xs text-gray-500">Kompetitor</p>
+          <p className="font-semibold text-gray-800">{data.competitorCount} bisnis</p>
         </div>
       </div>
       
-      {/* Conversion */}
-      <div className="text-xs text-gray-500 text-center pt-2 border-t border-indigo-100">
-        <p>Konversi: {data.conversionRate}% populasi × {data.traffic}% traffic</p>
+      {/* Competition Impact */}
+      <div className="bg-white/70 rounded-lg p-2 mt-2">
+        <div className="flex justify-between items-center mb-1">
+          <p className="text-xs text-gray-500">Pangsa Pasar</p>
+          <p className="font-semibold text-indigo-600">{data.marketShare}%</p>
+        </div>
+        <div className="w-full bg-gray-200 rounded-full h-2">
+          <div 
+            className="bg-indigo-500 h-2 rounded-full" 
+            style={{ width: `${data.marketShare}%` }}
+          />
+        </div>
+        <p className="text-xs text-gray-400 mt-1">
+          Kompetitor: {data.competitorCount} → Faktor: {Math.round(data.competitionFactor * 100)}%
+        </p>
       </div>
     </div>
   )

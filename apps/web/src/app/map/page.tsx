@@ -225,6 +225,7 @@ export default function MapPage() {
                     lng={pin.lng} 
                     radius={radius}
                     category={category}
+                    competitorCount={competitors.length}
                   />
                 </>
               ) : (
