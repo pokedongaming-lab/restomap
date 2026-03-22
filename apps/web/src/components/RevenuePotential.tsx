@@ -155,11 +155,6 @@ function estimateSOM(sam: number, competitorCount: number, radiusMeters: number,
     effectiveCompetitors: totalCompetitors,
   }
 }
-    som: Math.round(sam * penetration),
-    penetration: Math.round(penetration * 100),
-    effectiveCompetitors,
-  }
-}
 
 type RevenueData = {
   // TAM (hypothetical max)
