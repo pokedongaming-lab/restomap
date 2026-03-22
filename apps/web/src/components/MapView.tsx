@@ -303,9 +303,10 @@ export default function MapView({
     if (!mapRef.current || !competitors || competitors.length === 0) return
     
     // Remove existing Voronoi polygons
-    if ((window as any).voronoiLayers) {
-      (window as any).voronoiLayers.forEach((layer: any) => layer.remove())
-      (window as any).voronoiLayers = []
+    const existingLayers = (window as any).voronoiLayers
+    if (existingLayers && Array.isArray(existingLayers)) {
+      existingLayers.forEach((layer: any) => layer.remove())
+      ;(window as any).voronoiLayers = []
     }
     
     if (!showVoronoi) return
