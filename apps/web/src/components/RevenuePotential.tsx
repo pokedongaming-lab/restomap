@@ -10,43 +10,48 @@ type Props = {
   competitorCount?: number
 }
 
-type RevenueData = {
-  population: number
-  populationDensity: number
-  traffic: number
-  income: number
-  incomeLevel: string
-  avgSpend: number
-  estimatedRevenue: number
-  monthlyVisitors: number
-  competitorCount: number
-  competitionFactor: number
-  marketShare: number
-}
+// TAM: Total Addressable Market (all coffee lovers globally - tidak realistis)
+// SAM: Serviceable Addressable Market (population in radius yang potensial)
+// SOM: Serviceable Obtainable Market (after competition)
 
-// Category average spend per visit (in IDR)
+// Category average spend per visit (IDR)
 const CATEGORY_AVG_SPEND: Record<string, number> = {
-  coffee: 35000,       // Kopi - rendah
-  bakery: 45000,       // Bakery/snack
-  fastfood: 65000,     // Fast food
-  indonesian: 55000,   // Makanan Indonesia
-  western: 85000,      // Western/fine dining
-  japanese: 95000,     // Japanese
-  korean: 80000,       // Korean
-  chinese: 100000,     // Chinese - tinggi
-  seafood: 120000,    // Seafood
-  ramen: 75000,        // Ramen
-  italian: 110000,    // Italian
-  indian: 70000,      // Indian
-  thai: 65000,        // Thai
-  vietnamese: 60000,   // Vietnamese
-  mexican: 75000,     // Mexican
-  default: 50000,      // Default
+  coffee: 35000,
+  bakery: 45000,
+  fastfood: 65000,
+  indonesian: 55000,
+  western: 85000,
+  japanese: 95000,
+  korean: 80000,
+  chinese: 100000,
+  seafood: 120000,
+  ramen: 75000,
+  italian: 110000,
+  indian: 70000,
+  thai: 65000,
+  vietnamese: 60000,
+  mexican: 75000,
+  default: 50000,
 }
 
-// Simulated income level data based on Jakarta neighborhoods
+// Category visit frequency per month
+const CATEGORY_FREQUENCY: Record<string, number> = {
+  coffee: 8,
+  bakery: 4,
+  fastfood: 5,
+  indonesian: 12,
+  western: 3,
+  japanese: 4,
+  korean: 3,
+  chinese: 4,
+  seafood: 2,
+  ramen: 4,
+  italian: 2,
+  default: 4,
+}
+
+// Get income level based on location
 function getIncomeLevel(lat: number, lng: number): { level: string; multiplier: number } {
-  // Jakarta approximate income zones
   const southJakarta = lat < -6.25
   const centralJakarta = lat >= -6.2 && lat <= -6.15 && lng > 106.8
   const northJakarta = lat > -6.1
@@ -56,7 +61,6 @@ function getIncomeLevel(lat: number, lng: number): { level: string; multiplier: 
     { lat: -6.2301, lng: 106.8111 }, // Thamrin
   ]
   
-  // Check if near premium areas
   const isPremium = premiumAreas.some(area => 
     Math.abs(lat - area.lat) < 0.02 && Math.abs(lng - area.lng) < 0.02
   )
@@ -78,11 +82,15 @@ function getCategorySpend(category: string | null | undefined): number {
   return CATEGORY_AVG_SPEND[category.toLowerCase()] ?? CATEGORY_AVG_SPEND.default
 }
 
-function estimatePopulation(lat: number, lng: number, radiusMeters: number): number {
-  // Jakarta population density ~ 15,000 per km² average
-  const baseDensity = 15000
+function getCategoryFrequency(category: string | null | undefined): number {
+  if (!category) return CATEGORY_FREQUENCY.default
+  return CATEGORY_FREQUENCY[category.toLowerCase()] ?? CATEGORY_FREQUENCY.default
+}
+
+// Estimate SAM (Serviceable Addressable Market) - population in radius
+function estimateSAM(lat: number, lng: number, radiusMeters: number): number {
+  const baseDensity = 15000 // Jakarta avg
   
-  // Adjust based on location
   const centralJakarta = lat >= -6.22 && lat <= -6.18 && lng >= 106.81 && lng <= 106.84
   const southJakarta = lat < -6.23
   const densityMultiplier = centralJakarta ? 3 : southJakarta ? 1.5 : 2
@@ -93,59 +101,37 @@ function estimatePopulation(lat: number, lng: number, radiusMeters: number): num
   return Math.round(areaKm2 * baseDensity * densityMultiplier)
 }
 
-// Realistic visitor estimation - not all population visits
-function estimateVisitors(population: number, radiusMeters: number, category: string | null | undefined): number {
-  const radiusKm = radiusMeters / 1000
+// Estimate SOM (Serviceable Obtainable Market) after competition
+// SOM = SAM × Penetration Rate
+// Penetration decreases with more competitors
+function estimateSOM(sam: number, competitorCount: number): { som: number; penetration: number } {
+  // Base penetration: 5% (mirip contoh di referensi)
+  // Decreases by 0.5% per competitor
+  const basePenetration = 0.05 // 5%
+  const competitorPenalty = Math.min(0.04, competitorCount * 0.005)
+  const penetration = Math.max(0.01, basePenetration - competitorPenalty)
   
-  // Distance decay: people prefer closer places
-  // Base visit rate decreases with distance
-  let distanceFactor: number
-  if (radiusKm <= 1) {
-    distanceFactor = 0.15 // 15% of population in 1km visits
-  } else if (radiusKm <= 2) {
-    distanceFactor = 0.08 // 8% in 2km
-  } else if (radiusKm <= 5) {
-    distanceFactor = 0.03 // 3% in 5km
-  } else {
-    distanceFactor = 0.01 // 1% in 10km+
+  return {
+    som: Math.round(sam * penetration),
+    penetration: Math.round(penetration * 100),
   }
-  
-  // Category frequency - how often people visit per month
-  const categoryFrequency: Record<string, number> = {
-    coffee: 8,      // 8x/month
-    bakery: 4,     // 4x/month  
-    fastfood: 5,   // 5x/month
-    indonesian: 12, // 12x/month (daily/wk)
-    western: 3,    // 3x/month
-    japanese: 4,   // 4x/month
-    korean: 3,
-    chinese: 4,
-    seafood: 2,
-    ramen: 4,
-    italian: 2,
-  }
-  const monthlyVisits = categoryFrequency[category?.toLowerCase() ?? ''] ?? 4
-  
-  return Math.round(population * distanceFactor * monthlyVisits)
 }
 
-function estimateTraffic(lat: number, lng: number): number {
-  // Traffic score 0-100
-  const centralJakarta = lat >= -6.22 && lat <= -6.18 && lng >= 106.81 && lng <= 106.84
-  const mainRoads = [
-    { lat: -6.2, lng: 106.82 }, // Sudirman
-    { lat: -6.18, lng: 106.83 }, // Thamrin
-    { lat: -6.21, lng: 106.85 }, // MH Thamrin
-  ]
-  
-  const nearMainRoad = mainRoads.some(road => 
-    Math.abs(lat - road.lat) < 0.015 && Math.abs(lng - road.lng) < 0.015
-  )
-  
-  if (centralJakarta) return 85
-  if (nearMainRoad) return 90
-  if (lat < -6.25) return 60 // South Jakarta
-  return 70
+type RevenueData = {
+  // TAM (hypothetical max)
+  tam: number
+  // SAM (reachable market)
+  sam: number
+  // SOM (obtainable after competition)
+  som: number
+  penetration: number
+  // Metrics
+  traffic: number
+  incomeLevel: string
+  avgSpend: number
+  monthlyVisits: number
+  estimatedRevenue: number
+  competitorCount: number
 }
 
 export default function RevenuePotential(props: Props) {
@@ -156,52 +142,58 @@ export default function RevenuePotential(props: Props) {
   useEffect(() => {
     setLoading(true)
     
-    // Calculate revenue potential
-    const population = estimatePopulation(lat, lng, radius)
-    const traffic = estimateTraffic(lat, lng)
     const incomeData = getIncomeLevel(lat, lng)
-    
-    // Category-based spend
     const categorySpend = getCategorySpend(props.category)
-    // Adjust by income multiplier
     const avgSpend = Math.round(categorySpend * incomeData.multiplier)
+    const visitFrequency = getCategoryFrequency(props.category)
     
-    // Get competitor count (passed from parent or estimate)
-    const competitorCount = props.competitorCount ?? 0
+    // TAM: Total hypothethical market (all people who like this category)
+    // Assume 30% of population likes this category
+    const sam = estimateSAM(lat, lng, radius)
+    const tam = Math.round(sam / 0.3) // TAM = SAM / 0.3
     
-    // Competition factor: more competitors = less market share
-    let competitionFactor = 1
-    if (competitorCount > 0) {
-      competitionFactor = Math.max(0.1, 1 - (competitorCount * 0.08))
-    }
+    // SOM after competition
+    const { som, penetration } = estimateSOM(sam, competitorCount)
     
-    // Market share calculation
-    const marketShare = Math.round(competitionFactor * 100)
+    // Monthly visits = SOM × visit frequency
+    const monthlyVisits = Math.round(som * visitFrequency)
     
-    // Realistic visitor estimation
-    const monthlyVisitors = estimateVisitors(population, radius, props.category)
-    const adjustedVisitors = Math.round(monthlyVisitors * competitionFactor)
+    // Revenue = monthly visits × average spend
+    const estimatedRevenue = monthlyVisits * avgSpend
     
-    // Revenue: visitors × avg spend
-    const estimatedRevenue = adjustedVisitors * avgSpend
+    // Traffic score
+    const traffic = (() => {
+      const centralJakarta = lat >= -6.22 && lat <= -6.18 && lng >= 106.81 && lng <= 106.84
+      const mainRoads = [
+        { lat: -6.2, lng: 106.82 },
+        { lat: -6.18, lng: 106.83 },
+        { lat: -6.21, lng: 106.85 },
+      ]
+      const nearMainRoad = mainRoads.some(road => 
+        Math.abs(lat - road.lat) < 0.015 && Math.abs(lng - road.lng) < 0.015
+      )
+      if (centralJakarta) return 85
+      if (nearMainRoad) return 90
+      if (lat < -6.25) return 60
+      return 70
+    })()
     
     const result: RevenueData = {
-      population,
-      populationDensity: Math.round(population / (Math.PI * (radius / 1000) ** 2)),
+      tam,
+      sam,
+      som,
+      penetration,
       traffic,
-      income: Math.round(incomeData.multiplier * 50),
       incomeLevel: incomeData.level,
       avgSpend,
+      monthlyVisits,
       estimatedRevenue,
-      monthlyVisitors: adjustedVisitors,
       competitorCount,
-      competitionFactor,
-      marketShare,
     }
     
     setData(result)
     setLoading(false)
-  }, [lat, lng, radius, props.competitorCount])
+  }, [lat, lng, radius, competitorCount, props.category])
 
   if (loading) {
     return (
@@ -211,12 +203,16 @@ export default function RevenuePotential(props: Props) {
     )
   }
 
+  const formatNumber = (num: number) => {
+    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`
+    if (num >= 1000) return `${(num / 1000).toFixed(0)}rb`
+    return num.toString()
+  }
+
   const formatCurrency = (amount: number) => {
-    if (amount >= 1000000000) {
-      return `Rp ${(amount / 1000000000).toFixed(1)}M`
-    } else if (amount >= 1000000) {
-      return `Rp ${(amount / 1000000).toFixed(0)}jt`
-    }
+    if (amount >= 1000000000) return `Rp ${(amount / 1000000000).toFixed(1)}M`
+    if (amount >= 1000000) return `Rp ${(amount / 1000000000).toFixed(1)}M` // Fixed
+    if (amount >= 1000000) return `Rp ${(amount / 1000000).toFixed(0)}jt`
     return `Rp ${(amount / 1000).toFixed(0)}rb`
   }
 
@@ -241,64 +237,77 @@ export default function RevenuePotential(props: Props) {
     <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl p-4 border border-indigo-100 space-y-3">
       <div className="flex items-center gap-2">
         <span className="text-lg">💰</span>
-        <p className="font-semibold text-indigo-800">Potensi Revenue</p>
+        <p className="font-semibold text-indigo-800">Potensi Revenue (TAM-SAM-SOM)</p>
       </div>
       
+      {/* Category & Spend */}
+      <div className="bg-white/70 rounded-lg p-2 text-center">
+        <p className="font-semibold text-indigo-700">{getCategoryLabel(props.category)}</p>
+        <p className="text-xs text-gray-400">ARPU: Rp {data.avgSpend.toLocaleString('id-ID')}/kunjungan • {data.monthlyVisits > 0 ? `${Math.round(data.monthlyVisits / data.som * 100)}x` : '0x'} per bulan</p>
+      </div>
+
+      {/* TAM SAM SOM Visualization */}
+      <div className="space-y-2">
+        {/* TAM */}
+        <div className="bg-gray-100 rounded-lg p-2">
+          <div className="flex justify-between text-xs">
+            <span className="text-gray-500">TAM (Total Market)</span>
+            <span className="font-medium">{formatNumber(data.tam)} orang</span>
+          </div>
+          <div className="w-full bg-gray-200 h-1.5 rounded-full mt-1">
+            <div className="bg-gray-400 h-1.5 rounded-full" style={{ width: '100%' }} />
+          </div>
+        </div>
+        
+        {/* SAM */}
+        <div className="bg-blue-50 rounded-lg p-2">
+          <div className="flex justify-between text-xs">
+            <span className="text-blue-600">SAM (Radius {radius/1000}km)</span>
+            <span className="font-medium text-blue-700">{formatNumber(data.sam)} orang</span>
+          </div>
+          <div className="w-full bg-blue-200 h-1.5 rounded-full mt-1">
+            <div className="bg-blue-500 h-1.5 rounded-full" style={{ width: `${Math.min(100, (data.sam / data.tam) * 100)}%` }} />
+          </div>
+        </div>
+        
+        {/* SOM */}
+        <div className="bg-green-50 rounded-lg p-2">
+          <div className="flex justify-between text-xs">
+            <span className="text-green-600 font-medium">SOM (Target Obtainable)</span>
+            <span className="font-bold text-green-700">{formatNumber(data.som)} orang ({data.penetration}%)</span>
+          </div>
+          <div className="w-full bg-green-200 h-1.5 rounded-full mt-1">
+            <div className="bg-green-500 h-1.5 rounded-full" style={{ width: `${Math.min(100, (data.som / data.sam) * 100)}%` }} />
+          </div>
+        </div>
+      </div>
+
       {/* Main Revenue */}
-      <div className="text-center py-3 bg-white rounded-lg">
+      <div className="text-center py-3 bg-white rounded-lg border border-green-200">
         <p className="text-xs text-gray-500 mb-1">Estimasi Revenue Bulanan</p>
         <p className="text-2xl font-bold text-green-600">
           {formatCurrency(data.estimatedRevenue)}
         </p>
         <p className="text-xs text-gray-400">
-          {formatCurrency(Math.round(data.estimatedRevenue / 30))}/hari • {Math.round(data.estimatedRevenue / data.avgSpend)} pengunjung/bulan
+          {formatCurrency(Math.round(data.estimatedRevenue / 30))}/hari • {formatNumber(data.monthlyVisits)} pengunjung/bulan
         </p>
       </div>
-      
-      {/* Category Info */}
-      <div className="bg-white/70 rounded-lg p-2 text-center">
-        <p className="text-xs text-gray-500">Kategori</p>
-        <p className="font-semibold text-indigo-700">{getCategoryLabel(props.category)}</p>
-        <p className="text-xs text-gray-400">Avg spend: Rp {data.avgSpend.toLocaleString('id-ID')}/kunjungan</p>
-      </div>
-      
-      {/* Key Metrics */}
-      <div className="grid grid-cols-2 gap-2">
-        <div className="bg-white/70 rounded-lg p-2">
-          <p className="text-xs text-gray-500">Populasi</p>
-          <p className="font-semibold text-gray-800">
-            {data.population >= 1000 ? `${(data.population / 1000).toFixed(0)}rb` : data.population}
-          </p>
-        </div>
-        <div className="bg-white/70 rounded-lg p-2">
-          <p className="text-xs text-gray-500">Traffic</p>
-          <p className="font-semibold text-gray-800">{data.traffic}/100</p>
-        </div>
-        <div className="bg-white/70 rounded-lg p-2">
-          <p className="text-xs text-gray-500">Income</p>
-          <p className="font-semibold text-gray-800">{data.incomeLevel}</p>
-        </div>
-        <div className="bg-white/70 rounded-lg p-2">
-          <p className="text-xs text-gray-500">Kompetitor</p>
-          <p className="font-semibold text-gray-800">{data.competitorCount} bisnis</p>
-        </div>
-      </div>
-      
+
       {/* Competition Impact */}
-      <div className="bg-white/70 rounded-lg p-2 mt-2">
-        <div className="flex justify-between items-center mb-1">
-          <p className="text-xs text-gray-500">Pangsa Pasar</p>
-          <p className="font-semibold text-indigo-600">{data.marketShare}%</p>
+      <div className="bg-white/70 rounded-lg p-2 text-xs">
+        <div className="flex justify-between">
+          <span className="text-gray-500">Kompetitor:</span>
+          <span className="font-medium">{data.competitorCount} bisnis</span>
         </div>
-        <div className="w-full bg-gray-200 rounded-full h-2">
-          <div 
-            className="bg-indigo-500 h-2 rounded-full" 
-            style={{ width: `${data.marketShare}%` }}
-          />
+        <div className="flex justify-between mt-1">
+          <span className="text-gray-500">Market Penetration:</span>
+          <span className="font-medium text-indigo-600">{data.penetration}%</span>
         </div>
-        <p className="text-xs text-gray-400 mt-1">
-          Kompetitor: {data.competitorCount} → Faktor: {Math.round(data.competitionFactor * 100)}%
-        </p>
+      </div>
+
+      {/* Formula Reference */}
+      <div className="text-xs text-gray-400 text-center pt-1 border-t border-indigo-100">
+        <p>Revenue = SOM ({formatNumber(data.som)}) × Frekuensi ({getCategoryFrequency(props.category)}x) × ARPU (Rp {data.avgSpend.toLocaleString('id-ID')})</p>
       </div>
     </div>
   )
