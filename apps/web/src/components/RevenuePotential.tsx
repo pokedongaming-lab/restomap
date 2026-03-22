@@ -20,40 +20,56 @@ type Props = {
 // SAM: Serviceable Addressable Market (population in radius yang potensial)
 // SOM: Serviceable Obtainable Market (after competition)
 
-// Category average spend per visit (IDR)
+// Category average spend per visit (IDR) - based on market research
 const CATEGORY_AVG_SPEND: Record<string, number> = {
-  coffee: 35000,
-  bakery: 45000,
-  fastfood: 65000,
-  indonesian: 55000,
-  western: 85000,
-  japanese: 95000,
-  korean: 80000,
-  chinese: 100000,
-  seafood: 120000,
-  ramen: 75000,
-  italian: 110000,
-  indian: 70000,
-  thai: 65000,
-  vietnamese: 60000,
-  mexican: 75000,
+  coffee: 40000,      // Mid-segment coffee: Rp 30-50k
+  bakery: 45000,     // Bakery snacks
+  fastfood: 65000,   // Fast food mid
+  indonesian: 35000,  // Warung/Indonesian - lower spend
+  western: 125000,    // Casual dining
+  japanese: 100000,   // Japanese mid-high
+  korean: 85000,     // Korean
+  chinese: 90000,     // Chinese
+  seafood: 150000,    // Seafood higher end
+  ramen: 75000,      // Ramen
+  italian: 150000,    // Italian fine dining
+  indian: 65000,     // Indian
+  thai: 60000,       // Thai
+  vietnamese: 55000, // Vietnamese
+  mexican: 75000,    // Mexican
   default: 50000,
 }
 
-// Category visit frequency per month
+// Category visit frequency per month (realistic based on market research)
 const CATEGORY_FREQUENCY: Record<string, number> = {
-  coffee: 8,
-  bakery: 4,
-  fastfood: 5,
-  indonesian: 12,
-  western: 3,
-  japanese: 4,
-  korean: 3,
-  chinese: 4,
-  seafood: 2,
-  ramen: 4,
-  italian: 2,
-  default: 4,
+  coffee: 10,       // Coffee shops: 8-12x/month
+  bakery: 4,       // Bakery: 4x/month
+  fastfood: 6,      // Fast food: 5-8x/month
+  indonesian: 20,  // Warung: 20-30x/month (daily/weekly)
+  western: 4,       // Casual dining: 3-5x/month
+  japanese: 5,      // Japanese: 4-5x/month
+  korean: 4,       // Korean: 3-4x/month
+  chinese: 4,       // Chinese: 4x/month
+  seafood: 3,       // Seafood: 2-3x/month
+  ramen: 6,        // Ramen: 4-6x/month
+  italian: 3,      // Italian: 2-3x/month
+  default: 5,
+}
+
+// Market penetration rates (based on research)
+const CATEGORY_PENETRATION: Record<string, number> = {
+  coffee: 0.18,      // 18% of population
+  bakery: 0.10,
+  fastfood: 0.22,    // 22%
+  indonesian: 0.40,  // 40% - most common
+  western: 0.08,
+  japanese: 0.12,
+  korean: 0.08,
+  chinese: 0.10,
+  seafood: 0.05,
+  ramen: 0.10,
+  italian: 0.05,
+  default: 0.15,
 }
 
 // Get income level based on location
@@ -115,39 +131,38 @@ function estimateSAM(lat: number, lng: number, radiusMeters: number, bpsScore?: 
 }
 
 // Estimate SOM (Serviceable Obtainable Market) after competition
-// Key insight: a single restaurant can realistically only capture 1-3% of the addressable market
-// More competitors + larger area = much less market share
-function estimateSOM(sam: number, competitorCount: number, radiusMeters: number, bpsCompetition?: number): { 
+// Based on market research: use category penetration rates
+function estimateSOM(sam: number, competitorCount: number, radiusMeters: number, category?: string | null, bpsCompetition?: number): { 
   som: number; 
   penetration: number; 
   effectiveCompetitors: number 
 } {
   const radiusKm = radiusMeters / 1000
   
-  // Hidden competitors: for every km², assume ~5 hidden competitors not in Google
-  const hiddenCompetitors = Math.round(radiusKm * radiusKm * 5)
+  // Hidden competitors: for every km², assume ~8 hidden competitors not in Google
+  const hiddenCompetitors = Math.round(radiusKm * radiusKm * 8)
   
   // Total competitors = visible + hidden
   const totalCompetitors = competitorCount + hiddenCompetitors
   
-  // Realistic max penetration: even with 0 competitors, max ~5%
-  // With each competitor, penetration drops faster
-  let basePenetration = 0.05 // 5% max
+  // Get base penetration from category (market research data)
+  let basePenetration = category ? (CATEGORY_PENETRATION[category.toLowerCase()] ?? 0.15) : 0.15
   
-  // BPS competition score (0-100) reduces penetration: BPS 80 = 20% reduction
+  // BPS competition score (0-100) further reduces penetration
   if (bpsCompetition) {
-    basePenetration = basePenetration * (1 - (bpsCompetition / 200))
+    // BPS 80 = 40% reduction in base penetration
+    const reduction = (bpsCompetition / 100) * 0.4
+    basePenetration = basePenetration * (1 - reduction)
   }
   
-  // Competitor penalty: more competitors = exponential drop
-  // 10 competitors in 1km = ~1% penetration
-  // 50 competitors in 5km = ~0.5% penetration
+  // Competitor penalty: each visible competitor reduces penetration
+  // Based on market research: competition is fierce in Jakarta
   const competitorPenalty = Math.min(
-    basePenetration - 0.002,
-    totalCompetitors * 0.001 * (radiusKm / 2) // penalty scales with area
+    basePenetration * 0.5, // Max 50% reduction
+    competitorCount * 0.01 * basePenetration // 1% penalty per competitor
   )
   
-  const penetration = Math.max(0.002, basePenetration - competitorPenalty) // min 0.2%
+  const penetration = Math.max(0.01, basePenetration - competitorPenalty) // min 1%
   
   return {
     som: Math.round(sam * penetration),
@@ -197,11 +212,12 @@ export default function RevenuePotential(props: Props) {
     const sam = estimateSAM(lat, lng, radius, bpsPopulation)
     const tam = Math.round(sam / 0.3) // TAM = SAM / 0.3
     
-    // SOM after competition - use BPS competition score
+    // SOM after competition - use category penetration + BPS competition
     const { som, penetration, effectiveCompetitors: totalSaingan } = estimateSOM(
       sam, 
       competitorCount, 
       radius,
+      props.category,
       bpsCompetition
     )
     
@@ -228,9 +244,26 @@ export default function RevenuePotential(props: Props) {
       return 70
     })()
     
-    // Realistic cap: a single restaurant in Jakarta rarely makes > Rp 500M/month
-    // Most make Rp 50-200M/month
-    const realisticMax = 500000000
+    // Realistic cap based on market research:
+    // - Coffee shop: Rp 50-200M/month
+    // - Fast food: Rp 100-400M/month
+    // - Casual dining: Rp 150-500M/month
+    const maxByCategory: Record<string, number> = {
+      coffee: 200000000,
+      bakery: 150000000,
+      fastfood: 400000000,
+      indonesian: 80000000,
+      western: 500000000,
+      japanese: 350000000,
+      korean: 300000000,
+      chinese: 350000000,
+      seafood: 400000000,
+      ramen: 250000000,
+      italian: 500000000,
+      default: 300000000,
+    }
+    const categoryKey = props.category?.toLowerCase() ?? 'default'
+    const realisticMax = maxByCategory[categoryKey] ?? 300000000
     const cappedRevenue = Math.min(estimatedRevenue, realisticMax)
     
     const result: RevenueData = {
