@@ -52,6 +52,92 @@ export async function competitorRoutes(app: FastifyInstance) {
     }
   })
 
+  // GET /competitors/search?lat=&lng=&radius=&keyword= - Search for specific brand
+  app.get('/competitors/search', async (request, reply) => {
+    try {
+      const { lat, lng, radius, keyword, type } = request.query as {
+        lat?: string
+        lng?: string
+        radius?: string
+        keyword?: string
+        type?: string
+      }
+
+      if (!lat || !lng) {
+        return reply.code(400).send({
+          ok: false,
+          error: 'MISSING_PARAMS',
+          message: 'lat and lng are required'
+        })
+      }
+
+      // If no API key, return mock famous brands matching keyword
+      if (!service) {
+        const keywordLower = (keyword || '').toLowerCase()
+        const matchingBrands = FAMOUS_BRANDS.filter(b => 
+          b.name.toLowerCase().includes(keywordLower)
+        )
+        
+        const centerLat = parseFloat(lat)
+        const centerLng = parseFloat(lng)
+        const searchRadius = radius ? parseInt(radius) : 5000
+
+        const results = matchingBrands.map(brand => {
+          const latOffset = (Math.random() - 0.5) * 0.05
+          const lngOffset = (Math.random() - 0.5) * 0.05
+          const distance = Math.round(Math.sqrt(latOffset * latOffset + lngOffset * lngOffset) * 111000)
+          
+          return {
+            placeId: `brand_${brand.name.replace(/[^a-zA-Z]/g, '').toLowerCase()}`,
+            name: brand.name,
+            category: brand.category,
+            rating: brand.rating,
+            priceLevel: brand.priceLevel,
+            address: `Jl. ${brand.name} - Various Locations`,
+            lat: centerLat + latOffset,
+            lng: centerLng + lngOffset,
+            distance,
+            isOpen: Math.random() > 0.1,
+            photoRef: null,
+            isFamousBrand: true
+          }
+        }).filter(b => b.distance <= searchRadius)
+
+        return reply.send({
+          ok: true,
+          data: { 
+            competitors: results.sort((a, b) => a.distance - b.distance), 
+            total: results.length,
+            source: 'mock' 
+          },
+        })
+      }
+
+      // Real Google Places search
+      const results = await service.findNearby({
+        lat: parseFloat(lat),
+        lng: parseFloat(lng),
+        radius: parseInt(radius || '5000'),
+        category: type || null,
+        keyword: keyword || undefined,
+        maxResults: 20
+      })
+
+      return reply.send({
+        ok: true,
+        data: { 
+          competitors: results, 
+          total: results.length,
+          source: 'google_places' 
+        },
+      })
+
+    } catch (error) {
+      request.log.error(error)
+      return reply.status(500).send({ ok: false, error: 'Failed to search' })
+    }
+  })
+
   // GET /competitors/brands?lat=&lng=&radius= - Search for famous brand chains
   app.get('/competitors/brands', async (request, reply) => {
     try {
