@@ -5,7 +5,7 @@ import { CompetitorService } from '../services/CompetitorService'
 const QuerySchema = z.object({
   lat:      z.coerce.number(),
   lng:      z.coerce.number(),
-  radius:   z.coerce.number().min(100).max(5000),
+  radius:   z.coerce.number().min(100).max(20000),
   category: z.string().optional(),
 })
 

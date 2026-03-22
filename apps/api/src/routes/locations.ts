@@ -11,7 +11,7 @@ const SaveLocationSchema = z.object({
   city: z.string().min(1),
   lat: z.number().min(-90).max(90),
   lng: z.number().min(-180).max(180),
-  radius: z.number().min(100).max(5000),
+  radius: z.number().min(100).max(20000),
   weights: z.record(z.number()),
   score: z.number().optional(),
 })

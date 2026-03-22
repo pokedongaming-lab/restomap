@@ -14,7 +14,7 @@ const WeightsSchema = z.object({
 const CalculateSchema = z.object({
   lat:     z.number().min(-90).max(90),
   lng:     z.number().min(-180).max(180),
-  radius:  z.number().min(100).max(5000),
+  radius:  z.number().min(100).max(20000),
   weights: WeightsSchema,
 })
 
