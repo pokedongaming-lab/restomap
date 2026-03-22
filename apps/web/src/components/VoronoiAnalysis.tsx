@@ -98,6 +98,15 @@ function assignToNearest(
   return grid
 }
 
+// Recommendation function
+function getCatchmentRecommendation(count: number, avgArea: number): string {
+  if (count === 0) return 'Tidak ada kompetitor - opportunity tinggi!'
+  if (count <= 3 && avgArea > 5) return 'Sedikit kompetitor, area luas - potensi tinggi!'
+  if (count <= 5 && avgArea > 3) return 'Kompetisi sedang - masih ada peluang.'
+  if (count <= 10) return 'Kompetisi cukup ketat - perlu differensiasi.'
+  return 'Kompetisi sangat ketat - sulit untuk masuk.'
+}
+
 export default function VoronoiAnalysis({ lat, lng, radius, category, competitors }: Props) {
   const [showVoronoi, setShowVoronoi] = useState(false)
   const [grid, setGrid] = useState<number[][]>([])
@@ -140,14 +149,6 @@ export default function VoronoiAnalysis({ lat, lng, radius, category, competitor
       recommendation: getCatchmentRecommendation(competitors.length, avgAreaPerCompetitor)
     }
   }, [competitors, radius])
-
-  const getCatchmentRecommendation = (count: number, avgArea: number): string => {
-    if (count === 0) return 'Tidak ada kompetitor - opportunity tinggi!'
-    if (count <= 3 && avgArea > 5) return 'Sedikit kompetitor, area luas - potensi tinggi!'
-    if (count <= 5 && avgArea > 3) return 'Kompetisi sedang - masih ada peluang.'
-    if (count <= 10) return 'Kompetisi cukup ketat - perlu differensiasi.'
-    return 'Kompetisi sangat ketat - sulit untuk masuk.'
-  }
 
   if (competitors.length === 0) {
     return (
