@@ -122,15 +122,62 @@ export async function competitorRoutes(app: FastifyInstance) {
         })
       }
 
-      // Real Google Places search
-      const results = await service.findNearby({
-        lat: parseFloat(lat),
-        lng: parseFloat(lng),
-        radius: parseInt(radius || '5000'),
-        category: type || null,
-        keyword: keyword || undefined,
-        maxResults: 20
-      })
+      // Real Google Places search - try multiple approaches for better results
+      let results: any[] = []
+      
+      // Try 1: Direct keyword search
+      if (keyword) {
+        results = await service.findNearby({
+          lat: parseFloat(lat),
+          lng: parseFloat(lng),
+          radius: parseInt(radius || '5000'),
+          category: type || null,
+          keyword: keyword,
+          maxResults: 20
+        })
+        
+        // Try 2: If no results, try with type instead of keyword
+        if (results.length === 0) {
+          results = await service.findNearby({
+            lat: parseFloat(lat),
+            lng: parseFloat(lng),
+            radius: parseInt(radius || '5000'),
+            category: type || null,
+            keyword: undefined,
+            maxResults: 30
+          })
+          
+          // Filter results that contain the keyword
+          if (keyword && results.length > 0) {
+            const keywordLower = keyword.toLowerCase()
+            results = results.filter((r: any) => 
+              r.name?.toLowerCase().includes(keywordLower) ||
+              r.address?.toLowerCase().includes(keywordLower)
+            )
+          }
+        }
+        
+        // Try 3: If still no results, search broader category
+        if (results.length === 0) {
+          results = await service.findNearby({
+            lat: parseFloat(lat),
+            lng: parseFloat(lng),
+            radius: parseInt(radius || '10000'), // Larger radius
+            category: 'cafe', // Try cafe category
+            keyword: keyword,
+            maxResults: 20
+          })
+        }
+      } else {
+        results = await service.findNearby({
+          lat: parseFloat(lat),
+          lng: parseFloat(lng),
+          radius: parseInt(radius || '5000'),
+          category: type || null,
+          keyword: undefined,
+          maxResults: 20
+        })
+      }
 
       return reply.send({
         ok: true,
