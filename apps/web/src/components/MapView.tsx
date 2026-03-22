@@ -190,43 +190,35 @@ export default function MapView({
       centerLng = markerPos.lng
     }
 
-    // Create heatmap overlay using gradient circles
+    // Create heatmap overlay using CircleMarker (pixel-based, always visible)
     heatmapLayers.forEach(layer => {
       const value = heatmapData[layer]
       if (value === undefined) return
 
-      // Color based on layer type and value
+      // Color based on layer type
       let color: string
       if (layer === 'income') {
-        color = '#22C55E' // Green for income
+        color = '#22C55E' // Green
       } else if (layer === 'traffic') {
-        color = '#F59E0B' // Orange for traffic
+        color = '#F59E0B' // Orange
       } else {
-        color = '#EF4444' // Red for population
+        color = '#EF4444' // Red
       }
 
-      // Use radius directly from prop (in meters for Leaflet)
-      const circleRadius = radius * 1.5
+      // Use CircleMarker for better visibility (radius in pixels)
+      const pixelRadius = layer === 'population' ? 80 : layer === 'traffic' ? 70 : 60
       
-      // Create a custom overlay pane on top of everything
-      const paneName = `heatmap-${layer}`
-      let pane = mapRef.current.getPane(paneName)
-      if (!pane) {
-        pane = mapRef.current.createPane(paneName)
-        pane.style.zIndex = '500' // Above markers
-      }
-      
-      const circle = (window as any).L.circle([centerLat, centerLng], {
-        radius: circleRadius,
-        color: color,
+      const circleMarker = (window as any).L.circleMarker([centerLat, centerLng], {
+        radius: pixelRadius,
         fillColor: color,
-        fillOpacity: 0.6,
-        weight: 4,
-        className: 'heatmap-layer',
+        color: color,
+        weight: 3,
+        fillOpacity: 0.5,
+        opacity: 1,
       }).addTo(mapRef.current)
       
-      circle.bringToFront()
-      circleRefs.current.push(circle)
+      circleMarker.bringToFront()
+      circleRefs.current.push(circleMarker)
     })
 
     console.log('[Heatmap] Circles drawn:', circleRefs.current.length)
