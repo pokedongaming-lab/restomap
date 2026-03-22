@@ -11,6 +11,7 @@ import SavedLocationsList from '@/components/SavedLocationsList'
 import CompetitorList from '@/components/CompetitorList'
 import GapCategoryPanel from '@/components/GapCategoryPanel'
 import QuadrantAnalysis from '@/components/QuadrantAnalysis'
+import BrandSearch from '@/components/BrandSearch'
 import OnboardingTour from '@/components/OnboardingTour'
 import { useSavedLocations } from '@/hooks/useSavedLocations'
 import { useHeatmap } from '@/hooks/useHeatmap'
@@ -37,6 +38,7 @@ export default function MapPage() {
   const [heatmapLayers, setHeatmap] = useState<HeatmapLayer[]>([])
   const [saveMsg, setSaveMsg]       = useState<string | null>(null)
   const [competitors, setCompetitors] = useState<MapCompetitor[]>([])
+  const [selectedBrand, setSelectedBrand] = useState<string | null>(null)
 
   const { locations, save, remove, isAtLimit, loaded } = useSavedLocations()
   const { loading: heatmapLoading, data: heatmapData, fetchHeatmapData } = useHeatmap()
@@ -164,6 +166,20 @@ export default function MapPage() {
                 </p>
                 <CitySearch onSelect={handleCitySelect} />
               </div>
+
+              {/* Brand Search */}
+              {pin && (
+                <div>
+                  <p className="text-xs text-gray-500 mb-2 font-medium uppercase tracking-wide">
+                    Cari brand
+                  </p>
+                  <BrandSearch 
+                    lat={pin.lat} 
+                    lng={pin.lng} 
+                    onSelectBrand={(brand) => setCategory(brand.category)}
+                  />
+                </div>
+              )}
 
               <CategoryFilter value={category} onChange={setCategory} />
               <RadiusSelector value={radius} onChange={setRadius} />
