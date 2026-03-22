@@ -103,17 +103,27 @@ function estimateSAM(lat: number, lng: number, radiusMeters: number): number {
 
 // Estimate SOM (Serviceable Obtainable Market) after competition
 // SOM = SAM × Penetration Rate
-// Penetration decreases with more competitors
-function estimateSOM(sam: number, competitorCount: number): { som: number; penetration: number } {
-  // Base penetration: 5% (mirip contoh di referensi)
-  // Decreases by 0.5% per competitor
-  const basePenetration = 0.05 // 5%
-  const competitorPenalty = Math.min(0.04, competitorCount * 0.005)
-  const penetration = Math.max(0.01, basePenetration - competitorPenalty)
+// Penetration decreases with more competitors AND larger radius
+function estimateSOM(sam: number, competitorCount: number, radiusMeters: number): { som: number; penetration: number; effectiveCompetitors: number } {
+  const radiusKm = radiusMeters / 1000
+  
+  // Assume hidden competitors scale with area (not just visible ones)
+  // More area = more hidden competitors to compete with
+  const hiddenCompetitorFactor = Math.round(radiusKm * 2) // e.g., 5km = 10 hidden competitors
+  const effectiveCompetitors = competitorCount + hiddenCompetitorFactor
+  
+  // Base penetration: 5% in small area
+  // Decreases significantly with more competitors
+  // In 1km: base 5%, each competitor reduces by 0.3%
+  // In 10km: base 2%, each competitor reduces by 0.5%
+  const basePenetration = radiusKm <= 2 ? 0.05 : radiusKm <= 5 ? 0.03 : 0.02
+  const competitorPenalty = Math.min(basePenetration - 0.005, effectiveCompetitors * (radiusKm <= 2 ? 0.003 : 0.005))
+  const penetration = Math.max(0.005, basePenetration - competitorPenalty)
   
   return {
     som: Math.round(sam * penetration),
     penetration: Math.round(penetration * 100),
+    effectiveCompetitors,
   }
 }
 
@@ -125,6 +135,7 @@ type RevenueData = {
   // SOM (obtainable after competition)
   som: number
   penetration: number
+  effectiveCompetitors: number
   // Metrics
   traffic: number
   incomeLevel: string
@@ -152,8 +163,8 @@ export default function RevenuePotential(props: Props) {
     const sam = estimateSAM(lat, lng, radius)
     const tam = Math.round(sam / 0.3) // TAM = SAM / 0.3
     
-    // SOM after competition
-    const { som, penetration } = estimateSOM(sam, competitorCount)
+    // SOM after competition - include radius for larger area penalty
+    const { som, penetration, effectiveCompetitors } = estimateSOM(sam, competitorCount, radius)
     
     // Monthly visits = SOM × visit frequency
     const monthlyVisits = Math.round(som * visitFrequency)
@@ -183,6 +194,7 @@ export default function RevenuePotential(props: Props) {
       sam,
       som,
       penetration,
+      effectiveCompetitors,
       traffic,
       incomeLevel: incomeData.level,
       avgSpend,
@@ -296,8 +308,12 @@ export default function RevenuePotential(props: Props) {
       {/* Competition Impact */}
       <div className="bg-white/70 rounded-lg p-2 text-xs">
         <div className="flex justify-between">
-          <span className="text-gray-500">Kompetitor:</span>
+          <span className="text-gray-500">Kompetitor (terlihat):</span>
           <span className="font-medium">{data.competitorCount} bisnis</span>
+        </div>
+        <div className="flex justify-between mt-1">
+          <span className="text-gray-500">Total saingan (radius):</span>
+          <span className="font-medium text-red-600">{data.effectiveCompetitors} bisnis</span>
         </div>
         <div className="flex justify-between mt-1">
           <span className="text-gray-500">Market Penetration:</span>
