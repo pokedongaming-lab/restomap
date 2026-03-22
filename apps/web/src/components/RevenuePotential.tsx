@@ -23,8 +23,28 @@ type RevenueData = {
   marketShare: number
 }
 
+// Category average spend per visit (in IDR)
+const CATEGORY_AVG_SPEND: Record<string, number> = {
+  coffee: 35000,       // Kopi - rendah
+  bakery: 45000,       // Bakery/snack
+  fastfood: 65000,     // Fast food
+  indonesian: 55000,   // Makanan Indonesia
+  western: 85000,      // Western/fine dining
+  japanese: 95000,     // Japanese
+  korean: 80000,       // Korean
+  chinese: 100000,     // Chinese - tinggi
+  seafood: 120000,    // Seafood
+  ramen: 75000,        // Ramen
+  italian: 110000,    // Italian
+  indian: 70000,      // Indian
+  thai: 65000,        // Thai
+  vietnamese: 60000,   // Vietnamese
+  mexican: 75000,     // Mexican
+  default: 50000,      // Default
+}
+
 // Simulated income level data based on Jakarta neighborhoods
-function getIncomeLevel(lat: number, lng: number): { level: string; avgSpend: number; multiplier: number } {
+function getIncomeLevel(lat: number, lng: number): { level: string; multiplier: number } {
   // Jakarta approximate income zones
   const southJakarta = lat < -6.25
   const centralJakarta = lat >= -6.2 && lat <= -6.15 && lng > 106.8
@@ -41,15 +61,20 @@ function getIncomeLevel(lat: number, lng: number): { level: string; avgSpend: nu
   )
   
   if (isPremium || (southJakarta && lng > 106.83)) {
-    return { level: 'Tinggi', avgSpend: 150000, multiplier: 1.5 }
+    return { level: 'Tinggi', multiplier: 1.5 }
   } else if (centralJakarta) {
-    return { level: 'Menengah Tinggi', avgSpend: 100000, multiplier: 1.2 }
+    return { level: 'Menengah Tinggi', multiplier: 1.2 }
   } else if (southJakarta) {
-    return { level: 'Menengah', avgSpend: 75000, multiplier: 1.0 }
+    return { level: 'Menengah', multiplier: 1.0 }
   } else if (northJakarta) {
-    return { level: 'Menengah Rendah', avgSpend: 50000, multiplier: 0.8 }
+    return { level: 'Menengah Rendah', multiplier: 0.8 }
   }
-  return { level: 'Menengah', avgSpend: 75000, multiplier: 1.0 }
+  return { level: 'Menengah', multiplier: 1.0 }
+}
+
+function getCategorySpend(category: string | null | undefined): number {
+  if (!category) return CATEGORY_AVG_SPEND.default
+  return CATEGORY_AVG_SPEND[category.toLowerCase()] ?? CATEGORY_AVG_SPEND.default
 }
 
 function estimatePopulation(lat: number, lng: number, radiusMeters: number): number {
@@ -100,6 +125,11 @@ export default function RevenuePotential(props: Props) {
     const traffic = estimateTraffic(lat, lng)
     const incomeData = getIncomeLevel(lat, lng)
     
+    // Category-based spend
+    const categorySpend = getCategorySpend(props.category)
+    // Adjust by income multiplier
+    const avgSpend = Math.round(categorySpend * incomeData.multiplier)
+    
     // Get competitor count (passed from parent or estimate)
     const competitorCount = props.competitorCount ?? 0
     
@@ -117,7 +147,7 @@ export default function RevenuePotential(props: Props) {
     // Conversion rate: % of population that visits per day
     const conversionRate = 0.03 // 3% daily conversion (more realistic)
     const dailyVisitors = population * conversionRate * (traffic / 100)
-    const estimatedRevenue = Math.round(dailyVisitors * incomeData.avgSpend * 30 * competitionFactor)
+    const estimatedRevenue = Math.round(dailyVisitors * avgSpend * 30 * competitionFactor)
     
     const result: RevenueData = {
       population,
@@ -125,7 +155,7 @@ export default function RevenuePotential(props: Props) {
       traffic,
       income: Math.round(incomeData.multiplier * 50),
       incomeLevel: incomeData.level,
-      avgSpend: incomeData.avgSpend,
+      avgSpend,
       estimatedRevenue,
       competitorCount,
       competitionFactor,
@@ -153,6 +183,23 @@ export default function RevenuePotential(props: Props) {
     return `Rp ${(amount / 1000).toFixed(0)}rb`
   }
 
+  const getCategoryLabel = (cat: string | null | undefined) => {
+    const labels: Record<string, string> = {
+      coffee: '☕ Kopi',
+      bakery: '🧁 Bakery',
+      fastfood: '🍔 Fast Food',
+      indonesian: '🍛 Indonesia',
+      western: '🥩 Western',
+      japanese: '🍣 Japanese',
+      korean: '🥘 Korean',
+      chinese: '🥢 Chinese',
+      seafood: '🦐 Seafood',
+      ramen: '🍜 Ramen',
+      italian: '🍕 Italian',
+    }
+    return cat ? (labels[cat.toLowerCase()] ?? cat) : 'Umum'
+  }
+
   return (
     <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl p-4 border border-indigo-100 space-y-3">
       <div className="flex items-center gap-2">
@@ -169,6 +216,13 @@ export default function RevenuePotential(props: Props) {
         <p className="text-xs text-gray-400">
           {formatCurrency(Math.round(data.estimatedRevenue / 30))}/hari
         </p>
+      </div>
+      
+      {/* Category Info */}
+      <div className="bg-white/70 rounded-lg p-2 text-center">
+        <p className="text-xs text-gray-500">Kategori</p>
+        <p className="font-semibold text-indigo-700">{getCategoryLabel(props.category)}</p>
+        <p className="text-xs text-gray-400">Avg spend: Rp {data.avgSpend.toLocaleString('id-ID')}/kunjungan</p>
       </div>
       
       {/* Key Metrics */}
