@@ -39,7 +39,7 @@ export default function MapPage() {
   const [heatmapLayers, setHeatmap] = useState<HeatmapLayer[]>([])
   const [saveMsg, setSaveMsg]       = useState<string | null>(null)
   const [competitors, setCompetitors] = useState<MapCompetitor[]>([])
-  const [selectedBrand, setSelectedBrand] = useState<string | null>(null)
+  const [brandQuery, setBrandQuery] = useState<string | null>(null)
 
   const { locations, save, remove, isAtLimit, loaded } = useSavedLocations()
   const { loading: heatmapLoading, data: heatmapData, fetchHeatmapData } = useHeatmap()
@@ -88,12 +88,16 @@ export default function MapPage() {
         const params = new URLSearchParams({
           lat: pin.lat.toString(),
           lng: pin.lng.toString(),
-          radius: Math.min(radius * 2, 5000).toString(), // Larger radius for map markers
-          limit: '30',
+          radius: Math.min(radius * 2, 10000).toString(), // Larger radius for brand search
+          limit: '50',
         })
         // Add category filter
         if (category) {
           params.set('category', category)
+        }
+        // Add brand search
+        if (brandQuery) {
+          params.set('brand', brandQuery)
         }
         const res = await fetch(`http://localhost:3001/competitors?${params}`)
         const json = await res.json()
@@ -106,7 +110,7 @@ export default function MapPage() {
     }
     
     fetchCompetitors()
-  }, [pin?.lat, pin?.lng, radius, category])
+  }, [pin?.lat, pin?.lng, radius, category, brandQuery])
 
   const handleLoad = useCallback((loc: typeof locations[0]) => {
     setPin(loc.pin)
@@ -177,12 +181,15 @@ export default function MapPage() {
                   <BrandSearch 
                     lat={pin.lat} 
                     lng={pin.lng} 
-                    onSelectBrand={(brand) => setCategory(brand.category)}
+                    onSelectBrand={(brand) => {
+                      setBrandQuery(brand.name)
+                      setCategory(null)
+                    }}
                   />
                 </div>
               )}
 
-              <CategoryFilter value={category} onChange={setCategory} />
+              <CategoryFilter value={category} onChange={(c) => { setCategory(c); setBrandQuery(null); }} />
               <RadiusSelector value={radius} onChange={setRadius} />
               <div id="heatmap-toggle">
                 <HeatmapToggle 
