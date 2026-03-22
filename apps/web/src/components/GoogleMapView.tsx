@@ -97,8 +97,9 @@ export default function GoogleMapView({
     }
 
     // Load Google Maps script
+    const apiKey = 'AIzaSyAzlXgIm1ofUw-A26fQp0zylxczS8oNaJk'
     const script = document.createElement('script')
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&callback=initMap`
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&callback=initMap`
     script.async = true
     script.defer = true
     (window as any).initMap = initMap
