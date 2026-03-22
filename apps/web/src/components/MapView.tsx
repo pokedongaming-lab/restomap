@@ -103,7 +103,7 @@ export default function MapView({
       coffee: '☕',
       fastfood: '🍔',
       indonesian: '🍛',
-      western: '🍔',
+      western: '🥩',
       japanese: '🍣',
       korean: '🍜',
       chinese: '🥡',
