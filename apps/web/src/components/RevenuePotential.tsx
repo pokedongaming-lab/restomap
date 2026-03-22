@@ -247,6 +247,7 @@ export default function RevenuePotential(props: Props) {
     const traffic = (() => {
       if (bpsData?.traffic) return bpsData.traffic
       
+      const isCentral = lat >= -6.22 && lat <= -6.18 && lng >= 106.81 && lng <= 106.84
       const mainRoads = [
         { lat: -6.2, lng: 106.82 },
         { lat: -6.18, lng: 106.83 },
@@ -255,7 +256,7 @@ export default function RevenuePotential(props: Props) {
       const nearMainRoad = mainRoads.some(road => 
         Math.abs(lat - road.lat) < 0.015 && Math.abs(lng - road.lng) < 0.015
       )
-      if (centralJakarta) return 85
+      if (isCentral) return 85
       if (nearMainRoad) return 90
       if (lat < -6.25) return 60
       return 70
