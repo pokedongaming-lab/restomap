@@ -1,9 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 type Step = {
   target: string
+  targetTab?: 'analisa' | 'kompetitor' | 'tersimpan'
   title: string
   content: string
 }
@@ -16,41 +17,106 @@ const TOUR_STEPS: Step[] = [
   },
   {
     target: 'search-box',
+    targetTab: 'analisa',
     title: '🔍 Pencarian',
     content: 'Cari lokasi berdasarkan nama kota atau area.',
   },
   {
     target: 'heatmap-toggle',
+    targetTab: 'analisa',
     title: '📊 Heatmap',
     content: 'Aktifkan layer heatmap untuk melihat kepadatan penduduk, traffic, dan daya beli.',
   },
   {
     target: 'scoring-panel',
+    targetTab: 'analisa',
     title: '🎯 Skor Potensi',
     content: 'Lihat skor 0-100 untuk setiap lokasi.',
   },
   {
     target: 'competitors-list',
+    targetTab: 'kompetitor',
     title: '🏪 Kompetitor',
     content: 'Lihat semua kompetitor dalam radius.',
   },
   {
     target: 'save-button',
+    targetTab: 'analisa',
     title: '💾 Simpan',
     content: 'Simpan lokasi ke watchlist.',
   },
 ]
 
+// Element IDs for each step
+const TARGET_IDS: Record<string, string> = {
+  'map-container': 'map-container',
+  'search-box': 'search-box',
+  'heatmap-toggle': 'heatmap-toggle',
+  'scoring-panel': 'scoring-panel',
+  'competitors-list': 'competitors-list',
+  'save-button': 'save-button',
+}
+
 export default function OnboardingTour() {
   const [isOpen, setIsOpen] = useState(false)
   const [currentStep, setCurrentStep] = useState(0)
+  const highlightedRef = useRef<string | null>(null)
 
   useEffect(() => {
     const seen = localStorage.getItem('restomap:onboarding_seen')
     if (!seen) {
-      setIsOpen(true)
+      // Delay slightly to ensure page is loaded
+      setTimeout(() => setIsOpen(true), 500)
     }
   }, [])
+
+  // Handle step change - scroll to element and highlight
+  useEffect(() => {
+    if (!isOpen) return
+
+    const step = TOUR_STEPS[currentStep]
+    const targetId = TARGET_IDS[step.target]
+    
+    if (!targetId) return
+
+    // Remove previous highlight
+    if (highlightedRef.current) {
+      const prevEl = document.getElementById(highlightedRef.current)
+      if (prevEl) {
+        prevEl.style.outline = ''
+        prevEl.style.transition = ''
+      }
+    }
+
+    // Small delay to ensure element exists
+    setTimeout(() => {
+      const el = document.getElementById(targetId)
+      if (el) {
+        // Scroll into view
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        
+        // Add highlight
+        el.style.outline = '3px solid #4F46E5'
+        el.style.outlineOffset = '4px'
+        el.style.transition = 'all 0.3s ease'
+        
+        highlightedRef.current = targetId
+      }
+    }, 100)
+
+  }, [currentStep, isOpen])
+
+  // Cleanup on close
+  useEffect(() => {
+    if (!isOpen && highlightedRef.current) {
+      const el = document.getElementById(highlightedRef.current)
+      if (el) {
+        el.style.outline = ''
+        el.style.transition = ''
+      }
+      highlightedRef.current = null
+    }
+  }, [isOpen])
 
   const startTour = () => {
     setIsOpen(true)
@@ -58,6 +124,16 @@ export default function OnboardingTour() {
   }
 
   const nextStep = () => {
+    // Remove highlight before moving
+    if (highlightedRef.current) {
+      const el = document.getElementById(highlightedRef.current)
+      if (el) {
+        el.style.outline = ''
+        el.style.transition = ''
+      }
+      highlightedRef.current = null
+    }
+
     if (currentStep < TOUR_STEPS.length - 1) {
       setCurrentStep(currentStep + 1)
     } else {
@@ -67,12 +143,30 @@ export default function OnboardingTour() {
   }
 
   const prevStep = () => {
+    // Remove highlight before moving
+    if (highlightedRef.current) {
+      const el = document.getElementById(highlightedRef.current)
+      if (el) {
+        el.style.outline = ''
+        el.style.transition = ''
+      }
+      highlightedRef.current = null
+    }
+
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1)
     }
   }
 
   const skipTour = () => {
+    // Remove highlight
+    if (highlightedRef.current) {
+      const el = document.getElementById(highlightedRef.current)
+      if (el) {
+        el.style.outline = ''
+        el.style.transition = ''
+      }
+    }
     setIsOpen(false)
     localStorage.setItem('restomap:onboarding_seen', 'true')
   }

@@ -193,6 +193,7 @@ export default function ScoringPanel({ pin, radius, category, onSave }: Props) {
 
       {result && onSave && (
         <button
+          id="save-button"
           onClick={() => onSave(result.total, weights)}
           className="w-full py-2.5 rounded-xl text-sm font-medium bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-all border border-indigo-100"
         >

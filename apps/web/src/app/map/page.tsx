@@ -153,7 +153,7 @@ export default function MapPage() {
           {tab === 'analisa' && (
             <>
               {/* Search */}
-              <div>
+              <div id="search-box">
                 <p className="text-xs text-gray-500 mb-2 font-medium uppercase tracking-wide">
                   Cari lokasi
                 </p>
@@ -162,12 +162,14 @@ export default function MapPage() {
 
               <CategoryFilter value={category} onChange={setCategory} />
               <RadiusSelector value={radius} onChange={setRadius} />
-              <HeatmapToggle 
-                active={heatmapLayers} 
-                onChange={handleHeatmapChange}
-                data={heatmapData}
-                loading={heatmapLoading}
-              />
+              <div id="heatmap-toggle">
+                <HeatmapToggle 
+                  active={heatmapLayers} 
+                  onChange={handleHeatmapChange}
+                  data={heatmapData}
+                  loading={heatmapLoading}
+                />
+              </div>
 
               <div className="border-t border-gray-100" />
 
@@ -200,12 +202,14 @@ export default function MapPage() {
 
               {/* Scoring panel */}
               {pin && (
-                <ScoringPanel
-                  pin={pin}
-                  radius={radius}
-                  category={category}
-                  onSave={handleSave}
-                />
+                <div id="scoring-panel">
+                  <ScoringPanel
+                    pin={pin}
+                    radius={radius}
+                    category={category}
+                    onSave={handleSave}
+                  />
+                </div>
               )}
             </>
           )}
@@ -222,12 +226,14 @@ export default function MapPage() {
                   </div>
                   <RadiusSelector value={radius} onChange={setRadius} />
                   <div className="border-t border-gray-100" />
-                  <CompetitorList
-                    lat={pin.lat}
-                    lng={pin.lng}
-                    radius={radius}
-                    category={category}
-                  />
+                  <div id="competitors-list">
+                    <CompetitorList
+                      lat={pin.lat}
+                      lng={pin.lng}
+                      radius={radius}
+                      category={category}
+                    />
+                  </div>
                   <div className="border-t border-gray-100 my-4" />
                   <GapCategoryPanel
                     lat={pin.lat}
@@ -257,12 +263,14 @@ export default function MapPage() {
                   </a>
                 )}
               </div>
-              <SavedLocationsList
+              <div id="saved-locations">
+                <SavedLocationsList
                 locations={locations}
                 onLoad={handleLoad}
                 onDelete={remove}
                 isAtLimit={isAtLimit}
               />
+              </div>
             </>
           )}
 
@@ -278,7 +286,7 @@ export default function MapPage() {
       </aside>
 
       {/* ── Map ─────────────────────────────────────────────────────── */}
-      <main className="flex-1 relative z-0">
+      <main id="map-container" className="flex-1 relative z-0">
         <MapView 
           onPinChange={setPin} 
           radius={radius} 
