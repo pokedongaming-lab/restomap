@@ -12,6 +12,7 @@ import { gapCategoryRoutes } from './routes/gapCategory'
 import { cityAverageRoutes } from './routes/cityAverage'
 import { sentimentRoutes } from './routes/sentiment'
 import { quadrantRoutes } from './routes/quadrant'
+import { bayesianRoutes } from './routes/bayesian'
 
 async function start() {
   const app = Fastify({ logger: true })
@@ -35,6 +36,7 @@ async function start() {
   await app.register(cityAverageRoutes)
   await app.register(sentimentRoutes)
   await app.register(quadrantRoutes)
+  await app.register(bayesianRoutes)
 
   const port = Number(process.env.PORT ?? 3001)
   await app.listen({ port, host: '0.0.0.0' })
