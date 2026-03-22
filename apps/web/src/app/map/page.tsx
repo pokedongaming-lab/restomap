@@ -279,6 +279,7 @@ export default function MapPage() {
 
       {/* ── Map ─────────────────────────────────────────────────────── */}
       <main className="flex-1 relative z-0">
+        {console.log('[MapPage] Rendering MapView with radius:', radius)}
         <MapView 
           onPinChange={setPin} 
           radius={radius} 
