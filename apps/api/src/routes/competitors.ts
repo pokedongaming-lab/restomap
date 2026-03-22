@@ -190,13 +190,16 @@ export async function competitorRoutes(app: FastifyInstance) {
       // Use SERP results if available, otherwise Google Places
       let finalResults = serpResults.length > 0 ? serpResults : results
       
-      // Filter to only show results that match the brand keyword
+      // Filter to ONLY show results that match the brand keyword EXACTLY
       if (keyword && finalResults.length > 0) {
         const keywordLower = keyword.toLowerCase()
-        finalResults = finalResults.filter((r: any) => 
-          r.name?.toLowerCase().includes(keywordLower) ||
-          r.address?.toLowerCase().includes(keywordLower)
-        )
+        
+        // For SERP results, the name field is 'title'
+        finalResults = finalResults.filter((r: any) => {
+          const name = (r.name || r.title || '').toLowerCase()
+          const address = (r.address || '').toLowerCase()
+          return name.includes(keywordLower) || address.includes(keywordLower)
+        })
       }
 
       return reply.send({
