@@ -197,29 +197,45 @@ export default function RevenuePotential(props: Props) {
   useEffect(() => {
     setLoading(true)
     
-    // Use BPS data if available
-    const bpsPopulation = bpsData?.population
-    const bpsIncome = bpsData?.income ?? 50
-    const bpsTraffic = bpsData?.traffic ?? 50
-    const bpsCompetition = bpsData?.competition
-    
-    const incomeData = getIncomeLevel(lat, lng)
+    // Get category-specific data (PRIMARY)
     const categorySpend = getCategorySpend(props.category)
-    const avgSpend = Math.round(categorySpend * incomeData.multiplier)
     const visitFrequency = getCategoryFrequency(props.category)
+    const categoryPenetration = props.category 
+      ? (CATEGORY_PENETRATION[props.category.toLowerCase()] ?? 0.15) 
+      : 0.15
     
-    // SAM = population in radius based on BPS or location
-    const sam = estimateSAM(lat, lng, radius, bpsPopulation)
+    // Get location-based adjustments
+    const incomeData = getIncomeLevel(lat, lng)
+    const avgSpend = Math.round(categorySpend * incomeData.multiplier) // Adjust by income
+    
+    // Calculate SAM based on population in radius (using location, not BPS)
+    const sam = estimateSAM(lat, lng, radius, null)
     const tam = Math.round(sam / 0.3) // TAM = SAM / 0.3
     
-    // SOM after competition - use category penetration + BPS competition
-    const { som, penetration, effectiveCompetitors: totalSaingan } = estimateSOM(
-      sam, 
-      competitorCount, 
-      radius,
-      props.category,
-      bpsCompetition
+    // Calculate SOM with category-based penetration
+    // BPS competition is additional factor
+    const bpsCompetition = bpsData?.competition
+    let effectivePenetration = categoryPenetration
+    
+    // Reduce penetration if BPS shows high competition
+    if (bpsCompetition && bpsCompetition > 60) {
+      effectivePenetration = effectivePenetration * 0.7 // 30% reduction
+    }
+    
+    // Reduce penetration based on visible competitors
+    const competitorPenalty = Math.min(
+      effectivePenetration * 0.5,
+      competitorCount * 0.015 * effectivePenetration
     )
+    const finalPenetration = Math.max(0.02, effectivePenetration - competitorPenalty)
+    
+    const som = Math.round(sam * finalPenetration)
+    const penetration = Math.round(finalPenetration * 100)
+    
+    // Hidden competitors based on area
+    const radiusKm = radius / 1000
+    const hiddenCompetitors = Math.round(radiusKm * radiusKm * 5)
+    const totalSaingan = competitorCount + hiddenCompetitors
     
     // Monthly visits = SOM × visit frequency
     const monthlyVisits = Math.round(som * visitFrequency)
@@ -227,8 +243,11 @@ export default function RevenuePotential(props: Props) {
     // Revenue = monthly visits × average spend
     const estimatedRevenue = monthlyVisits * avgSpend
     
-    // Traffic score - use BPS if available
-    const traffic = bpsData ? bpsTraffic : (() => {
+    // Traffic score - use BPS if available, otherwise calculate
+    const traffic = (() => {
+      if (bpsData?.traffic) return bpsData.traffic
+      
+      const centralJakarta = lat >= -6.22 && lat <= -6.18 && lng >= 106.81 && lng <= 106.84
       const centralJakarta = lat >= -6.22 && lat <= -6.18 && lng >= 106.81 && lng <= 106.84
       const mainRoads = [
         { lat: -6.2, lng: 106.82 },
