@@ -91,7 +91,7 @@ export default function MapPage() {
           lat: pin.lat.toString(),
           lng: pin.lng.toString(),
           radius: Math.min(radius * 2, 10000).toString(), // Larger radius for brand search
-          limit: '150', // Get all competitors
+          limit: '60', // Limit competitors
         })
         // Add category filter
         if (category) {
