@@ -91,9 +91,10 @@ export async function searchBrand(
 ): Promise<SerpResult[]> {
   // Try multiple search variations for better results
   const queries = [
-    `${brandName} ${city}`, // "KFC Manila"
-    `${brandName} restaurant ${city}`, // "KFC restaurant Manila"
-    `${brandName} ${city} Indonesia`, // "KFC Manila Indonesia"
+    `${brandName} ${city}`, // "KFC Jakarta"
+    `${brandName} restaurant ${city}`, // "KFC restaurant Jakarta"
+    `${brandName} ${city} Indonesia`, // "KFC Jakarta Indonesia"
+    `${brandName} ${city} ${country}`, // "KFC Jakarta Indonesia"
   ]
   
   for (const query of queries) {
