@@ -231,8 +231,6 @@ function getMockCompetitors(lat: number, lng: number, category?: string) {
     const brandData = BRAND_DATA[cat]
     
     if (brandData) {
-    
-    if (brandData) {
       const nameIndex = i % brandData.names.length
       const ratingIndex = i % brandData.ratings.length
       const priceIndex = i % brandData.priceLevels.length
