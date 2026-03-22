@@ -22,6 +22,7 @@ export type Competitor = {
   distance:   number
   isOpen:     boolean | null
   photoRef:   string | null
+  userRatingsTotal?: number  // Total user ratings/reviews
   // Opening hours data
   openingHours?: {
     periods: Array<{
