@@ -5,6 +5,7 @@ const RADIUS_OPTIONS = [
   { label: '1km',  value: 1000 },
   { label: '2km',  value: 2000 },
   { label: '5km',  value: 5000 },
+  { label: '10km', value: 10000 },
 ]
 
 type Props = {
