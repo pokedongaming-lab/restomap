@@ -279,7 +279,13 @@ export default function MapPage() {
 
       {/* ── Map ─────────────────────────────────────────────────────── */}
       <main className="flex-1 relative z-0">
-        <MapView onPinChange={setPin} radius={radius} competitors={competitors} />
+        <MapView 
+          onPinChange={setPin} 
+          radius={radius} 
+          competitors={competitors}
+          heatmapLayers={heatmapLayers}
+          heatmapData={heatmapData?.factors ?? null}
+        />
       </main>
 
     </div>
