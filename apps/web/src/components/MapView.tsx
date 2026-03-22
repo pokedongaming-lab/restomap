@@ -62,6 +62,8 @@ export default function MapView({
   competitors = [],
   onCompetitorClick,
 }: Props) {
+  // Debug: log props
+  console.log('[MapView] Props:', { heatmapLayers, heatmapData, radius })
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef       = useRef<any>(null)
   const markerRef    = useRef<any>(null)
