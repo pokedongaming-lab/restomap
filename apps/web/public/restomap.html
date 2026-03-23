@@ -197,21 +197,26 @@ canvas#map{width:100%;height:100%;cursor:crosshair;display:block;}
 <div class="app">
   <!-- MAP -->
   <div class="map-wrap" id="mapWrap">
-    <!-- Google Maps Embed -->
-    <iframe 
-      id="googleMap"
-      width="100%" 
-      height="100%" 
-      style="border:0;filter:grayscale(100%) contrast(1.1) invert(92%) sepia(10%) saturate(500%) hue-rotate(-5deg);"
-      loading="lazy"
-      allowfullscreen
-      referrerpolicy="no-referrer-when-downgrade"
-      src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d126932.5892992252!2d106.68988169307872!3d-6.195123774995957!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69f3ec3a5b5997%3A0x6a0c08c8b8c8c8c8!2sJakarta%2C%20Indonesia!5e0!3m2!1sen!2sid!4v1700000000000!5m2!1sen!2sid">
-    </iframe>
-    <!-- Hidden input for coordinates -->
-    <input type="hidden" id="mapCenter" value="-6.2,106.8">
-    <div class="map-coords" id="mapCoords">LAT: -6.20 · LNG: 106.83 · JAKARTA</div>
+    <!-- Google Maps with JavaScript API -->
+    <div id="map" style="width:100%;height:100%;"></div>
+    
+    <!-- Map Pin Marker -->
+    <div class="map-pin" id="mapPin">
+      <svg width="22" height="32" viewBox="0 0 22 32">
+        <path d="M11 0C4.9 0 0 4.9 0 11c0 7.7 11 21 11 21s11-13.3 11-21C22 4.9 17.1 0 11 0z" fill="#FF6D00"/>
+        <circle cx="11" cy="11" r="4" fill="#000"/>
+      </svg>
+    </div>
+    <div class="map-pulse" id="mapPulse"><div class="pulse-ring"></div></div>
+    
+    <div class="map-coords" id="mapCoords">LAT: -6.20 · LNG: 106.83 · KOTA: —</div>
     <div class="loc-tooltip" id="locTooltip"></div>
+    
+    <!-- Search Box -->
+    <div style="position:absolute;top:10px;left:50px;z-index:10;">
+      <input type="text" id="citySearch" placeholder="Cari kota..." 
+        style="background:var(--bg2);border:1px solid var(--b2);color:var(--t);padding:8px 12px;font-size:11px;border-radius:4px;width:200px;">
+    </div>
   </div>
 
   <!-- ANALYSIS PANEL -->
@@ -877,73 +882,192 @@ function goToBuilder(){
   window.location.href='restobuilder.html?'+params.toString();
 }
 
-// ═══ GOOGLE MAPS REAL ═══
-let map, marker, geocoder;
-const API_KEY = 'AIzaSyAzlXgIm1ofUw-A26fQp0zylxczS8oNaJk';
+// ═══ GOOGLE MAPS JS API ═══
+let map, marker, geocoder, infoWindow;
+
+const LOCS = [
+  {id:'sudirman',name:'Sudirman',sub:'CBD · Premium',x:.50,y:.30,type:'cbd',lat:-6.2088,lng:106.8234},
+  {id:'thamrin',name:'Thamrin',sub:'CBD · Central',x:.55,y:.26,type:'cbd',lat:-6.1944,lng:106.8229},
+  {id:'scbd',name:'SCBD Senayan',sub:'Premium District',x:.43,y:.37,type:'premium',lat:-6.2267,lng:106.8053},
+  {id:'senayan',name:'Senayan',sub:'Sports & Mall',x:.39,y:.42,type:'commercial',lat:-6.2184,lng:106.8008},
+  {id:'blok_m',name:'Blok M',sub:'Commercial Hub',x:.36,y:.46,type:'commercial',lat:-6.2441,lng:106.7990},
+  {id:'kemang',name:'Kemang',sub:'Trendy · Expat',x:.33,y:.55,type:'trendy',lat:-6.2600,lng:106.8152},
+  {id:'pk_indah',name:'Pondok Indah',sub:'Premium Residential',x:.27,y:.59,type:'premium',lat:-6.2863,lng:106.7771},
+  {id:'tb_sim',name:'TB Simatupang',sub:'Suburban Office',x:.32,y:.69,type:'suburban',lat:-6.3248,lng:106.8134},
+  {id:'ps_minggu',name:'Pasar Minggu',sub:'Local Area',x:.40,y:.72,type:'local',lat:-6.2936,lng:106.8437},
+  {id:'depok',name:'Depok',sub:'South Suburb',x:.44,y:.84,type:'suburban',lat:-6.4025,lng:106.7942},
+  {id:'kg',name:'Kelapa Gading',sub:'Premium North',x:.65,y:.22,type:'premium',lat:-6.1579,lng:106.9040},
+  {id:'pik',name:'PIK',sub:'Waterfront Premium',x:.23,y:.17,type:'premium',lat:-6.1145,lng:106.7327},
+  {id:'bekasi',name:'Bekasi',sub:'East Suburb',x:.78,y:.40,type:'suburban',lat:-6.2383,lng:106.9756},
+  {id:'cibubur',name:'Cibubur',sub:'East Suburb',x:.83,y:.63,type:'suburban',lat:-6.3613,lng:106.8936},
+  {id:'serpong',name:'BSD Serpong',sub:'West Suburb',x:.07,y:.66,type:'suburban',lat:-6.3216,lng:106.6527},
+  {id:'tangerang',name:'Tangerang',sub:'Industrial West',x:.10,y:.34,type:'suburban',lat:-6.1784,lng:106.6319},
+];
+
+const TYPE_STATS = {
+  cbd:{score:78,revM:487,be:14,comp:28,check:74,margin:18.3,growth:8.4,vsCity:'+3.2'},
+  premium:{score:82,revM:620,be:18,comp:20,check:95,margin:21.5,growth:11.8,vsCity:'+7.1'},
+  commercial:{score:71,revM:368,be:12,comp:35,check:55,margin:15.2,growth:6.2,vsCity:'-3.8'},
+  trendy:{score:74,revM:415,be:13,comp:22,check:68,margin:17.1,growth:9.6,vsCity:'+0.5'},
+  suburban:{score:60,revM:238,be:10,comp:9,check:42,margin:14.0,growth:6.8,vsCity:'-12.4'},
+  local:{score:54,revM:185,be:9,comp:6,check:35,margin:13.2,growth:4.1,vsCity:'-18.6'},
+};
 
 function initMap() {
   const jakarta = { lat: -6.2088, lng: 106.8456 };
   
-  // Create map (hidden, we'll use iframe for display)
-  map = new google.maps.Map(document.createElement('div'), {
+  map = new google.maps.Map(document.getElementById('map'), {
     center: jakarta,
     zoom: 12,
+    styles: [
+      { elementType: "geometry", stylers: [{ color: "#1a1a1a" }] },
+      { elementType: "labels.text.stroke", stylers: [{ color: "#1a1a1a" }] },
+      { elementType: "labels.text.fill", stylers: [{ color: "#746855" }] },
+    ],
+    disableDefaultUI: false,
+    zoomControl: true,
+    mapTypeControl: false,
+    streetViewControl: false,
+    fullscreenControl: false,
   });
   
   geocoder = new google.maps.Geocoder();
+  infoWindow = new google.maps.InfoWindow();
   
-  // Update iframe to use clicked location
-  updateMapEmbed(jakarta.lat, jakarta.lng);
+  // Add click listener
+  map.addListener('click', (e) => {
+    const lat = e.latLng.lat();
+    const lng = e.latLng.lng();
+    
+    // Reverse geocode
+    geocoder.geocode({ location: { lat, lng } }, (results, status) => {
+      let address = 'Lokasi Dipilih';
+      if (status === 'OK' && results[0]) {
+        address = results[0].formatted_address.split(',')[0];
+      }
+      
+      // Update coords display
+      document.getElementById('mapCoords').textContent = `LAT: ${lat.toFixed(5)} · LNG: ${lng.toFixed(5)} · ${address.toUpperCase()}`;
+      
+      // Place marker
+      if (marker) marker.setMap(null);
+      marker = new google.maps.Marker({
+        position: { lat, lng },
+        map: map,
+        icon: {
+          path: google.maps.SymbolPath.CIRCLE,
+          scale: 10,
+          fillColor: '#FF6D00',
+          fillOpacity: 1,
+          strokeColor: '#FF6D00',
+          strokeWeight: 2,
+        },
+        animation: google.maps.Animation.DROP,
+      });
+      
+      // Drop pin animation
+      dropPinVisual(lat, lng);
+      
+      // Create mock location object
+      const mockLoc = {
+        id: 'custom',
+        name: address,
+        sub: 'Area yang dipilih',
+        lat: lat,
+        lng: lng,
+        type: 'cbd',
+        x: 0.5,
+        y: 0.5,
+      };
+      
+      selectedLoc = mockLoc;
+      showPanel();
+      renderAnalysis(mockLoc);
+      document.getElementById('mapHint').classList.add('hidden');
+    });
+  });
+  
+  // Add predefined location markers
+  LOCS.forEach(loc => {
+    const m = new google.maps.Marker({
+      position: { lat: loc.lat, lng: loc.lng },
+      map: map,
+      title: loc.name,
+      icon: {
+        path: google.maps.SymbolPath.CIRCLE,
+        scale: 6,
+        fillColor: '#FF6D00',
+        fillOpacity: 0.7,
+        strokeColor: '#FF6D00',
+        strokeWeight: 1,
+      },
+    });
+    
+    m.addListener('click', () => {
+      selectedLoc = loc;
+      map.setCenter({ lat: loc.lat, lng: loc.lng });
+      map.setZoom(14);
+      dropPinVisual(loc.lat, loc.lng);
+      showPanel();
+      renderAnalysis(loc);
+      document.getElementById('mapHint').classList.add('hidden');
+    });
+  });
+  
+  // Search box
+  const searchBox = document.getElementById('citySearch');
+  searchBox.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+      const query = searchBox.value;
+      geocoder.geocode({ address: query + ', Indonesia' }, (results, status) => {
+        if (status === 'OK' && results[0]) {
+          const loc = results[0].geometry.location;
+          map.setCenter(loc);
+          map.setZoom(13);
+        }
+      });
+    }
+  });
 }
 
-function updateMapEmbed(lat, lng) {
-  const iframe = document.getElementById('googleMap');
-  const embedUrl = `https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d126932.5892992252!2d${lng-0.1}!3d${lat}!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69f3ec3a5b5997%3A0x6a0c08c8b8c8c8c8!2sJakarta%2C%20Indonesia!5e0!3m2!1sen!2sid!4v1700000000000!5m2!1sen!2sid`;
+function dropPinVisual(lat, lng) {
+  const pin = document.getElementById('mapPin');
+  const pulse = document.getElementById('mapPulse');
   
-  // Actually let's use a direct coordinates embed
-  iframe.src = `https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d2000!2d${lng}!3d${lat}!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sen!2sid!4v1700000000000`;
+  pin.style.display = 'block';
+  pulse.style.display = 'block';
+  
+  // Get screen position from lat/lng
+  const proj = map.getProjection();
+  const point = proj.fromLatLngToContainerPixel(new google.maps.LatLng(lat, lng));
+  
+  pin.style.left = point.x + 'px';
+  pin.style.top = point.y + 'px';
+  pulse.style.left = point.x + 'px';
+  pulse.style.top = point.y + 'px';
+  
+  pin.style.animation = 'none';
+  pin.offsetHeight;
+  pin.style.animation = 'pinDrop 0.4s cubic-bezier(.4,0,.2,1)';
 }
 
-function handleMapClick(e) {
-  // This is a simplified version - in production use Google Maps JS API properly
-  const rect = e.target.getBoundingClientRect();
-  const x = e.clientX - rect.left;
-  const y = e.clientY - rect.top;
-  
-  // Approximate Jakarta area
-  const lat = -6.4 + (y / rect.height) * 0.5;
-  const lng = 106.6 + (x / rect.width) * 0.4;
-  
-  document.getElementById('mapCoords').textContent = `LAT: ${lat.toFixed(4)} · LNG: ${lng.toFixed(4)}`;
-  
-  // Trigger analysis for this location
-  const mockLoc = {
-    id:'custom',
-    name:'Lokasi Kustom',
-    sub:'Area yang dipilih',
-    lat:lat.toFixed(4),
-    lng:lng.toFixed(4),
-    type:'cbd',
-    x:x/rect.width,
-    y:y/rect.height
-  };
-  
-  selectedLoc = mockLoc;
-  showPanel();
-  renderAnalysis(mockLoc);
-  document.getElementById('mapHint').classList.add('hidden');
-}
+// Wait for Google Maps to load
+window.initMap = initMap;
 
-// Add click listener to map iframe's parent
-document.getElementById('mapWrap').addEventListener('click', handleMapClick);
+// Add scanline effect
+const style = document.createElement('style');
+style.textContent = `
+  @keyframes pinDrop{
+    from{transform:translate(-50%,-200%) scale(1.3);opacity:0;}
+    to{transform:translate(-50%,-100%);opacity:1;}
+  }
+`;
+document.head.appendChild(style);
 
-// ═══ INIT ═══
-// Note: For full Google Maps integration, load the JavaScript API
-// This is a simplified version using embed
 console.log('RestoMap initialized - Click on map to analyze location');
 </script>
 
-<!-- Google Maps API (optional - for full functionality) -->
-<!-- <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAzlXgIm1ofUw-A26fQp0zylxczS8oNaJk&callback=initMap"></script> -->
+<!-- Google Maps JavaScript API -->
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAzlXgIm1ofUw-A26fQp0zylxczS8oNaJk&libraries=places"></script>
 </body>
 </html>
