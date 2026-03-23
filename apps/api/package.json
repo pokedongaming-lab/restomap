@@ -21,7 +21,6 @@
     "@fastify/swagger": "^8.14.0",
     "@fastify/swagger-ui": "^3.0.0",
     "@googlemaps/google-maps-services-js": "^3.4.2",
-    "@prisma/client": "^5.14.0",
     "@restomap/common": "workspace:*",
     "@sparticuz/chromium-min": "^143.0.4",
     "argon2": "^0.44.0",
@@ -38,7 +37,6 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^20.14.0",
     "@vitest/coverage-v8": "^4.1.0",
-    "prisma": "^5.14.0",
     "tsx": "^4.15.0",
     "typescript": "^5.4.0",
     "vitest": "^1.6.1"

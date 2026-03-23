@@ -1,9 +1,6 @@
 import type { FastifyInstance } from 'fastify'
 import { z } from 'zod'
-import { PrismaClient } from '@prisma/client'
 import { calculateRevenue, RESTAURANT_TYPES } from '../lib/revenue'
-
-const prisma = new PrismaClient()
 
 // Feasibility Score Calculation
 interface FeasibilityInput {
@@ -166,7 +163,7 @@ function mockBPSCityData(city: string) {
     'bandung': 2575478,
     'medan': 2235369,
     'makassar': 1430696,
-    'semarang': 180散,
+    'semarang': 1800000,
     'yogyakarta': 4013525,
     'bali': 4225384,
   }

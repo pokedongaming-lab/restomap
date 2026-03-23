@@ -1,8 +1,4 @@
 import type { FastifyRequest, FastifyReply } from 'fastify'
-import { PrismaClient } from '@prisma/client'
-import { AuthService } from '../services/AuthService'
-
-const prisma = new PrismaClient()
 
 // ─── Tier limits ─────────────────────────────────────────────────────────────
 
@@ -13,6 +9,13 @@ export const FREE_LIMITS = {
   dailyAnalysis:    10,
 }
 
+// Simple token validation (in production, use proper JWT with user lookup)
+const validTokens = new Map<string, { userId: string; email: string; role: string }>()
+
+export function registerToken(token: string, userData: { userId: string; email: string; role: string }) {
+  validTokens.set(token, userData)
+}
+
 // ─── Middleware ───────────────────────────────────────────────────────────────
 
 export async function requireAuth(request: FastifyRequest, reply: FastifyReply) {
@@ -21,29 +24,21 @@ export async function requireAuth(request: FastifyRequest, reply: FastifyReply) 
     return reply.code(401).send({ ok: false, error: 'MISSING_TOKEN' })
   }
   const token = authHeader.slice(7)
-  const authService = new AuthService(
-    prisma,
-    process.env.JWT_SECRET ?? 'dev-secret-change-in-production',
-  )
-  try {
-    const user = await authService.verifyToken(token)
-    ;(request as any).user = user
-  } catch {
+  const user = validTokens.get(token)
+  
+  if (!user) {
     return reply.code(401).send({ ok: false, error: 'INVALID_TOKEN' })
   }
+  
+  ;(request as any).user = user
 }
 
 export async function requirePro(request: FastifyRequest, reply: FastifyReply) {
   await requireAuth(request, reply)
   const user = (request as any).user
   if (!user) return // already replied
-
-  if (user.tier !== 'pro') {
-    return reply.code(403).send({
-      ok: false,
-      error: 'PRO_REQUIRED',
-      message: 'Fitur ini hanya tersedia untuk pengguna Pro.',
-      upgradeUrl: '/upgrade',
-    })
+  
+  if (user.role !== 'pro' && user.role !== 'enterprise') {
+    return reply.code(403).send({ ok: false, error: 'PRO_REQUIRED' })
   }
 }

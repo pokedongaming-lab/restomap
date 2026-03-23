@@ -1,3 +1,120 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Bloomberg Terminal Theme */
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700&family=DM+Serif+Display&family=Outfit:wght@300;400;500;600;700&display=swap');
+
+:root {
+  /* Bloomberg Terminal Colors */
+  --bg: #030303;
+  --bg2: #0a0a0a;
+  --bg3: #111111;
+  --panel: #0d0d0d;
+  
+  /* Orange/Amber Accent */
+  --accent: #FF6D00;
+  --accent2: #FF8F00;
+  --accent-light: rgba(255, 109, 0, 0.1);
+  
+  /* Text */
+  --text: #FFB74D;
+  --text2: #FFA726;
+  --text3: rgba(255, 183, 77, 0.45);
+  --text4: rgba(255, 183, 77, 0.15);
+  
+  /* Semantic */
+  --positive: #69F0AE;
+  --negative: #FF5252;
+  --info: #4DA6FF;
+  --warning: #FFA726;
+  
+  /* Borders */
+  --border: rgba(255, 109, 0, 0.15);
+  --border2: rgba(255, 109, 0, 0.38);
+  
+  /* Lime accent for modern touch */
+  --lime: #c9f03a;
+  --lime-dark: #8ecc20;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 3px;
+  height: 3px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border2);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
+}
+
+/* Selection */
+::selection {
+  background: var(--accent-light);
+  color: var(--text);
+}
+
+/* Custom utilities */
+@layer components {
+  .btn-primary {
+    @apply bg-accent text-black font-bold px-4 py-2 rounded transition-colors;
+  }
+  .btn-primary:hover {
+    @apply bg-accent-hover;
+  }
+  
+  .card {
+    @apply bg-terminal-bg2 border border-orange-500/20 rounded-lg p-4;
+  }
+  
+  .input {
+    @apply bg-terminal-bg3 border border-orange-500/20 text-orange-100 px-3 py-2 rounded focus:outline-none focus:border-orange-500;
+  }
+  
+  .panel-header {
+    @apply bg-orange-500/10 border-b border-orange-500/20 px-4 py-3;
+  }
+}
+
+/* Animations */
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 5px var(--accent); }
+  50% { box-shadow: 0 0 20px var(--accent); }
+}
+
+.pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Scanline effect (optional) */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 3px,
+    rgba(0, 0, 0, 0.03) 3px,
+    rgba(0, 0, 0, 0.03) 4px
+  );
+  pointer-events: none;
+  z-index: 9999;
+}

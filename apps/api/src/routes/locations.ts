@@ -1,8 +1,21 @@
 import type { FastifyInstance } from 'fastify'
 import { z } from 'zod'
-import { PrismaClient } from '@prisma/client'
 
-const prisma = new PrismaClient()
+// In-memory storage (replace with proper DB in production)
+interface SavedLocation {
+  id: string
+  name: string
+  city: string
+  lat: number
+  lng: number
+  radius: number
+  weights: Record<string, number>
+  score?: number
+  userId?: string
+  createdAt: Date
+}
+
+const locations = new Map<string, SavedLocation>()
 
 // ─── Schemas ─────────────────────────────────────────────────────────────────
 
@@ -24,8 +37,6 @@ const UpdateLocationSchema = z.object({
 // ─── Routes ─────────────────────────────────────────────────────────────────
 
 export async function savedLocationsRoutes(app: FastifyInstance) {
-  const prisma = new PrismaClient()
-
   // Helper: get user from token
   const getUserId = async (request: any) => {
     try {

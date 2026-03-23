@@ -1,8 +1,22 @@
 import type { FastifyInstance } from 'fastify'
 import { z } from 'zod'
-import { PrismaClient } from '@prisma/client'
 
-const prisma = new PrismaClient()
+// In-memory storage for restaurant plans (replace with proper DB in production)
+interface RestaurantPlan {
+  id: string
+  userId?: string
+  name: string
+  conceptType: string
+  cuisineType: string
+  city: string
+  seatingCapacity: number
+  currentStep: number
+  data: Record<string, any>
+  createdAt: Date
+  updatedAt: Date
+}
+
+const plans = new Map<string, RestaurantPlan>()
 
 // ─── Schemas ─────────────────────────────────────────────────────────────────
 
