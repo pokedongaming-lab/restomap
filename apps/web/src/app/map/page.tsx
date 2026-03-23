@@ -18,6 +18,7 @@ import RevenuePotential from '@/components/RevenuePotential'
 import CannibalAnalysis from '@/components/CannibalAnalysis'
 import GoogleMapView from '@/components/GoogleMapView'
 import OnboardingTour from '@/components/OnboardingTour'
+import StreetViewPreview from '@/components/StreetViewPreview'
 import { useSavedLocations } from '@/hooks/useSavedLocations'
 import { useHeatmap } from '@/hooks/useHeatmap'
 import type { MapPin, MapCompetitor } from '@/components/MapView'
@@ -238,6 +239,11 @@ export default function MapPage() {
                     competitorCount={competitors.length}
                     bpsData={bpsData}
                   />
+                  
+                  {/* Street View Preview - Quick Win #1 */}
+                  <div className="mt-4">
+                    <StreetViewPreview lat={pin.lat} lng={pin.lng} />
+                  </div>
                 </>
               ) : (
                 <div className="bg-gray-50 rounded-xl p-4 border border-dashed border-gray-200 text-center">
