@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RestoMap — RestoSuite</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root{--bg:#030303;--bg2:#0a0a0a;--bg3:#111;--panel:#0d0d0d;--b:rgba(255,109,0,.15);--b2:rgba(255,109,0,.38);--a:#FF6D00;--a2:#FF8F00;--a3:rgba(255,109,0,.07);--t:#FFB74D;--t2:#FFA726;--t3:rgba(255,183,77,.45);--t4:rgba(255,183,77,.15);--pos:#69F0AE;--neg:#FF5252;--info:#4DA6FF;}
+.th-matrix{--bg:#000500;--bg2:#000a00;--bg3:#001100;--panel:#000d00;--b:rgba(0,255,65,.14);--b2:rgba(0,255,65,.36);--a:#00FF41;--a2:#00E636;--a3:rgba(0,255,65,.06);--t:#00E676;--t2:#00C853;--t3:rgba(0,230,118,.42);--t4:rgba(0,230,118,.14);}
+.th-arctic{--bg:#000B14;--bg2:#001122;--bg3:#001830;--panel:#000E1A;--b:rgba(0,229,255,.14);--b2:rgba(0,229,255,.36);--a:#00E5FF;--a2:#00B8D4;--a3:rgba(0,229,255,.06);--t:#80DEEA;--t2:#4DD0E1;--t3:rgba(128,222,234,.42);--t4:rgba(128,222,234,.14);}
+.th-ember{--bg:#0D0000;--bg2:#150000;--bg3:#1a0000;--panel:#100000;--b:rgba(255,61,0,.16);--b2:rgba(255,61,0,.38);--a:#FF3D00;--a2:#FF6E40;--a3:rgba(255,61,0,.06);--t:#FFAB91;--t2:#FF8A65;--t3:rgba(255,171,145,.42);--t4:rgba(255,171,145,.14);}
+.th-mercury{--bg:#08080F;--bg2:#0D0D1A;--bg3:#11112A;--panel:#0A0A16;--b:rgba(180,180,220,.12);--b2:rgba(180,180,220,.30);--a:#B0B8E0;--a2:#9098C8;--a3:rgba(180,180,220,.05);--t:#C8D0F0;--t2:#A0A8D8;--t3:rgba(200,208,240,.42);--t4:rgba(200,208,240,.14);}
+
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;overflow:hidden;}
+body{background:var(--bg);color:var(--t);font-family:'Share Tech Mono',monospace;font-size:11px;transition:background .4s,color .4s;}
+body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.03) 3px,rgba(0,0,0,.03) 4px);pointer-events:none;z-index:9999;}
+
+/* TOPBAR */
+.tb{display:flex;align-items:center;height:38px;background:var(--bg2);border-bottom:1px solid var(--b2);flex-shrink:0;z-index:100;}
+.tb-logo{display:flex;flex-direction:column;justify-content:center;padding:0 14px;height:100%;border-right:1px solid var(--b);flex-shrink:0;gap:1px;}
+.logo-t{font-family:'Orbitron',sans-serif;font-size:12px;font-weight:700;color:var(--a);letter-spacing:3px;}
+.logo-s{font-size:8px;color:var(--t3);letter-spacing:1.5px;}
+.nav-links{display:flex;height:100%;border-right:1px solid var(--b);}
+.nl{display:flex;align-items:center;padding:0 16px;height:100%;font-size:10px;cursor:pointer;color:var(--t3);border-right:1px solid var(--b);letter-spacing:1px;text-decoration:none;transition:all .2s;}
+.nl:hover{color:var(--t);background:var(--a3);}
+.nl.active{color:var(--a);border-bottom:2px solid var(--a);}
+.tb-dot{width:6px;height:6px;border-radius:50%;background:var(--a);animation:blink 1.4s infinite;margin:0 5px;}
+.tb-status{font-size:9px;color:var(--t3);padding:0 12px;border-right:1px solid var(--b);}
+.tb-clock{font-family:'Orbitron',sans-serif;font-size:11px;color:var(--a);padding:0 12px;border-right:1px solid var(--b);letter-spacing:1px;}
+.tier-group{display:flex;align-items:center;gap:0;padding:0 10px;border-right:1px solid var(--b);}
+.tier-lbl{font-size:8px;color:var(--t3);letter-spacing:1px;margin-right:6px;}
+.tier-btn{padding:3px 9px;font-size:8px;cursor:pointer;border:1px solid var(--b);color:var(--t3);background:none;font-family:'Share Tech Mono',monospace;letter-spacing:1px;transition:all .2s;}
+.tier-btn:hover{color:var(--a);}
+.tier-btn.on{background:var(--a3);border-color:var(--a);color:var(--a);}
+.theme-grp{display:flex;align-items:center;gap:5px;padding:0 12px;}
+.tc{width:13px;height:13px;border-radius:2px;cursor:pointer;border:1px solid transparent;transition:all .2s;}
+.tc:hover,.tc.on{border-color:var(--t);transform:scale(1.25);}
+.spacer{flex:1;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.12;}}
+
+/* LAYOUT */
+.app{display:flex;height:calc(100vh - 38px);}
+.map-wrap{flex:1;position:relative;overflow:hidden;}
+canvas#map{width:100%;height:100%;cursor:crosshair;display:block;}
+.map-hint{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;gap:8px;transition:opacity .5s;}
+.map-hint.hidden{opacity:0;}
+.hint-icon{font-size:28px;opacity:.3;}
+.hint-txt{font-size:11px;color:var(--t3);letter-spacing:2px;text-transform:uppercase;}
+.hint-sub{font-size:9px;color:var(--t4);letter-spacing:1px;}
+.map-pin{position:absolute;pointer-events:none;display:none;transform:translate(-50%,-100%);}
+.map-pin svg{filter:drop-shadow(0 0 8px var(--a));}
+.map-pulse{position:absolute;pointer-events:none;display:none;transform:translate(-50%,-50%);}
+.pulse-ring{width:40px;height:40px;border-radius:50%;border:1px solid var(--a);animation:pulse-anim 1.5s ease-out infinite;opacity:0;}
+@keyframes pulse-anim{0%{transform:scale(.3);opacity:.8;}100%{transform:scale(1.8);opacity:0;}}
+.map-coords{position:absolute;bottom:10px;left:10px;background:rgba(0,0,0,.7);border:1px solid var(--b);padding:5px 10px;font-size:9px;color:var(--t3);letter-spacing:1px;}
+.loc-tooltip{position:absolute;background:#0a0a0a;border:1px solid var(--b2);padding:5px 10px;font-size:9px;pointer-events:none;white-space:nowrap;display:none;color:var(--t);}
+
+/* ANALYSIS PANEL */
+.panel{width:0;background:var(--panel);border-left:1px solid var(--b2);display:flex;flex-direction:column;overflow:hidden;transition:width .4s cubic-bezier(.4,0,.2,1);flex-shrink:0;}
+.panel.open{width:400px;}
+.ph{padding:10px 14px;border-bottom:1px solid var(--b);background:var(--a3);flex-shrink:0;}
+.ph-loc{font-family:'Orbitron',sans-serif;font-size:11px;color:var(--a);letter-spacing:1px;}
+.ph-sub{font-size:9px;color:var(--t3);margin-top:2px;letter-spacing:.5px;}
+.ph-coords{font-size:8px;color:var(--t4);margin-top:3px;}
+.tier-badge{display:inline-block;padding:2px 8px;font-size:8px;letter-spacing:1.5px;border:1px solid;margin-top:4px;}
+.badge-free{color:#888;border-color:#555;background:rgba(100,100,100,.05);}
+.badge-basic{color:#4DA6FF;border-color:#4DA6FF;background:rgba(77,166,255,.05);}
+.badge-pro{color:var(--pos);border-color:var(--pos);background:rgba(105,240,174,.05);}
+
+/* TABS */
+.tab-bar{display:flex;border-bottom:1px solid var(--b);flex-shrink:0;background:var(--bg2);}
+.tab{flex:1;padding:7px 4px;text-align:center;font-size:8px;letter-spacing:.8px;cursor:pointer;color:var(--t3);border-bottom:2px solid transparent;transition:all .2s;}
+.tab:hover{color:var(--t);background:var(--a3);}
+.tab.on{color:var(--a);border-bottom-color:var(--a);}
+.tab-content{flex:1;overflow-y:auto;overflow-x:hidden;}
+.tab-pane{display:none;padding:12px;}.tab-pane.on{display:block;}
+
+/* OVERVIEW */
+.score-row{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+.score-big{font-family:'Orbitron',sans-serif;font-size:48px;font-weight:700;color:var(--a);line-height:1;}
+.score-detail{display:flex;flex-direction:column;gap:2px;}
+.score-label{font-size:8px;color:var(--t3);letter-spacing:1px;}
+.score-rating{font-size:11px;color:var(--a);letter-spacing:1px;}
+.metrics-row{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:12px;}
+.metric-box{background:var(--bg3);border:1px solid var(--b);padding:7px 8px;}
+.mb-label{font-size:8px;color:var(--t3);letter-spacing:1px;margin-bottom:2px;}
+.mb-val{font-family:'Orbitron',sans-serif;font-size:13px;color:var(--t);}
+.mb-val.pos{color:var(--pos);}
+.mb-val.warn{color:var(--a);}
+.bk-list{display:flex;flex-direction:column;gap:6px;}
+.bk-row{display:grid;grid-template-columns:90px 1fr 30px;gap:6px;align-items:center;}
+.bk-n{font-size:9px;color:var(--t3);}
+.bk-bg{height:4px;background:var(--b);overflow:hidden;}
+.bk-f{height:100%;background:var(--a);transition:width 1s ease;}
+.bk-v{font-size:9px;color:var(--t);text-align:right;}
+.section-title{font-size:8px;color:var(--t4);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid var(--b);}
+
+/* HEATMAP TAB */
+.hm-mini{display:grid;grid-template-columns:repeat(10,1fr);gap:2px;margin-bottom:10px;}
+.hm-c{aspect-ratio:1;font-size:7px;display:flex;align-items:center;justify-content:center;font-weight:bold;transition:transform .2s;}
+.hm-c:hover{transform:scale(1.2);z-index:5;}
+.layer-btns{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px;}
+.lb{padding:3px 8px;font-size:8px;cursor:pointer;border:1px solid var(--b);color:var(--t3);background:none;letter-spacing:.5px;transition:all .2s;font-family:'Share Tech Mono',monospace;}
+.lb:hover{border-color:var(--a);color:var(--t);}
+.lb.on{border-color:var(--a);color:var(--a);background:var(--a3);}
+.lb.locked{opacity:.35;cursor:not-allowed;}
+.lock-overlay{border:1px solid var(--b);padding:16px;text-align:center;background:var(--a3);margin-top:8px;}
+.lock-icon{font-size:18px;margin-bottom:6px;opacity:.4;}
+.lock-txt{font-size:9px;color:var(--t3);letter-spacing:1px;line-height:1.6;}
+.lock-tier{font-size:8px;color:var(--a);letter-spacing:1px;margin-top:6px;}
+.upgrade-btn{display:inline-block;margin-top:8px;padding:4px 14px;border:1px solid var(--a);color:var(--a);font-size:8px;cursor:pointer;letter-spacing:1px;background:var(--a3);font-family:'Share Tech Mono',monospace;transition:all .2s;}
+.upgrade-btn:hover{background:var(--a);color:#000;}
+
+/* COMPETITOR TAB */
+.comp-t{width:100%;border-collapse:collapse;}
+.comp-t th{font-size:8px;color:var(--t3);letter-spacing:1px;padding:4px 5px;border-bottom:1px solid var(--b);text-align:left;text-transform:uppercase;font-weight:normal;}
+.comp-t td{font-size:9px;padding:5px 5px;border-bottom:1px solid var(--b);color:var(--t2);}
+.comp-t tr:hover td{background:var(--a3);}
+.qbadge{display:inline-block;padding:1px 5px;font-size:7px;border:1px solid;letter-spacing:.5px;}
+.qb-hg{color:var(--pos);border-color:var(--pos);}
+.qb-pp{color:var(--a);border-color:var(--a);}
+.qb-up{color:var(--neg);border-color:var(--neg);}
+.qb-pc{color:var(--info);border-color:var(--info);}
+.chart-wrap{height:160px;margin-top:10px;}
+
+/* CANNIBALIZATION TAB */
+.cannibal-input{display:flex;flex-direction:column;gap:8px;margin-bottom:10px;}
+.ci-row{display:flex;align-items:center;gap:6px;}
+.ci-lbl{font-size:8px;color:var(--t3);width:80px;letter-spacing:.5px;}
+.ci-inp{background:var(--bg3);border:1px solid var(--b);color:var(--t);padding:4px 8px;font-family:'Share Tech Mono',monospace;font-size:10px;outline:none;flex:1;}
+.ci-inp:focus{border-color:var(--a);}
+.ci-inp[type=range]{padding:0;background:none;cursor:pointer;accent-color:var(--a);}
+.cannibal-result{padding:10px;background:var(--bg3);border:1px solid var(--b);margin-top:8px;}
+.cr-rate{font-family:'Orbitron',sans-serif;font-size:22px;font-weight:700;margin-bottom:4px;}
+.cr-verdict{font-size:8px;letter-spacing:1.5px;padding:3px 10px;display:inline-block;border:1px solid;}
+.cv-green{color:var(--pos);border-color:var(--pos);background:rgba(105,240,174,.05);}
+.cv-yellow{color:var(--a);border-color:var(--a);background:var(--a3);}
+.cv-red{color:var(--neg);border-color:var(--neg);background:rgba(255,82,82,.05);}
+
+/* AI INSIGHT TAB */
+.ai-item{display:flex;gap:8px;padding:7px 0;border-bottom:1px solid var(--b);align-items:flex-start;}
+.ai-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:3px;}
+.ai-dot.pos{background:var(--pos);}
+.ai-dot.neg{background:var(--neg);}
+.ai-dot.neu{background:var(--a);}
+.ai-txt{font-size:9px;color:var(--t2);line-height:1.6;}
+.ai-typing{display:inline-block;color:var(--a);}
+.ai-typing::after{content:'█';animation:blink .8s infinite;}
+
+/* CONTINUE BUTTON */
+.continue-area{padding:10px 12px;border-top:1px solid var(--b);background:var(--bg2);flex-shrink:0;}
+.continue-btn{width:100%;padding:10px;background:var(--a3);border:1px solid var(--b2);color:var(--a);font-family:'Orbitron',sans-serif;font-size:9px;cursor:pointer;letter-spacing:2px;transition:all .2s;text-align:center;}
+.continue-btn:hover{background:var(--a);color:#000;}
+.continue-note{font-size:8px;color:var(--t4);text-align:center;margin-top:5px;letter-spacing:.5px;}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:3px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--b2);}
+</style>
+</head>
+<body id="body">
+
+<!-- TOPBAR -->
+<div class="tb">
+  <div class="tb-logo">
+    <div class="logo-t">RestoSuite</div>
+    <div class="logo-s">TERMINAL v1.1</div>
+  </div>
+  <div class="nav-links">
+    <a class="nl active">RestoMap</a>
+    <a class="nl" id="link-builder" href="restobuilder.html">RestoBuilder</a>
+  </div>
+  <div class="tb-dot"></div>
+  <div class="tb-status">MOCK DATA · JAKARTA AREA</div>
+  <div class="tb-clock" id="clock">--:--:--</div>
+  <div class="spacer"></div>
+  <div class="tier-group">
+    <span class="tier-lbl">TIER:</span>
+    <button class="tier-btn on" onclick="setTier('free',this)">FREE</button>
+    <button class="tier-btn" onclick="setTier('basic',this)">BASIC</button>
+    <button class="tier-btn" onclick="setTier('pro',this)">PRO</button>
+  </div>
+  <div class="theme-grp">
+    <div class="tc on" style="background:#FF6D00" onclick="setTheme('')" title="Bloomberg"></div>
+    <div class="tc" style="background:#00FF41" onclick="setTheme('th-matrix')" title="Matrix"></div>
+    <div class="tc" style="background:#00E5FF" onclick="setTheme('th-arctic')" title="Arctic"></div>
+    <div class="tc" style="background:#FF3D00" onclick="setTheme('th-ember')" title="Ember"></div>
+    <div class="tc" style="background:#B0B8E0" onclick="setTheme('th-mercury')" title="Mercury"></div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div class="app">
+  <!-- MAP -->
+  <div class="map-wrap" id="mapWrap">
+    <canvas id="map"></canvas>
+    <div class="map-hint" id="mapHint">
+      <div class="hint-icon">📍</div>
+      <div class="hint-txt">Klik pada peta untuk memilih lokasi</div>
+      <div class="hint-sub">Mendukung 16 area di Jakarta & sekitarnya</div>
+    </div>
+    <div class="map-pin" id="mapPin">
+      <svg width="22" height="32" viewBox="0 0 22 32">
+        <path d="M11 0C4.9 0 0 4.9 0 11c0 7.7 11 21 11 21s11-13.3 11-21C22 4.9 17.1 0 11 0z" fill="var(--a)"/>
+        <circle cx="11" cy="11" r="4" fill="#000"/>
+      </svg>
+    </div>
+    <div class="map-pulse" id="mapPulse"><div class="pulse-ring"></div></div>
+    <div class="map-coords" id="mapCoords">LAT: — · LNG: — · ZONE: —</div>
+    <div class="loc-tooltip" id="locTooltip"></div>
+  </div>
+
+  <!-- ANALYSIS PANEL -->
+  <div class="panel" id="analysisPanel">
+    <div class="ph">
+      <div class="ph-loc" id="phLoc">— PILIH LOKASI —</div>
+      <div class="ph-sub" id="phSub">Klik pada peta untuk mulai analisis</div>
+      <div class="ph-coords" id="phCoords"></div>
+      <div id="phBadge"></div>
+    </div>
+
+    <div class="tab-bar">
+      <div class="tab on" onclick="switchTab('overview',this)">OVERVIEW</div>
+      <div class="tab" onclick="switchTab('heatmap',this)">HEATMAP</div>
+      <div class="tab" onclick="switchTab('competitor',this)">KOMPETITOR</div>
+      <div class="tab" onclick="switchTab('cannibal',this)">CANNIBAL</div>
+      <div class="tab" onclick="switchTab('ai',this)">AI INSIGHT</div>
+    </div>
+
+    <div class="tab-content">
+
+      <!-- OVERVIEW -->
+      <div class="tab-pane on" id="tab-overview">
+        <div class="score-row">
+          <div class="score-big" id="ovScore">--</div>
+          <div class="score-detail">
+            <div class="score-label">FEASIBILITY SCORE</div>
+            <div class="score-rating" id="ovRating">—</div>
+            <div class="score-label" style="margin-top:4px;color:var(--t4)">vs avg kota: <span id="ovVsCity" style="color:var(--pos)">—</span></div>
+          </div>
+        </div>
+        <div class="metrics-row">
+          <div class="metric-box"><div class="mb-label">REV/BLN</div><div class="mb-val pos" id="ovRev">—</div></div>
+          <div class="metric-box"><div class="mb-label">BREAK-EVEN</div><div class="mb-val warn" id="ovBE">—</div></div>
+          <div class="metric-box"><div class="mb-label">KOMPETITOR</div><div class="mb-val" id="ovComp">—</div></div>
+        </div>
+        <div class="metrics-row">
+          <div class="metric-box"><div class="mb-label">AVG CHECK</div><div class="mb-val" id="ovCheck">—</div></div>
+          <div class="metric-box"><div class="mb-label">MARGIN EST</div><div class="mb-val" id="ovMargin">—</div></div>
+          <div class="metric-box"><div class="mb-label">GROWTH YOY</div><div class="mb-val pos" id="ovGrowth">—</div></div>
+        </div>
+        <div class="section-title">SCORE BREAKDOWN</div>
+        <div class="bk-list" id="ovBreakdown"></div>
+      </div>
+
+      <!-- HEATMAP -->
+      <div class="tab-pane" id="tab-heatmap">
+        <div class="section-title">LAYER SELECTOR</div>
+        <div class="layer-btns">
+          <button class="lb on" onclick="switchLayer(0,this)">L1 POPULASI</button>
+          <button class="lb" id="lb1" onclick="switchLayer(1,this)">L2 TRAFFIC</button>
+          <button class="lb" id="lb2" onclick="switchLayer(2,this)">L3 DAYA BELI</button>
+          <button class="lb locked" id="lb3" onclick="switchLayer(3,this)">L4 KOMPETITOR</button>
+          <button class="lb locked" id="lb4" onclick="switchLayer(4,this)">L5 OPPORTUNITY</button>
+        </div>
+        <div class="section-title">GRID 10×6 — <span id="hmLayerName">POPULASI</span></div>
+        <div class="hm-mini" id="hmGrid"></div>
+        <div id="hmLockMsg"></div>
+        <div style="margin-top:10px;font-size:8px;color:var(--t4);line-height:1.8;border-top:1px solid var(--b);padding-top:8px;">
+          SEL 200×200m · <span id="hmTop5">TOP 5 CELLS: —</span>
+        </div>
+      </div>
+
+      <!-- COMPETITOR -->
+      <div class="tab-pane" id="tab-competitor">
+        <div class="section-title">COMPETITOR INTEL — <span id="compCount">0</span> DITEMUKAN</div>
+        <div id="compTable"></div>
+        <div id="compChartWrap" class="chart-wrap" style="display:none;">
+          <div class="section-title" style="margin-top:8px;">QUADRANT ANALYSIS</div>
+          <canvas id="compChart"></canvas>
+        </div>
+        <div id="compLock"></div>
+      </div>
+
+      <!-- CANNIBALIZATION -->
+      <div class="tab-pane" id="tab-cannibal">
+        <div id="cannibalContent"></div>
+      </div>
+
+      <!-- AI INSIGHT -->
+      <div class="tab-pane" id="tab-ai">
+        <div id="aiContent"></div>
+      </div>
+
+    </div><!-- /tab-content -->
+
+    <div class="continue-area">
+      <button class="continue-btn" onclick="goToBuilder()">LANJUT KE RESTOBUILDER →</button>
+      <div class="continue-note">Data lokasi akan otomatis diteruskan ke wizard</div>
+    </div>
+  </div><!-- /panel -->
+</div><!-- /app -->
+
+<script>
+// ═══ CLOCK ═══
+function tick(){
+  const n=new Date();
+  document.getElementById('clock').textContent=
+    [n.getHours(),n.getMinutes(),n.getSeconds()].map(v=>String(v).padStart(2,'0')).join(':');
+}
+setInterval(tick,1000);tick();
+
+// ═══ THEME / TIER ═══
+let theme='', tier='free', selectedLoc=null, activeTab='overview', activeLayer=0, compChart=null;
+function setTheme(c){
+  document.body.className=c;theme=c;
+  document.querySelectorAll('.tc').forEach((el,i)=>el.classList.toggle('on',['','th-matrix','th-arctic','th-ember','th-mercury'][i]===c));
+  drawMap();
+}
+function setTier(t,btn){
+  tier=t;
+  document.querySelectorAll('.tier-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  if(selectedLoc) renderAnalysis(selectedLoc);
+}
+
+// ═══ LOCATION DATA ═══
+const LOCS=[
+  {id:'sudirman',name:'Sudirman',sub:'CBD · Premium',x:.50,y:.30,type:'cbd',lat:-6.2088,lng:106.8234},
+  {id:'thamrin',name:'Thamrin',sub:'CBD · Central',x:.55,y:.26,type:'cbd',lat:-6.1944,lng:106.8229},
+  {id:'scbd',name:'SCBD Senayan',sub:'Premium District',x:.43,y:.37,type:'premium',lat:-6.2267,lng:106.8053},
+  {id:'senayan',name:'Senayan',sub:'Sports & Mall',x:.39,y:.42,type:'commercial',lat:-6.2184,lng:106.8008},
+  {id:'blok_m',name:'Blok M',sub:'Commercial Hub',x:.36,y:.46,type:'commercial',lat:-6.2441,lng:106.7990},
+  {id:'kemang',name:'Kemang',sub:'Trendy · Expat',x:.33,y:.55,type:'trendy',lat:-6.2600,lng:106.8152},
+  {id:'pk_indah',name:'Pondok Indah',sub:'Premium Residential',x:.27,y:.59,type:'premium',lat:-6.2863,lng:106.7771},
+  {id:'tb_sim',name:'TB Simatupang',sub:'Suburban Office',x:.32,y:.69,type:'suburban',lat:-6.3248,lng:106.8134},
+  {id:'ps_minggu',name:'Pasar Minggu',sub:'Local Area',x:.40,y:.72,type:'local',lat:-6.2936,lng:106.8437},
+  {id:'depok',name:'Depok',sub:'South Suburb',x:.44,y:.84,type:'suburban',lat:-6.4025,lng:106.7942},
+  {id:'kg',name:'Kelapa Gading',sub:'Premium North',x:.65,y:.22,type:'premium',lat:-6.1579,lng:106.9040},
+  {id:'pik',name:'PIK',sub:'Waterfront Premium',x:.23,y:.17,type:'premium',lat:-6.1145,lng:106.7327},
+  {id:'bekasi',name:'Bekasi',sub:'East Suburb',x:.78,y:.40,type:'suburban',lat:-6.2383,lng:106.9756},
+  {id:'cibubur',name:'Cibubur',sub:'East Suburb',x:.83,y:.63,type:'suburban',lat:-6.3613,lng:106.8936},
+  {id:'serpong',name:'BSD Serpong',sub:'West Suburb',x:.07,y:.66,type:'suburban',lat:-6.3216,lng:106.6527},
+  {id:'tangerang',name:'Tangerang',sub:'Industrial West',x:.10,y:.34,type:'suburban',lat:-6.1784,lng:106.6319},
+];
+
+const TYPE_STATS={
+  cbd:{score:78,revM:487,be:14,comp:28,check:74,margin:18.3,growth:8.4,vsCity:'+3.2'},
+  premium:{score:82,revM:620,be:18,comp:20,check:95,margin:21.5,growth:11.8,vsCity:'+7.1'},
+  commercial:{score:71,revM:368,be:12,comp:35,check:55,margin:15.2,growth:6.2,vsCity:'-3.8'},
+  trendy:{score:74,revM:415,be:13,comp:22,check:68,margin:17.1,growth:9.6,vsCity:'+0.5'},
+  suburban:{score:60,revM:238,be:10,comp:9,check:42,margin:14.0,growth:6.8,vsCity:'-12.4'},
+  local:{score:54,revM:185,be:9,comp:6,check:35,margin:13.2,growth:4.1,vsCity:'-18.6'},
+};
+const TYPE_RATING={82:'EXCELLENT',75:'GOOD',65:'MODERATE',55:'RISKY',0:'HIGH RISK'};
+function getRating(s){for(const[v,r] of Object.entries(TYPE_RATING).reverse()){if(s>=+v)return r;}return 'HIGH RISK';}
+function fmtRp(m){return m>=1000?`Rp${(m/1000).toFixed(1)}M`:`Rp${m}jt`;}
+
+// ═══ COMPETITORS MOCK ═══
+const COMP_DATA={
+  premium:[
+    {n:'Amuz Gourmet',t:'Fine Dining',r:4.9,u:318,q:'hg'},{n:'Altitude GFK',t:'Fine Dining',r:4.8,u:5420,q:'pp'},
+    {n:'Skye Bar',t:'Rooftop',r:4.7,u:8910,q:'pp'},{n:'Akira Back',t:'Japanese Fine',r:4.8,u:2830,q:'pp'},
+    {n:'Tesate',t:'Italian',r:4.6,u:1240,q:'pp'},{n:'Sate & Co',t:'Indonesian',r:4.5,u:890,q:'pp'},
+    {n:'Social House',t:'All-Day',r:4.4,u:12400,q:'pp'},{n:'Duck King',t:'Chinese',r:4.3,u:6700,q:'pp'},
+    {n:'Warung Bu Ida',t:'Homestyle',r:4.9,u:185,q:'hg'},{n:'Kafe Kita',t:'Café',r:3.8,u:4200,q:'pc'},
+    {n:'Nusa Gastro',t:'Indonesian',r:3.5,u:890,q:'pc'},{n:'Grill Bros',t:'Western',r:3.2,u:320,q:'up'},
+    {n:'Hanamasa',t:'AYCE Japanese',r:4.4,u:18900,q:'pp'},{n:'Bob\'s Bar',t:'Bar & Grill',r:3.9,u:2100,q:'pc'},
+    {n:'Lapis Legit',t:'Pastry',r:4.8,u:440,q:'hg'},{n:'Mie Tek Tek Bu Sar',t:'Street',r:4.9,u:92,q:'hg'},
+    {n:'Isshin',t:'Kaiseki',r:4.7,u:680,q:'hg'},{n:'Publik',t:'Modern Indo',r:4.2,u:3400,q:'pp'},
+    {n:'Chatter Box',t:'Café',r:3.6,u:1800,q:'pc'},{n:'Street Taco',t:'Mexican',r:3.1,u:240,q:'up'},
+  ],
+  cbd:[
+    {n:'Plataran MH',t:'Indonesian',r:4.8,u:2100,q:'pp'},{n:'Seribu Rasa',t:'Indonesian',r:4.9,u:680,q:'hg'},
+    {n:'Restoran Padang',t:'Minang',r:4.7,u:4500,q:'pp'},{n:'Burger & Lobster',t:'Western',r:4.6,u:3200,q:'pp'},
+    {n:'Kuningan City FnB',t:'Mall FnB',r:3.9,u:8900,q:'pc'},{n:'Warung Tekko',t:'Street',r:4.8,u:145,q:'hg'},
+    {n:'CityLink Café',t:'Café',r:3.5,u:2100,q:'pc'},{n:'Sate Khas Senayan',t:'Sate',r:4.7,u:11200,q:'pp'},
+  ],
+};
+
+// ═══ MAP CANVAS ═══
+const canvas=document.getElementById('map');
+const ctx=canvas.getContext('2d');
+let hoveredLoc=null;
+let animFrame=0;
+
+function resizeCanvas(){
+  const wrap=document.getElementById('mapWrap');
+  canvas.width=wrap.clientWidth;canvas.height=wrap.clientHeight;
+  drawMap();
+}
+
+function drawMap(){
+  const W=canvas.width,H=canvas.height;
+  if(!W||!H)return;
+  ctx.clearRect(0,0,W,H);
+
+  // Background
+  ctx.fillStyle=getComputedStyle(document.body).getPropertyValue('--bg').trim()||'#030303';
+  ctx.fillRect(0,0,W,H);
+
+  // Fine street grid
+  ctx.strokeStyle='rgba(255,109,0,0.05)';
+  ctx.lineWidth=0.5;
+  for(let x=0;x<W;x+=28){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+  for(let y=0;y<H;y+=28){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+
+  // Zone fills
+  const zfill=[
+    {x:.35,y:.12,w:.28,h:.28,c:'rgba(255,109,0,0.04)'},
+    {x:.07,y:.08,w:.20,h:.32,c:'rgba(77,166,255,0.03)'},
+    {x:.62,y:.08,w:.32,h:.35,c:'rgba(105,240,174,0.025)'},
+    {x:.15,y:.48,w:.40,h:.40,c:'rgba(255,183,77,0.025)'},
+    {x:.58,y:.42,w:.38,h:.42,c:'rgba(180,100,255,0.02)'},
+  ];
+  for(const z of zfill){
+    ctx.fillStyle=z.c;ctx.fillRect(z.x*W,z.y*H,z.w*W,z.h*H);
+  }
+
+  // Water (top-right suggestion)
+  ctx.fillStyle='rgba(30,90,180,0.06)';
+  ctx.beginPath();ctx.moveTo(W*.6,0);ctx.lineTo(W,0);ctx.lineTo(W,H*.18);ctx.quadraticCurveTo(W*.82,H*.1,W*.6,0);ctx.fill();
+
+  // River (Ciliwung proxy — diagonal)
+  ctx.strokeStyle='rgba(40,120,220,0.2)';ctx.lineWidth=3;ctx.setLineDash([]);
+  ctx.beginPath();ctx.moveTo(W*.52,0);
+  ctx.bezierCurveTo(W*.54,H*.15,W*.56,H*.35,W*.51,H*.55);
+  ctx.bezierCurveTo(W*.48,H*.70,W*.44,H*.82,W*.46,H);
+  ctx.stroke();
+
+  // Major arteries
+  ctx.strokeStyle='rgba(255,109,0,0.15)';ctx.lineWidth=1.5;
+  const roads=[[0,H*.28,W,H*.28],[0,H*.52,W,H*.52],[0,H*.74,W,H*.74],
+               [W*.22,0,W*.22,H],[W*.47,0,W*.47,H],[W*.70,0,W*.70,H]];
+  for(const r of roads){ctx.beginPath();ctx.moveTo(r[0],r[1]);ctx.lineTo(r[2],r[3]);ctx.stroke();}
+
+  // Toll road (diagonal, dashed)
+  ctx.strokeStyle='rgba(255,183,77,0.22)';ctx.lineWidth=2;ctx.setLineDash([10,5]);
+  ctx.beginPath();ctx.moveTo(W*.05,H*.9);ctx.bezierCurveTo(W*.2,H*.7,W*.55,H*.45,W*.9,H*.08);ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Park dot (Monas area)
+  ctx.fillStyle='rgba(0,200,80,0.08)';
+  ctx.fillRect(W*.46,H*.21,W*.035,H*.06);
+
+  // Location dots
+  for(const loc of LOCS){
+    const px=loc.x*W,py=loc.y*H;
+    const isHov=hoveredLoc&&hoveredLoc.id===loc.id;
+    const isSel=selectedLoc&&selectedLoc.id===loc.id;
+    const col=getComputedStyle(document.body).getPropertyValue('--a').trim()||'#FF6D00';
+    const posCol=getComputedStyle(document.body).getPropertyValue('--pos').trim()||'#69F0AE';
+
+    if(isSel){
+      // Outer glow ring
+      ctx.strokeStyle=col.trim();ctx.lineWidth=1;
+      for(let r=12;r<=28;r+=8){
+        ctx.globalAlpha=0.3-(r-12)*0.01;
+        ctx.beginPath();ctx.arc(px,py,r,0,Math.PI*2);ctx.stroke();
+      }
+      ctx.globalAlpha=1;
+    }
+
+    if(isHov||isSel){
+      ctx.fillStyle=isSel?col:'rgba(255,183,77,0.35)';
+      ctx.beginPath();ctx.arc(px,py,isSel?6:5,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle=isSel?col:getComputedStyle(document.body).getPropertyValue('--t').trim()||'#FFB74D';
+      ctx.lineWidth=1;ctx.beginPath();ctx.arc(px,py,isSel?8:7,0,Math.PI*2);ctx.stroke();
+    } else {
+      ctx.fillStyle='rgba(255,109,0,0.5)';
+      ctx.beginPath();ctx.arc(px,py,3,0,Math.PI*2);ctx.fill();
+    }
+
+    // Label
+    if(isHov||isSel){
+      ctx.fillStyle=isSel?col:'rgba(255,183,77,0.85)';
+      ctx.font=`${isSel?'bold ':''} 10px 'Share Tech Mono'`;
+      ctx.textAlign='center';
+      ctx.fillText(loc.name,px,py-14);
+    }
+  }
+}
+
+// Animation loop for smooth hover
+function animate(){
+  if(hoveredLoc)drawMap();
+  requestAnimationFrame(animate);
+}
+animate();
+
+// ═══ MAP EVENTS ═══
+function getNearestLoc(x,y){
+  const W=canvas.width,H=canvas.height;
+  let best=null,bestDist=Infinity;
+  for(const loc of LOCS){
+    const dx=(loc.x*W-x),dy=(loc.y*H-y);
+    const d=Math.sqrt(dx*dx+dy*dy);
+    if(d<bestDist){bestDist=d;best=loc;}
+  }
+  return bestDist<60?best:null;
+}
+
+canvas.addEventListener('mousemove',e=>{
+  const rect=canvas.getBoundingClientRect();
+  const mx=e.clientX-rect.left,my=e.clientY-rect.top;
+  const loc=getNearestLoc(mx,my);
+  hoveredLoc=loc;
+  const tip=document.getElementById('locTooltip');
+  if(loc){
+    tip.style.display='block';
+    tip.style.left=(loc.x*canvas.width+10)+'px';
+    tip.style.top=(loc.y*canvas.height-10)+'px';
+    tip.textContent=`${loc.name} · ${loc.sub}`;
+    canvas.style.cursor='pointer';
+  } else {
+    tip.style.display='none';
+    canvas.style.cursor='crosshair';
+  }
+  // Update coords
+  const W=canvas.width,H=canvas.height;
+  const lat=(-6.0-my/H*0.6).toFixed(4);
+  const lng=(106.5+mx/W*0.8).toFixed(4);
+  document.getElementById('mapCoords').textContent=`LAT: ${lat} · LNG: ${lng} · ${loc?loc.name.toUpperCase():'—'}`;
+});
+
+canvas.addEventListener('click',e=>{
+  const rect=canvas.getBoundingClientRect();
+  const mx=e.clientX-rect.left,my=e.clientY-rect.top;
+  const loc=getNearestLoc(mx,my)||{
+    id:'custom',name:'Lokasi Kustom',sub:'Area yang dipilih',
+    x:mx/canvas.width,y:my/canvas.height,type:'suburban',
+    lat:(-6.0-my/canvas.height*0.6).toFixed(4),
+    lng:(106.5+mx/canvas.width*0.8).toFixed(4)
+  };
+  selectedLoc=loc;
+  dropPin(mx,my);
+  showPanel();
+  renderAnalysis(loc);
+  drawMap();
+  document.getElementById('mapHint').classList.add('hidden');
+});
+
+canvas.addEventListener('mouseleave',()=>{
+  hoveredLoc=null;
+  document.getElementById('locTooltip').style.display='none';
+});
+
+function dropPin(x,y){
+  const pin=document.getElementById('mapPin');
+  const pulse=document.getElementById('mapPulse');
+  pin.style.display='block';
+  pulse.style.display='block';
+  pin.style.left=x+'px';pin.style.top=y+'px';
+  pulse.style.left=x+'px';pulse.style.top=y+'px';
+  // Drop animation
+  pin.style.animation='none';
+  pin.offsetHeight;
+  pin.style.animation='pinDrop 0.4s cubic-bezier(.4,0,.2,1)';
+}
+
+// Pin drop keyframe via JS (since we can't add @keyframes easily)
+const st=document.createElement('style');
+st.textContent='@keyframes pinDrop{from{transform:translate(-50%,-200%) scale(1.3);opacity:0;}to{transform:translate(-50%,-100%);opacity:1;}}';
+document.head.appendChild(st);
+
+function showPanel(){
+  document.getElementById('analysisPanel').classList.add('open');
+}
+
+// ═══ RENDER ANALYSIS ═══
+function renderAnalysis(loc){
+  const s=TYPE_STATS[loc.type]||TYPE_STATS.suburban;
+  const tierColors={free:'badge-free',basic:'badge-basic',pro:'badge-pro'};
+  const tierNames={free:'FREE TIER',basic:'BASIC TIER',pro:'PRO TIER'};
+
+  document.getElementById('phLoc').textContent=loc.name.toUpperCase();
+  document.getElementById('phSub').textContent=loc.sub;
+  document.getElementById('phCoords').textContent=`LAT: ${loc.lat} · LNG: ${loc.lng}`;
+  document.getElementById('phBadge').innerHTML=`<span class="tier-badge ${tierColors[tier]}">${tierNames[tier]}</span>`;
+
+  renderOverview(s);
+  renderHeatmap();
+  renderCompetitor(loc,s);
+  renderCannibal(s);
+  renderAI(loc,s);
+}
+
+function renderOverview(s){
+  document.getElementById('ovScore').textContent=s.score;
+  document.getElementById('ovRating').textContent=getRating(s.score);
+  document.getElementById('ovVsCity').textContent=s.vsCity;
+  document.getElementById('ovVsCity').style.color=s.vsCity.startsWith('+')?'var(--pos)':'var(--neg)';
+  document.getElementById('ovRev').textContent=fmtRp(s.revM);
+  document.getElementById('ovBE').textContent=`${s.be} bln`;
+  document.getElementById('ovComp').textContent=tier==='free'?`${Math.min(s.comp,5)} / ${s.comp}`:s.comp;
+  document.getElementById('ovCheck').textContent=`Rp${s.check}K`;
+  document.getElementById('ovMargin').textContent=`${s.margin}%`;
+  document.getElementById('ovGrowth').textContent=`+${s.growth}% YoY`;
+
+  const bkData=[
+    {n:'Location demand',v:Math.round(s.score*1.02)},{n:'Competition',v:Math.round(100-s.comp*1.5)},
+    {n:'Market size',v:Math.round(s.score*1.05)},{n:'Financial health',v:Math.round(s.score*.95)},
+    {n:'Growth potential',v:Math.round(s.score*1.0)},{n:'Infrastructure',v:Math.round(s.score*1.12)},
+    {n:'Gap opportunity',v:Math.round(100-s.comp*1.2)},
+  ].map(b=>{b.v=Math.min(99,Math.max(10,b.v));return b;});
+
+  document.getElementById('ovBreakdown').innerHTML=bkData.map(b=>
+    `<div class="bk-row"><span class="bk-n">${b.n}</span><div class="bk-bg"><div class="bk-f" style="width:${b.v}%"></div></div><span class="bk-v">${b.v}</span></div>`
+  ).join('');
+}
+
+// ═══ HEATMAP ═══
+const LAYER_NAMES=['POPULASI','TRAFFIC','DAYA BELI','KEPADATAN KOMPETITOR','OPPORTUNITY SCORE'];
+const LAYER_TIERS=[0,1,1,2,2]; // 0=free, 1=basic, 2=pro
+const tierLevel={free:0,basic:1,pro:2};
+
+function getHeatColor(v){
+  if(v>=76)return`rgba(105,240,174,${0.25+v/300})`;
+  if(v>=51)return`rgba(255,214,0,${0.2+v/350})`;
+  if(v>=26)return`rgba(255,143,0,${0.2+v/350})`;
+  return`rgba(255,82,82,${0.2+v/350})`;
+}
+function getHeatTextColor(v){
+  if(v>=76)return'#69F0AE';if(v>=51)return'#FFD600';
+  if(v>=26)return'#FF8F00';return'#FF5252';
+}
+
+function renderHeatmap(){
+  const lb1=document.getElementById('lb1'),lb2=document.getElementById('lb2');
+  const lb3=document.getElementById('lb3'),lb4=document.getElementById('lb4');
+  const canBasic=tierLevel[tier]>=1,canPro=tierLevel[tier]>=2;
+
+  lb1.classList.toggle('locked',!canBasic);
+  lb2.classList.toggle('locked',!canBasic);
+  lb3.classList.toggle('locked',!canPro);
+  lb4.classList.toggle('locked',!canPro);
+
+  const tl=tierLevel[tier];
+  const reqLevel=LAYER_TIERS[activeLayer];
+
+  document.getElementById('hmLayerName').textContent=LAYER_NAMES[activeLayer];
+
+  const lockMsg=document.getElementById('hmLockMsg');
+  if(tl<reqLevel){
+    lockMsg.innerHTML=`<div class="lock-overlay"><div class="lock-icon">🔒</div><div class="lock-txt">Layer ini membutuhkan tier lebih tinggi.<br>Upgrade untuk melihat ${LAYER_NAMES[activeLayer]}.</div><div class="lock-tier">DIPERLUKAN: ${reqLevel===1?'BASIC':'PRO'}</div><button class="upgrade-btn" onclick="promptUpgrade('${reqLevel===1?'basic':'pro'}')">UPGRADE SEKARANG</button></div>`;
+    document.getElementById('hmGrid').innerHTML='';
+    document.getElementById('hmTop5').textContent='TOP 5 CELLS: LOCKED';
+    return;
+  }
+  lockMsg.innerHTML='';
+
+  // Generate layer-specific values with variation
+  const seed=activeLayer*17+(selectedLoc?LOCS.indexOf(selectedLoc)*3:0);
+  const vals=Array.from({length:60},(_,i)=>{
+    const base=selectedLoc?TYPE_STATS[selectedLoc.type||'suburban']?.score||60:60;
+    return Math.max(10,Math.min(99,Math.round(base+(Math.sin((i+seed)*0.7)*20)+(Math.cos((i+seed)*1.3)*15))));
+  });
+
+  document.getElementById('hmGrid').innerHTML=vals.map(v=>
+    `<div class="hm-c" style="background:${getHeatColor(v)};color:${getHeatTextColor(v)}">${v}</div>`
+  ).join('');
+
+  const top5=[...vals].sort((a,b)=>b-a).slice(0,5);
+  document.getElementById('hmTop5').textContent=`TOP 5 CELLS: ${top5.join(' · ')}`;
+}
+
+function switchLayer(idx,btn){
+  if(btn.classList.contains('locked')){promptUpgrade(LAYER_TIERS[idx]===1?'basic':'pro');return;}
+  activeLayer=idx;
+  document.querySelectorAll('.lb').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  renderHeatmap();
+}
+
+// ═══ COMPETITOR ═══
+function renderCompetitor(loc,s){
+  const canBasic=tierLevel[tier]>=1,canPro=tierLevel[tier]>=2;
+  const raw=COMP_DATA[loc.type]||COMP_DATA.cbd;
+  const limit=tier==='free'?5:tier==='basic'?15:raw.length;
+  const comps=raw.slice(0,limit);
+  const total=s.comp;
+
+  document.getElementById('compCount').textContent=`${comps.length} TAMPIL / ${total} TOTAL`;
+
+  const qLabels={hg:'HIDDEN GEM',pp:'POPULAR',up:'UNDERPERFORM',pc:'PUBLIC CRITIC'};
+  const qClasses={hg:'qb-hg',pp:'qb-pp',up:'qb-up',pc:'qb-pc'};
+
+  let html=`<table class="comp-t"><thead><tr><th>Nama</th><th>Tipe</th><th>Rating</th>${canBasic?'<th>Kuadran</th>':''}</tr></thead><tbody>`;
+  for(const c of comps){
+    const rColor=c.r>=4.5?'var(--pos)':c.r>=4.0?'var(--t)':'var(--neg)';
+    html+=`<tr><td>${c.n}</td><td style="color:var(--t3)">${c.t}</td><td style="color:${rColor};font-family:'Orbitron',sans-serif">${c.r}</td>${canBasic?`<td><span class="qbadge ${qClasses[c.q]}">${qLabels[c.q]}</span></td>`:''}</tr>`;
+  }
+  html+='</tbody></table>';
+
+  if(tier==='free'&&total>5){
+    html+=`<div class="lock-overlay" style="margin-top:8px"><div class="lock-txt">${total-5} kompetitor lainnya disembunyikan.<br>Upgrade Basic untuk melihat hingga 20 kompetitor + Quadrant Analysis.</div><div class="lock-tier">DIPERLUKAN: BASIC</div><button class="upgrade-btn" onclick="promptUpgrade('basic')">UPGRADE</button></div>`;
+  }
+
+  document.getElementById('compTable').innerHTML=html;
+
+  const chartWrap=document.getElementById('compChartWrap');
+  if(canBasic){
+    chartWrap.style.display='block';
+    buildCompChart(comps);
+  } else {
+    chartWrap.style.display='none';
+  }
+
+  const lockEl=document.getElementById('compLock');
+  if(canPro){
+    lockEl.innerHTML=`<div style="margin-top:8px;padding:8px;background:var(--bg3);border:1px solid var(--b);font-size:9px;color:var(--t3);">🔬 ANALISA LANJUTAN (PRO): Bayesian Rating Correction · K-Means Clustering · Anomaly Detection aktif</div>`;
+  } else if(canBasic){
+    lockEl.innerHTML=`<div class="lock-overlay" style="margin-top:8px"><div class="lock-txt">Analisa lanjutan tersedia di tier Pro:<br>Bayesian Rating · K-Means · Anomaly Detection</div><button class="upgrade-btn" onclick="promptUpgrade('pro')">UPGRADE PRO</button></div>`;
+  } else lockEl.innerHTML='';
+}
+
+function buildCompChart(comps){
+  const canvas2=document.getElementById('compChart');
+  if(compChart){compChart.destroy();compChart=null;}
+  const col=getComputedStyle(document.body).getPropertyValue('--a').trim();
+  const pos=getComputedStyle(document.body).getPropertyValue('--pos').trim();
+  const neg=getComputedStyle(document.body).getPropertyValue('--neg').trim();
+  const inf=getComputedStyle(document.body).getPropertyValue('--info').trim();
+  const t3=getComputedStyle(document.body).getPropertyValue('--t3').trim();
+  const t=getComputedStyle(document.body).getPropertyValue('--t').trim();
+  const avgX=2.5,avgY=4.3;
+  const qColor={'hg':pos,'pp':col,'up':neg,'pc':inf};
+  compChart=new Chart(canvas2,{
+    type:'scatter',
+    data:{datasets:[{
+      data:comps.map(c=>({x:Math.log10(c.u+1),y:c.r,label:c.n,q:c.q})),
+      pointBackgroundColor:comps.map(c=>qColor[c.q]||col),
+      pointRadius:5,pointHoverRadius:7
+    }]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{backgroundColor:'#0d0d0d',borderColor:col,borderWidth:1,bodyColor:t,callbacks:{label:c=>`${c.raw.label} (${c.raw.y})`}}},
+      scales:{
+        x:{grid:{color:'rgba(255,109,0,.08)'},border:{color:'rgba(255,109,0,.2)'},ticks:{color:t3,font:{size:8},callback:v=>`log(${Math.round(Math.pow(10,v))})`}},
+        y:{grid:{color:'rgba(255,109,0,.08)'},border:{color:'rgba(255,109,0,.2)'},ticks:{color:t3,font:{size:8}},min:2.5,max:5.2,
+          ticks:{color:t3,font:{size:8},stepSize:0.5}}
+      }
+    }
+  });
+}
+
+// ═══ CANNIBALIZATION ═══
+function renderCannibal(s){
+  const el=document.getElementById('cannibalContent');
+  if(tierLevel[tier]<2){
+    el.innerHTML=`<div class="lock-overlay"><div class="lock-icon">🔒</div><div class="lock-txt">Cannibalization Analysis menggunakan Gravity Model untuk menghitung potensi kanibalisasi revenue dari gerai yang sudah ada.<br><br>Fitur ini eksklusif untuk tier PRO.</div><div class="lock-tier">DIPERLUKAN: PRO</div><button class="upgrade-btn" onclick="promptUpgrade('pro')">UPGRADE PRO</button></div>`;
+    return;
+  }
+  const rate=Math.max(5,Math.min(35,100-s.score));
+  const verdict=rate<20?{c:'green',txt:'HIJAU — AMAN DIBUKA'}:rate<40?{c:'yellow',txt:'KUNING — PERTIMBANGKAN'}:{c:'red',txt:'MERAH — RISIKO TINGGI'};
+
+  el.innerHTML=`
+<div class="section-title">INPUT EXISTING LOCATIONS</div>
+<div class="cannibal-input">
+  <div class="ci-row"><span class="ci-lbl">Gerai A radius</span><input type="range" class="ci-inp" id="canR1" min="0.5" max="5" step="0.5" value="1.5" oninput="updateCannibal()"><span id="canR1v" style="font-size:9px;color:var(--a);width:30px">1.5km</span></div>
+  <div class="ci-row"><span class="ci-lbl">Rev. Gerai A</span><input type="range" class="ci-inp" id="canRev1" min="100" max="800" step="50" value="350" oninput="updateCannibal()"><span id="canRev1v" style="font-size:9px;color:var(--a);width:40px">Rp350jt</span></div>
+  <div class="ci-row"><span class="ci-lbl">Transfer rate</span><input type="range" class="ci-inp" id="canTR" min="5" max="40" step="5" value="15" oninput="updateCannibal()"><span id="canTRv" style="font-size:9px;color:var(--a);width:30px">15%</span></div>
+</div>
+<div class="cannibal-result" id="canResult">
+  <div style="font-size:8px;color:var(--t3);letter-spacing:1px;margin-bottom:4px;">CANNIBAL RATE</div>
+  <div class="cr-rate" id="canRate" style="color:var(--pos)">${rate.toFixed(1)}%</div>
+  <span class="cr-verdict cv-${verdict.c}" id="canVerdict">${verdict.txt}</span>
+  <div style="margin-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+    <div style="background:var(--bg2);padding:6px;border:1px solid var(--b)"><div style="font-size:8px;color:var(--neg);letter-spacing:.5px">TERKANIBALISASI</div><div style="font-family:'Orbitron',sans-serif;font-size:12px;color:var(--neg)" id="canLost">—</div></div>
+    <div style="background:var(--bg2);padding:6px;border:1px solid var(--b)"><div style="font-size:8px;color:var(--pos);letter-spacing:.5px">NET INKREMENTAL</div><div style="font-family:'Orbitron',sans-serif;font-size:12px;color:var(--pos)" id="canNet">—</div></div>
+  </div>
+  <div style="margin-top:6px;font-size:8px;color:var(--t3);">JARAK AMAN MIN: <span id="canSafe" style="color:var(--a)">—</span></div>
+</div>`;
+  updateCannibal();
+}
+
+function updateCannibal(){
+  const r1=parseFloat(document.getElementById('canR1')?.value||1.5);
+  const rev1=parseFloat(document.getElementById('canRev1')?.value||350);
+  const tr=parseFloat(document.getElementById('canTR')?.value||15)/100;
+  if(document.getElementById('canR1v'))document.getElementById('canR1v').textContent=r1+'km';
+  if(document.getElementById('canRev1v'))document.getElementById('canRev1v').textContent=`Rp${rev1}jt`;
+  if(document.getElementById('canTRv'))document.getElementById('canTRv').textContent=`${Math.round(tr*100)}%`;
+  const lambda=0.5;
+  const decay=Math.exp(-lambda*r1);
+  const overlap=decay*Math.min(1.5/r1,1);
+  const lost=rev1*overlap*tr;
+  const projRev=selectedLoc?TYPE_STATS[selectedLoc.type]?.revM||238:238;
+  const net=projRev-lost;
+  const rate=(lost/projRev*100);
+  const safe=(-Math.log(0.20/tr)/lambda).toFixed(1);
+  if(document.getElementById('canRate'))document.getElementById('canRate').textContent=rate.toFixed(1)+'%';
+  const v=rate<20?{c:'green',txt:'HIJAU — AMAN DIBUKA'}:rate<40?{c:'yellow',txt:'KUNING — PERTIMBANGKAN'}:{c:'red',txt:'MERAH — RISIKO TINGGI'};
+  if(document.getElementById('canVerdict'))document.getElementById('canVerdict').className=`cr-verdict cv-${v.c}`,document.getElementById('canVerdict').textContent=v.txt;
+  if(document.getElementById('canLost'))document.getElementById('canLost').textContent=`Rp${lost.toFixed(0)}jt`;
+  if(document.getElementById('canNet'))document.getElementById('canNet').textContent=`Rp${net.toFixed(0)}jt`;
+  if(document.getElementById('canSafe'))document.getElementById('canSafe').textContent=safe+' km';
+}
+
+// ═══ AI INSIGHT ═══
+function renderAI(loc,s){
+  const el=document.getElementById('aiContent');
+  const canBasic=tierLevel[tier]>=1,canPro=tierLevel[tier]>=2;
+
+  const strengths=[
+    `Populasi dalam radius 1km: estimasi ${(s.score*420).toLocaleString()} jiwa — di atas rata-rata kota`,
+    `Traffic footfall sore hari (17:00–20:00) tergolong ${s.score>70?'tinggi':'sedang'} untuk kategori ${loc.type}`,
+    `Gap kategori kuliner ${loc.type==='premium'?'Fine Dining':'Casual Dining'} terdeteksi di area ini`,
+  ];
+  const weaknesses=[
+    `${s.comp} kompetitor aktif dalam radius 500m — perlu diferensiasi konsep`,
+    `Harga sewa estimasi ${loc.type==='premium'||loc.type==='cbd'?'tinggi':'sedang'} — hitung ulang payback period`,
+  ];
+  const recs=[
+    `Rekomendasi konsep: ${s.score>75?'Casual Fine Dining atau Modern Indonesian':'Casual Dining dengan harga kompetitif'}`,
+    `Waktu ramai tertinggi: ${loc.type==='cbd'?'Makan siang 12:00–14:00 dan dinner 18:00–21:00':'Weekend 11:00–14:00'}`,
+    `Strategi awal: Soft opening 14 hari, target occupancy 40% pada bulan pertama`,
+  ];
+
+  if(!canBasic){
+    el.innerHTML=`<div style="margin-bottom:10px">
+${strengths.map(t=>`<div class="ai-item"><div class="ai-dot pos"></div><div class="ai-txt">${t}</div></div>`).join('')}
+</div>
+<div class="lock-overlay"><div class="lock-icon">🔒</div><div class="lock-txt">Analisis lengkap tersedia di tier Basic & Pro:<br>Weakness analysis · Rekomendasi strategi · Market timing · Revenue optimization</div><div class="lock-tier">DIPERLUKAN: BASIC</div><button class="upgrade-btn" onclick="promptUpgrade('basic')">UPGRADE</button></div>`;
+    return;
+  }
+
+  let html=`<div class="section-title">KEKUATAN LOKASI</div>
+${strengths.map(t=>`<div class="ai-item"><div class="ai-dot pos"></div><div class="ai-txt">${t}</div></div>`).join('')}
+<div class="section-title" style="margin-top:10px;">KELEMAHAN & RISIKO</div>
+${weaknesses.map(t=>`<div class="ai-item"><div class="ai-dot neg"></div><div class="ai-txt">${t}</div></div>`).join('')}
+<div class="section-title" style="margin-top:10px;">REKOMENDASI STRATEGI</div>`;
+
+  if(canPro){
+    html+=recs.map(t=>`<div class="ai-item"><div class="ai-dot neu"></div><div class="ai-txt">${t}</div></div>`).join('');
+    html+=`<div style="margin-top:10px;padding:8px;background:var(--a3);border:1px solid var(--b);font-size:8px;color:var(--t3);line-height:1.8;">
+<span style="color:var(--a);letter-spacing:1px">AI VERDICT:</span> Lokasi <strong style="color:var(--t)">${loc.name}</strong> memiliki potensi <strong style="color:var(--a)">${getRating(s.score)}</strong> berdasarkan 7 faktor. Estimasi ROI year-1: <strong style="color:var(--pos)">${(s.margin*0.9).toFixed(1)}%</strong>. Disarankan untuk melanjutkan ke tahap analisis bisnis lebih detail.
+</div>`;
+  } else {
+    html+=recs.slice(0,1).map(t=>`<div class="ai-item"><div class="ai-dot neu"></div><div class="ai-txt">${t}</div></div>`).join('');
+    html+=`<div class="lock-overlay" style="margin-top:8px"><div class="lock-txt">Rekomendasi lengkap + AI Verdict tersedia di Pro</div><button class="upgrade-btn" onclick="promptUpgrade('pro')">UPGRADE PRO</button></div>`;
+  }
+  el.innerHTML=html;
+}
+
+// ═══ TAB SWITCH ═══
+function switchTab(name,btn){
+  activeTab=name;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById('tab-'+name).classList.add('on');
+  if(name==='heatmap')renderHeatmap();
+}
+
+// ═══ UPGRADE PROMPT ═══
+function promptUpgrade(targetTier){
+  const msg=targetTier==='pro'?'Upgrade ke PRO untuk akses fitur ini!':'Upgrade ke BASIC untuk akses fitur ini!';
+  // In real app this would open payment modal
+  // For demo: auto-switch tier
+  const btn=document.querySelector(`.tier-btn:nth-child(${targetTier==='basic'?2:3})`);
+  if(btn)setTier(targetTier,btn);
+}
+
+// ═══ NAVIGATE TO BUILDER ═══
+function goToBuilder(){
+  if(!selectedLoc){alert('Pilih lokasi terlebih dahulu!');return;}
+  const s=TYPE_STATS[selectedLoc.type]||TYPE_STATS.suburban;
+  const params=new URLSearchParams({
+    city:selectedLoc.name,zone:selectedLoc.sub,type:selectedLoc.type,
+    lat:selectedLoc.lat,lng:selectedLoc.lng,
+    score:s.score,revM:s.revM,comp:s.comp,tier:tier
+  });
+  window.location.href='restobuilder.html?'+params.toString();
+}
+
+// ═══ INIT ═══
+window.addEventListener('resize',resizeCanvas);
+resizeCanvas();
+</script>
+</body>
+</html>
