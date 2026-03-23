@@ -44,7 +44,7 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 /* LAYOUT */
 .app{display:flex;height:calc(100vh - 38px);}
 .map-wrap{flex:1;position:relative;overflow:hidden;}
-canvas#map{width:100%;height:100%;cursor:crosshair;display:block;}
+#map{width:100%;height:100%;}
 .map-hint{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;gap:8px;transition:opacity .5s;}
 .map-hint.hidden{opacity:0;}
 .hint-icon{font-size:28px;opacity:.3;}
@@ -432,35 +432,7 @@ function setTier(t,btn){
   if(selectedLoc) renderAnalysis(selectedLoc);
 }
 
-// ═══ LOCATION DATA ═══
-const LOCS=[
-  {id:'sudirman',name:'Sudirman',sub:'CBD · Premium',x:.50,y:.30,type:'cbd',lat:-6.2088,lng:106.8234},
-  {id:'thamrin',name:'Thamrin',sub:'CBD · Central',x:.55,y:.26,type:'cbd',lat:-6.1944,lng:106.8229},
-  {id:'scbd',name:'SCBD Senayan',sub:'Premium District',x:.43,y:.37,type:'premium',lat:-6.2267,lng:106.8053},
-  {id:'senayan',name:'Senayan',sub:'Sports & Mall',x:.39,y:.42,type:'commercial',lat:-6.2184,lng:106.8008},
-  {id:'blok_m',name:'Blok M',sub:'Commercial Hub',x:.36,y:.46,type:'commercial',lat:-6.2441,lng:106.7990},
-  {id:'kemang',name:'Kemang',sub:'Trendy · Expat',x:.33,y:.55,type:'trendy',lat:-6.2600,lng:106.8152},
-  {id:'pk_indah',name:'Pondok Indah',sub:'Premium Residential',x:.27,y:.59,type:'premium',lat:-6.2863,lng:106.7771},
-  {id:'tb_sim',name:'TB Simatupang',sub:'Suburban Office',x:.32,y:.69,type:'suburban',lat:-6.3248,lng:106.8134},
-  {id:'ps_minggu',name:'Pasar Minggu',sub:'Local Area',x:.40,y:.72,type:'local',lat:-6.2936,lng:106.8437},
-  {id:'depok',name:'Depok',sub:'South Suburb',x:.44,y:.84,type:'suburban',lat:-6.4025,lng:106.7942},
-  {id:'kg',name:'Kelapa Gading',sub:'Premium North',x:.65,y:.22,type:'premium',lat:-6.1579,lng:106.9040},
-  {id:'pik',name:'PIK',sub:'Waterfront Premium',x:.23,y:.17,type:'premium',lat:-6.1145,lng:106.7327},
-  {id:'bekasi',name:'Bekasi',sub:'East Suburb',x:.78,y:.40,type:'suburban',lat:-6.2383,lng:106.9756},
-  {id:'cibubur',name:'Cibubur',sub:'East Suburb',x:.83,y:.63,type:'suburban',lat:-6.3613,lng:106.8936},
-  {id:'serpong',name:'BSD Serpong',sub:'West Suburb',x:.07,y:.66,type:'suburban',lat:-6.3216,lng:106.6527},
-  {id:'tangerang',name:'Tangerang',sub:'Industrial West',x:.10,y:.34,type:'suburban',lat:-6.1784,lng:106.6319},
-];
-
-const TYPE_STATS={
-  cbd:{score:78,revM:487,be:14,comp:28,check:74,margin:18.3,growth:8.4,vsCity:'+3.2'},
-  premium:{score:82,revM:620,be:18,comp:20,check:95,margin:21.5,growth:11.8,vsCity:'+7.1'},
-  commercial:{score:71,revM:368,be:12,comp:35,check:55,margin:15.2,growth:6.2,vsCity:'-3.8'},
-  trendy:{score:74,revM:415,be:13,comp:22,check:68,margin:17.1,growth:9.6,vsCity:'+0.5'},
-  suburban:{score:60,revM:238,be:10,comp:9,check:42,margin:14.0,growth:6.8,vsCity:'-12.4'},
-  local:{score:54,revM:185,be:9,comp:6,check:35,margin:13.2,growth:4.1,vsCity:'-18.6'},
-};
-const TYPE_RATING={82:'EXCELLENT',75:'GOOD',65:'MODERATE',55:'RISKY',0:'HIGH RISK'};
+// Note: LOCS and TYPE_STATS are defined in the Google Maps section below
 function getRating(s){for(const[v,r] of Object.entries(TYPE_RATING).reverse()){if(s>=+v)return r;}return 'HIGH RISK';}
 function fmtRp(m){return m>=1000?`Rp${(m/1000).toFixed(1)}M`:`Rp${m}jt`;}
 
