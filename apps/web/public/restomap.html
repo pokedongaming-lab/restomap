@@ -197,20 +197,20 @@ canvas#map{width:100%;height:100%;cursor:crosshair;display:block;}
 <div class="app">
   <!-- MAP -->
   <div class="map-wrap" id="mapWrap">
-    <canvas id="map"></canvas>
-    <div class="map-hint" id="mapHint">
-      <div class="hint-icon">📍</div>
-      <div class="hint-txt">Klik pada peta untuk memilih lokasi</div>
-      <div class="hint-sub">Mendukung 16 area di Jakarta & sekitarnya</div>
-    </div>
-    <div class="map-pin" id="mapPin">
-      <svg width="22" height="32" viewBox="0 0 22 32">
-        <path d="M11 0C4.9 0 0 4.9 0 11c0 7.7 11 21 11 21s11-13.3 11-21C22 4.9 17.1 0 11 0z" fill="var(--a)"/>
-        <circle cx="11" cy="11" r="4" fill="#000"/>
-      </svg>
-    </div>
-    <div class="map-pulse" id="mapPulse"><div class="pulse-ring"></div></div>
-    <div class="map-coords" id="mapCoords">LAT: — · LNG: — · ZONE: —</div>
+    <!-- Google Maps Embed -->
+    <iframe 
+      id="googleMap"
+      width="100%" 
+      height="100%" 
+      style="border:0;filter:grayscale(100%) contrast(1.1) invert(92%) sepia(10%) saturate(500%) hue-rotate(-5deg);"
+      loading="lazy"
+      allowfullscreen
+      referrerpolicy="no-referrer-when-downgrade"
+      src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d126932.5892992252!2d106.68988169307872!3d-6.195123774995957!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69f3ec3a5b5997%3A0x6a0c08c8b8c8c8c8!2sJakarta%2C%20Indonesia!5e0!3m2!1sen!2sid!4v1700000000000!5m2!1sen!2sid">
+    </iframe>
+    <!-- Hidden input for coordinates -->
+    <input type="hidden" id="mapCenter" value="-6.2,106.8">
+    <div class="map-coords" id="mapCoords">LAT: -6.20 · LNG: 106.83 · JAKARTA</div>
     <div class="loc-tooltip" id="locTooltip"></div>
   </div>
 
@@ -877,9 +877,73 @@ function goToBuilder(){
   window.location.href='restobuilder.html?'+params.toString();
 }
 
+// ═══ GOOGLE MAPS REAL ═══
+let map, marker, geocoder;
+const API_KEY = 'AIzaSyAzlXgIm1ofUw-A26fQp0zylxczS8oNaJk';
+
+function initMap() {
+  const jakarta = { lat: -6.2088, lng: 106.8456 };
+  
+  // Create map (hidden, we'll use iframe for display)
+  map = new google.maps.Map(document.createElement('div'), {
+    center: jakarta,
+    zoom: 12,
+  });
+  
+  geocoder = new google.maps.Geocoder();
+  
+  // Update iframe to use clicked location
+  updateMapEmbed(jakarta.lat, jakarta.lng);
+}
+
+function updateMapEmbed(lat, lng) {
+  const iframe = document.getElementById('googleMap');
+  const embedUrl = `https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d126932.5892992252!2d${lng-0.1}!3d${lat}!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69f3ec3a5b5997%3A0x6a0c08c8b8c8c8c8!2sJakarta%2C%20Indonesia!5e0!3m2!1sen!2sid!4v1700000000000!5m2!1sen!2sid`;
+  
+  // Actually let's use a direct coordinates embed
+  iframe.src = `https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d2000!2d${lng}!3d${lat}!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sen!2sid!4v1700000000000`;
+}
+
+function handleMapClick(e) {
+  // This is a simplified version - in production use Google Maps JS API properly
+  const rect = e.target.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+  
+  // Approximate Jakarta area
+  const lat = -6.4 + (y / rect.height) * 0.5;
+  const lng = 106.6 + (x / rect.width) * 0.4;
+  
+  document.getElementById('mapCoords').textContent = `LAT: ${lat.toFixed(4)} · LNG: ${lng.toFixed(4)}`;
+  
+  // Trigger analysis for this location
+  const mockLoc = {
+    id:'custom',
+    name:'Lokasi Kustom',
+    sub:'Area yang dipilih',
+    lat:lat.toFixed(4),
+    lng:lng.toFixed(4),
+    type:'cbd',
+    x:x/rect.width,
+    y:y/rect.height
+  };
+  
+  selectedLoc = mockLoc;
+  showPanel();
+  renderAnalysis(mockLoc);
+  document.getElementById('mapHint').classList.add('hidden');
+}
+
+// Add click listener to map iframe's parent
+document.getElementById('mapWrap').addEventListener('click', handleMapClick);
+
 // ═══ INIT ═══
-window.addEventListener('resize',resizeCanvas);
-resizeCanvas();
+// Note: For full Google Maps integration, load the JavaScript API
+// This is a simplified version using embed
+console.log('RestoMap initialized - Click on map to analyze location');
 </script>
+
+<!-- Google Maps API (optional - for full functionality) -->
+<!-- <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAzlXgIm1ofUw-A26fQp0zylxczS8oNaJk&callback=initMap"></script> -->
 </body>
 </html>
