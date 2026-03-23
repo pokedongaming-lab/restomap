@@ -1206,7 +1206,23 @@ function findBestLocation() {
   const pop = parseInt(document.getElementById('critPop').value);
   const score = Math.round((traffic * 0.35 + buying * 0.35 + pop * 0.30));
   let rating = score >= 80 ? 'EXCELLENT' : score >= 65 ? 'GOOD' : score >= 50 ? 'MODERATE' : 'RISKY';
-  alert('HASIL: Skor ' + score + '/100 - ' + rating);
+  
+  // Find best location in our list based on score
+  const bestLoc = LOCS.reduce((best, loc) => {
+    const locScore = TYPE_STATS[loc.type]?.score || 60;
+    return locScore > (TYPE_STATS[best?.type]?.score || 0) ? loc : best;
+  }, LOCS[0]);
+  
+  if (map && bestLoc) {
+    map.setCenter({ lat: bestLoc.lat, lng: bestLoc.lng });
+    map.setZoom(14);
+    selectedLoc = bestLoc;
+    dropPinVisual(bestLoc.lat, bestLoc.lng);
+    renderAnalysis(bestLoc);
+    document.getElementById('mapHint').classList.add('hidden');
+  }
+  
+  alert('HASIL: Skor ' + score + '/100 - ' + rating + '\nLokasi terbaik: ' + bestLoc?.name);
 }
 
 function saveCurrentLocation() {
@@ -1244,6 +1260,13 @@ console.log('RestoMap features loaded');
 </script>
 
 <!-- Google Maps JavaScript API -->
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAzlXgIm1ofUw-A26fQp0zylxczS8oNaJk&libraries=places"></script>
+<script>
+  // Fallback if Google Maps fails to load
+  window.gm_authFailure = function() {
+    console.error('Google Maps auth failed - using fallback map');
+    document.getElementById('map').innerHTML = '<div style="width:100%;height:100%;background:#111;display:flex;align-items:center;justify-content:center;color:#666;font-size:12px;text-align:center;padding:20px;">⚠️ Google Maps tidak dapat dimuat.<br>Cek API key atau koneksi internet.</div>';
+  };
+</script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAzlXgIm1ofUw-A26fQp0zylxczS8oNaJk&libraries=places&callback=initMap" async defer></script>
 </body>
 </html>
