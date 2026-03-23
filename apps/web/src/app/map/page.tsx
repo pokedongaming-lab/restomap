@@ -20,6 +20,8 @@ import GoogleMapView from '@/components/GoogleMapView'
 import OnboardingTour from '@/components/OnboardingTour'
 import StreetViewPreview from '@/components/StreetViewPreview'
 import LoanSimulator from '@/components/LoanSimulator'
+import LocationCriteriaSearch from '@/components/LocationCriteriaSearch'
+import { LanguageProvider } from '@/hooks/useLanguage'
 import { useSavedLocations } from '@/hooks/useSavedLocations'
 import { useHeatmap } from '@/hooks/useHeatmap'
 import type { MapPin, MapCompetitor } from '@/components/MapView'
@@ -275,6 +277,21 @@ export default function MapPage() {
                   />
                 </div>
               )}
+
+              {/* Location Criteria Search - Find Best Location */}
+              <div className="border-t border-gray-100 mt-4">
+                <LanguageProvider>
+                  <LocationCriteriaSearch 
+                    onSearch={(criteria) => {
+                      console.log('Search criteria:', criteria)
+                      // Future: search map based on criteria
+                    }}
+                    onBestLocation={(result) => {
+                      console.log('Best location result:', result)
+                    }}
+                  />
+                </LanguageProvider>
+              </div>
             </>
           )}
 
