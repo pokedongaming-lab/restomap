@@ -19,6 +19,7 @@ import CannibalAnalysis from '@/components/CannibalAnalysis'
 import GoogleMapView from '@/components/GoogleMapView'
 import OnboardingTour from '@/components/OnboardingTour'
 import StreetViewPreview from '@/components/StreetViewPreview'
+import LoanSimulator from '@/components/LoanSimulator'
 import { useSavedLocations } from '@/hooks/useSavedLocations'
 import { useHeatmap } from '@/hooks/useHeatmap'
 import type { MapPin, MapCompetitor } from '@/components/MapView'
@@ -243,6 +244,11 @@ export default function MapPage() {
                   {/* Street View Preview - Quick Win #1 */}
                   <div className="mt-4">
                     <StreetViewPreview lat={pin.lat} lng={pin.lng} />
+                  </div>
+                  
+                  {/* KUR/Loan Simulator - Quick Win #2 */}
+                  <div className="mt-4">
+                    <LoanSimulator />
                   </div>
                 </>
               ) : (
