@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RestoBuilder — RestoSuite</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root{--bg:#030303;--bg2:#0a0a0a;--bg3:#111;--panel:#0d0d0d;--b:rgba(255,109,0,.15);--b2:rgba(255,109,0,.38);--a:#FF6D00;--a2:#FF8F00;--a3:rgba(255,109,0,.07);--t:#FFB74D;--t2:#FFA726;--t3:rgba(255,183,77,.45);--t4:rgba(255,183,77,.15);--pos:#69F0AE;--neg:#FF5252;--info:#4DA6FF;}
+.th-matrix{--bg:#000500;--bg2:#000a00;--bg3:#001100;--panel:#000d00;--b:rgba(0,255,65,.14);--b2:rgba(0,255,65,.36);--a:#00FF41;--a2:#00E636;--a3:rgba(0,255,65,.06);--t:#00E676;--t2:#00C853;--t3:rgba(0,230,118,.42);--t4:rgba(0,230,118,.14);}
+.th-arctic{--bg:#000B14;--bg2:#001122;--bg3:#001830;--panel:#000E1A;--b:rgba(0,229,255,.14);--b2:rgba(0,229,255,.36);--a:#00E5FF;--a2:#00B8D4;--a3:rgba(0,229,255,.06);--t:#80DEEA;--t2:#4DD0E1;--t3:rgba(128,222,234,.42);--t4:rgba(128,222,234,.14);}
+.th-ember{--bg:#0D0000;--bg2:#150000;--bg3:#1a0000;--panel:#100000;--b:rgba(255,61,0,.16);--b2:rgba(255,61,0,.38);--a:#FF3D00;--a2:#FF6E40;--a3:rgba(255,61,0,.06);--t:#FFAB91;--t2:#FF8A65;--t3:rgba(255,171,145,.42);--t4:rgba(255,171,145,.14);}
+.th-mercury{--bg:#08080F;--bg2:#0D0D1A;--bg3:#11112A;--panel:#0A0A16;--b:rgba(180,180,220,.12);--b2:rgba(180,180,220,.30);--a:#B0B8E0;--a2:#9098C8;--a3:rgba(180,180,220,.05);--t:#C8D0F0;--t2:#A0A8D8;--t3:rgba(200,208,240,.42);--t4:rgba(200,208,240,.14);}
+
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;overflow:hidden;}
+body{background:var(--bg);color:var(--t);font-family:'Share Tech Mono',monospace;font-size:11px;transition:background .4s;}
+body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.025) 3px,rgba(0,0,0,.025) 4px);pointer-events:none;z-index:9999;}
+
+/* TOPBAR */
+.tb{display:flex;align-items:center;height:38px;background:var(--bg2);border-bottom:1px solid var(--b2);flex-shrink:0;}
+.tb-logo{display:flex;flex-direction:column;justify-content:center;padding:0 14px;height:100%;border-right:1px solid var(--b);flex-shrink:0;gap:1px;}
+.logo-t{font-family:'Orbitron',sans-serif;font-size:12px;font-weight:700;color:var(--a);letter-spacing:3px;}
+.logo-s{font-size:8px;color:var(--t3);letter-spacing:1.5px;}
+.nav-links{display:flex;height:100%;border-right:1px solid var(--b);}
+.nl{display:flex;align-items:center;padding:0 16px;height:100%;font-size:10px;cursor:pointer;color:var(--t3);border-right:1px solid var(--b);letter-spacing:1px;text-decoration:none;transition:all .2s;}
+.nl:hover{color:var(--t);background:var(--a3);}
+.nl.active{color:var(--a);border-bottom:2px solid var(--a);}
+.prefill-banner{display:none;align-items:center;gap:8px;padding:0 14px;height:100%;border-right:1px solid var(--b);font-size:9px;color:var(--t3);}
+.pf-dot{width:5px;height:5px;border-radius:50%;background:var(--pos);flex-shrink:0;}
+.pf-txt{color:var(--pos);}
+.tb-clock{font-family:'Orbitron',sans-serif;font-size:11px;color:var(--a);padding:0 12px;border-right:1px solid var(--b);letter-spacing:1px;}
+.step-progress{display:flex;align-items:center;gap:0;padding:0 12px;border-right:1px solid var(--b);}
+.sp-num{font-size:9px;color:var(--t3);letter-spacing:.5px;}
+.sp-bar{display:flex;gap:3px;margin:0 8px;}
+.sp-dot{width:6px;height:6px;border-radius:50%;background:var(--b);transition:all .3s;}
+.sp-dot.done{background:var(--pos);}
+.sp-dot.on{background:var(--a);}
+.spacer{flex:1;}
+.theme-grp{display:flex;align-items:center;gap:5px;padding:0 12px;}
+.tc{width:13px;height:13px;border-radius:2px;cursor:pointer;border:1px solid transparent;transition:all .2s;}
+.tc:hover,.tc.on{border-color:var(--t);transform:scale(1.25);}
+
+/* MAIN LAYOUT */
+.app{display:flex;height:calc(100vh - 38px);}
+
+/* SIDEBAR */
+.sidebar{width:220px;background:var(--bg2);border-right:1px solid var(--b);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto;}
+.sb-header{padding:14px 14px 10px;border-bottom:1px solid var(--b);}
+.sb-title{font-family:'Orbitron',sans-serif;font-size:9px;color:var(--a);letter-spacing:2px;}
+.sb-sub{font-size:8px;color:var(--t3);margin-top:2px;}
+.step-list{padding:8px 0;flex:1;}
+.step-item{display:flex;align-items:center;gap:8px;padding:8px 14px;cursor:pointer;border-left:2px solid transparent;transition:all .2s;}
+.step-item:hover{background:var(--a3);}
+.step-item.on{border-left-color:var(--a);background:var(--a3);}
+.step-item.done{border-left-color:var(--pos);}
+.step-item.locked{opacity:.45;cursor:not-allowed;}
+.si-num{font-family:'Orbitron',sans-serif;font-size:9px;width:18px;height:18px;border-radius:50%;border:1px solid var(--b);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .3s;}
+.step-item.on .si-num{border-color:var(--a);color:var(--a);}
+.step-item.done .si-num{border-color:var(--pos);color:var(--pos);}
+.si-info{flex:1;min-width:0;}
+.si-title{font-size:9px;color:var(--t3);letter-spacing:.5px;transition:color .2s;}
+.step-item.on .si-title{color:var(--a);}
+.step-item.done .si-title{color:var(--pos);}
+.si-status{font-size:7px;color:var(--t4);letter-spacing:.5px;}
+.sb-footer{padding:10px 14px;border-top:1px solid var(--b);}
+.sb-tier{font-size:8px;color:var(--t3);letter-spacing:1px;}
+
+/* MAIN CONTENT */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.step-header{padding:14px 20px 10px;border-bottom:1px solid var(--b);background:var(--bg2);flex-shrink:0;}
+.sh-num{font-size:8px;color:var(--t4);letter-spacing:2px;margin-bottom:3px;}
+.sh-title{font-family:'Orbitron',sans-serif;font-size:14px;color:var(--a);letter-spacing:2px;}
+.sh-sub{font-size:9px;color:var(--t3);margin-top:3px;}
+.step-body{flex:1;overflow-y:auto;padding:16px 20px;}
+
+/* FORM */
+.form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;}
+.form-grid.cols3{grid-template-columns:repeat(3,1fr);}
+.form-grid.cols1{grid-template-columns:1fr;}
+.fg{display:flex;flex-direction:column;gap:4px;}
+.fg.span2{grid-column:span 2;}
+.fl{font-size:8px;color:var(--t3);letter-spacing:1px;text-transform:uppercase;}
+.fi{background:var(--bg3);border:1px solid var(--b);color:var(--t);padding:7px 10px;font-family:'Share Tech Mono',monospace;font-size:11px;outline:none;width:100%;transition:border-color .2s;}
+.fi:focus{border-color:var(--a);}
+select.fi option{background:var(--bg3);}
+.fi[type=range]{padding:0;background:none;cursor:pointer;accent-color:var(--a);}
+.fi-hint{font-size:8px;color:var(--t4);margin-top:1px;}
+.slider-val{font-size:9px;color:var(--a);font-family:'Orbitron',sans-serif;}
+
+/* MENU TABLE */
+.menu-table{width:100%;border-collapse:collapse;margin-bottom:8px;}
+.menu-table th{font-size:8px;color:var(--t3);letter-spacing:1px;padding:5px 6px;border-bottom:1px solid var(--b);text-align:left;font-weight:normal;text-transform:uppercase;}
+.menu-table td{padding:4px 4px;border-bottom:1px solid var(--b);}
+.menu-table td input,.menu-table td select{background:var(--bg3);border:1px solid var(--b);color:var(--t);padding:4px 6px;font-family:'Share Tech Mono',monospace;font-size:10px;width:100%;outline:none;}
+.menu-table td input:focus,.menu-table td select:focus{border-color:var(--a);}
+.btn-icon{background:none;border:1px solid var(--b);color:var(--neg);width:24px;height:24px;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;}
+.btn-add{background:var(--a3);border:1px solid var(--b2);color:var(--a);padding:5px 12px;cursor:pointer;font-size:8px;font-family:'Share Tech Mono',monospace;letter-spacing:1px;transition:all .2s;}
+.btn-add:hover{background:var(--a);color:#000;}
+
+/* STEP FOOTER */
+.step-footer{padding:12px 20px;border-top:1px solid var(--b);background:var(--bg2);display:flex;justify-content:space-between;align-items:center;flex-shrink:0;}
+.btn-nav{padding:8px 20px;font-size:9px;cursor:pointer;font-family:'Share Tech Mono',monospace;letter-spacing:1px;transition:all .2s;border:1px solid var(--b);background:none;color:var(--t3);}
+.btn-nav:hover{border-color:var(--t);color:var(--t);}
+.btn-next{border-color:var(--a2);color:var(--a);background:var(--a3);}
+.btn-next:hover{background:var(--a);color:#000;}
+.btn-finish{border-color:var(--pos);color:var(--pos);background:rgba(105,240,174,.05);}
+.btn-finish:hover{background:var(--pos);color:#000;}
+.step-progress-text{font-size:9px;color:var(--t3);}
+
+/* LIVE PANEL */
+.live-panel{width:260px;background:var(--panel);border-left:1px solid var(--b);display:flex;flex-direction:column;flex-shrink:0;}
+.lp-header{padding:10px 12px;border-bottom:1px solid var(--b);background:var(--a3);}
+.lp-title{font-size:8px;color:var(--a);letter-spacing:2px;}
+.lp-body{flex:1;overflow-y:auto;padding:10px 12px;}
+.lp-section{margin-bottom:12px;}
+.lp-sec-title{font-size:8px;color:var(--t4);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid var(--b);}
+.lp-row{display:flex;justify-content:space-between;align-items:center;padding:3px 0;border-bottom:1px solid rgba(255,109,0,.06);}
+.lp-lbl{font-size:8px;color:var(--t3);}
+.lp-val{font-size:9px;color:var(--t);font-family:'Orbitron',sans-serif;}
+.lp-val.pos{color:var(--pos);}
+.lp-val.warn{color:var(--a);}
+.lp-val.neg{color:var(--neg);}
+.lp-chart-wrap{height:120px;margin-top:8px;}
+.lp-mm-cell{padding:5px 6px;margin:2px 0;border:1px solid var(--b);display:flex;justify-content:space-between;align-items:center;}
+.lp-mm-type{font-size:7px;letter-spacing:1px;text-transform:uppercase;font-weight:bold;}
+.lp-mm-item{font-size:8px;color:var(--t3);}
+
+/* RESULTS PAGE */
+.results-page{flex:1;overflow-y:auto;padding:16px 20px;display:none;}
+.results-page.on{display:block;}
+.res-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px;}
+.res-card{background:var(--bg2);border:1px solid var(--b);padding:10px 12px;}
+.rc-lbl{font-size:8px;color:var(--t3);letter-spacing:1px;text-transform:uppercase;margin-bottom:3px;}
+.rc-val{font-family:'Orbitron',sans-serif;font-size:18px;color:var(--a);line-height:1;}
+.rc-sub{font-size:8px;color:var(--t3);margin-top:2px;}
+.res-charts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+.chart-card{background:var(--bg2);border:1px solid var(--b);padding:10px;}
+.cc-title{font-size:8px;color:var(--t3);letter-spacing:1.5px;margin-bottom:8px;text-transform:uppercase;}
+.cc-h{height:180px;}
+.res-table{width:100%;border-collapse:collapse;font-size:9px;margin-bottom:12px;}
+.res-table th{font-size:8px;color:var(--t3);letter-spacing:1px;padding:6px 8px;border-bottom:1px solid var(--b);text-align:left;font-weight:normal;text-transform:uppercase;background:var(--bg3);}
+.res-table td{padding:6px 8px;border-bottom:1px solid var(--b);color:var(--t2);}
+.res-table tr:hover td{background:var(--a3);}
+.sens-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:0;border:1px solid var(--b);margin-bottom:12px;}
+.sg-cell{padding:8px 6px;border-right:1px solid var(--b);border-bottom:1px solid var(--b);font-size:8px;text-align:center;}
+.sg-cell:last-child{border-right:none;}
+.sg-header{color:var(--t3);letter-spacing:.5px;background:var(--bg3);}
+.sg-base{color:var(--t);}
+.sg-pos{color:var(--pos);}
+.sg-neg{color:var(--neg);}
+.action-row{display:flex;gap:8px;margin-bottom:12px;}
+.action-btn{flex:1;padding:10px;border:1px solid var(--b2);color:var(--a);background:var(--a3);font-family:'Share Tech Mono',monospace;font-size:9px;cursor:pointer;letter-spacing:1px;transition:all .2s;text-align:center;}
+.action-btn:hover{background:var(--a);color:#000;}
+.wa-btn{border-color:var(--pos);color:var(--pos);background:rgba(105,240,174,.05);}
+.wa-btn:hover{background:var(--pos);color:#000;}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:3px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--b2);}
+::-webkit-scrollbar-thumb:hover{background:var(--a);}
+</style>
+</head>
+<body id="body">
+
+<!-- TOPBAR -->
+<div class="tb">
+  <div class="tb-logo">
+    <div class="logo-t">RestoSuite</div>
+    <div class="logo-s">TERMINAL v1.1</div>
+  </div>
+  <div class="nav-links">
+    <a class="nl" href="restomap.html">RestoMap</a>
+    <a class="nl active">RestoBuilder</a>
+  </div>
+  <div class="prefill-banner" id="prefillBanner">
+    <div class="pf-dot"></div>
+    <span class="pf-txt" id="prefillText">Data dari RestoMap dimuat</span>
+  </div>
+  <div class="tb-clock" id="clock">--:--:--</div>
+  <div class="step-progress">
+    <span class="sp-num" id="spNum">STEP 1/8</span>
+    <div class="sp-bar" id="spBar"></div>
+  </div>
+  <div class="spacer"></div>
+  <div class="theme-grp">
+    <div class="tc on" style="background:#FF6D00" onclick="setTheme('')"></div>
+    <div class="tc" style="background:#00FF41" onclick="setTheme('th-matrix')"></div>
+    <div class="tc" style="background:#00E5FF" onclick="setTheme('th-arctic')"></div>
+    <div class="tc" style="background:#FF3D00" onclick="setTheme('th-ember')"></div>
+    <div class="tc" style="background:#B0B8E0" onclick="setTheme('th-mercury')"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sb-header">
+      <div class="sb-title">WIZARD PROGRESS</div>
+      <div class="sb-sub" id="sbSub">Belum ada data</div>
+    </div>
+    <div class="step-list" id="stepList"></div>
+    <div class="sb-footer">
+      <div class="sb-tier" id="sbTier">TIER: FREE</div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main" id="mainArea">
+    <div class="step-header">
+      <div class="sh-num" id="shNum">STEP 1 OF 8</div>
+      <div class="sh-title" id="shTitle">CONCEPT & BASICS</div>
+      <div class="sh-sub" id="shSub">Definisikan konsep dasar restoran Anda</div>
+    </div>
+    <div class="step-body" id="stepBody"></div>
+    <div class="step-footer">
+      <button class="btn-nav" id="btnBack" onclick="goStep(-1)" style="display:none">← KEMBALI</button>
+      <span class="step-progress-text" id="sfProgress">Lengkapi semua field yang diperlukan</span>
+      <button class="btn-nav btn-next" id="btnNext" onclick="goStep(1)">LANJUT →</button>
+    </div>
+    <!-- Results page (replaces step body) -->
+    <div class="results-page" id="resultsPage"></div>
+  </div>
+
+  <!-- LIVE PANEL -->
+  <div class="live-panel">
+    <div class="lp-header"><div class="lp-title" id="lpTitle">LIVE PREVIEW</div></div>
+    <div class="lp-body" id="livePanelBody"></div>
+  </div>
+
+</div>
+
+<script>
+// ═══ CLOCK ═══
+function tick(){const n=new Date();document.getElementById('clock').textContent=[n.getHours(),n.getMinutes(),n.getSeconds()].map(v=>String(v).padStart(2,'0')).join(':');}
+setInterval(tick,1000);tick();
+
+// ═══ THEME ═══
+function setTheme(c){document.body.className=c;document.querySelectorAll('.tc').forEach((el,i)=>el.classList.toggle('on',['','th-matrix','th-arctic','th-ember','th-mercury'][i]===c));rebuildLiveCharts();}
+
+// ═══ STATE ═══
+let currentStep=0,tier='free',formData={},menuItems=[{n:'Nasi Goreng Spesial',cat:'main',price:85000,cogs:32},{n:'Ayam Bakar Madu',cat:'main',price:75000,cogs:35}];
+let prefill={},liveRevChart=null,liveKurChart=null,resCharts={};
+
+// ═══ PREFILL FROM URL ═══
+function loadPrefill(){
+  const p=new URLSearchParams(window.location.search);
+  if(p.has('city')){
+    prefill={city:p.get('city'),zone:p.get('zone'),type:p.get('type'),lat:p.get('lat'),lng:p.get('lng'),score:p.get('score'),revM:p.get('revM'),comp:p.get('comp'),tier:p.get('tier')};
+    tier=prefill.tier||'free';
+    if(prefill.city){
+      document.getElementById('prefillBanner').style.display='flex';
+      document.getElementById('prefillText').textContent=`Pre-filled: ${prefill.city} (${prefill.zone})`;
+    }
+    // Pre-populate form data
+    formData.restaurantCity=prefill.city;
+    formData.locationType=prefill.type;
+  }
+  document.getElementById('sbTier').textContent=`TIER: ${tier.toUpperCase()}`;
+}
+loadPrefill();
+
+// ═══ STEP DEFINITIONS ═══
+const STEPS=[
+  {id:'concept',title:'CONCEPT & BASICS',sub:'Definisikan konsep dasar restoran Anda',icon:'1'},
+  {id:'market',title:'MARKET ANALYSIS',sub:'Analisis target pasar dan kompetitor',icon:'2'},
+  {id:'financial',title:'FINANCIAL MODEL',sub:'Proyeksi keuangan & kalkulasi investasi',icon:'3'},
+  {id:'menu',title:'MENU DESIGN',sub:'Rancang menu dan engineering matrix',icon:'4'},
+  {id:'space',title:'SPACE DESIGN',sub:'Perencanaan ruang dan desain interior',icon:'5'},
+  {id:'team',title:'OPERATIONS & TEAM',sub:'Struktur tim dan kalkulasi payroll',icon:'6'},
+  {id:'launch',title:'LAUNCH STRATEGY',sub:'Strategi pemasaran dan grand opening',icon:'7'},
+  {id:'results',title:'RESULTS & DOCUMENTS',sub:'Hasil analisis lengkap dan dokumen',icon:'8'},
+];
+
+// ═══ SIDEBAR ═══
+function buildSidebar(){
+  document.getElementById('spBar').innerHTML=Array.from({length:8},(_,i)=>{
+    const cls=i<currentStep?'done':i===currentStep?'on':'';
+    return`<div class="sp-dot ${cls}"></div>`;
+  }).join('');
+  document.getElementById('spNum').textContent=`STEP ${currentStep+1}/8`;
+
+  const locText=prefill.city?`${prefill.city} · ${(prefill.zone||'').split('·')[0].trim()}`:'Belum ada lokasi';
+  document.getElementById('sbSub').textContent=locText;
+
+  document.getElementById('stepList').innerHTML=STEPS.map((s,i)=>{
+    const cls=i<currentStep?'done':i===currentStep?'on':i>currentStep?'':'' ;
+    return`<div class="step-item ${cls}" onclick="jumpStep(${i})">
+      <div class="si-num">${i<currentStep?'✓':s.icon}</div>
+      <div class="si-info">
+        <div class="si-title">${s.title}</div>
+        <div class="si-status">${i<currentStep?'SELESAI':i===currentStep?'AKTIF':'—'}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function jumpStep(i){if(i<=currentStep)setStep(i);}
+
+// ═══ STEP NAVIGATION ═══
+function goStep(dir){
+  const next=currentStep+dir;
+  if(next<0||next>7)return;
+  currentStep=next;
+  setStep(currentStep);
+}
+
+function setStep(idx){
+  currentStep=idx;
+  buildSidebar();
+  const s=STEPS[idx];
+  document.getElementById('shNum').textContent=`STEP ${idx+1} OF 8`;
+  document.getElementById('shTitle').textContent=s.title;
+  document.getElementById('shSub').textContent=s.sub;
+  document.getElementById('btnBack').style.display=idx>0?'block':'none';
+  document.getElementById('sfProgress').textContent=`Step ${idx+1} dari 8`;
+
+  const isLast=idx===7;
+  const btnNext=document.getElementById('btnNext');
+  btnNext.textContent=isLast?'SELESAI ✓':'LANJUT →';
+  btnNext.className=`btn-nav ${isLast?'btn-finish':'btn-next'}`;
+
+  const body=document.getElementById('stepBody');
+  const results=document.getElementById('resultsPage');
+
+  if(idx===7){
+    body.style.display='none';
+    results.style.display='block';
+    results.classList.add('on');
+    document.getElementById('btnNext').style.display='none';
+    renderResults();
+  } else {
+    body.style.display='block';
+    results.style.display='none';
+    results.classList.remove('on');
+    document.getElementById('btnNext').style.display='block';
+    renderStep(idx);
+  }
+
+  updateLivePanel(idx);
+}
+
+// ═══ STEP CONTENT ═══
+function renderStep(idx){
+  const body=document.getElementById('stepBody');
+  switch(idx){
+    case 0: body.innerHTML=stepConcept(); break;
+    case 1: body.innerHTML=stepMarket(); break;
+    case 2: body.innerHTML=stepFinancial(); attachFinancialListeners(); break;
+    case 3: body.innerHTML=stepMenu(); buildMenuTable(); break;
+    case 4: body.innerHTML=stepSpace(); break;
+    case 5: body.innerHTML=stepTeam(); attachTeamListeners(); break;
+    case 6: body.innerHTML=stepLaunch(); break;
+  }
+}
+
+// ── STEP 1 ──
+function stepConcept(){
+  const city=prefill.city||'';
+  return`<div class="form-grid">
+<div class="fg"><label class="fl">Nama Restoran *</label><input class="fi" id="f_name" placeholder="cth: Warung Nusantara" value="${formData.name||''}" oninput="save('name',this.value)"></div>
+<div class="fg"><label class="fl">Kota *</label><input class="fi" id="f_city" placeholder="cth: Jakarta" value="${formData.restaurantCity||city}" oninput="save('restaurantCity',this.value)"></div>
+<div class="fg"><label class="fl">Tipe Konsep *</label><select class="fi" onchange="save('concept',this.value)">
+  <option value="">— Pilih —</option>
+  <option value="fine_dining" ${formData.concept==='fine_dining'?'selected':''}>Fine Dining</option>
+  <option value="casual" ${formData.concept==='casual'?'selected':''}>Casual Dining</option>
+  <option value="quick_service" ${formData.concept==='quick_service'?'selected':''}>Quick Service / QSR</option>
+  <option value="food_truck" ${formData.concept==='food_truck'?'selected':''}>Food Truck / Kiosk</option>
+  <option value="cloud_kitchen" ${formData.concept==='cloud_kitchen'?'selected':''}>Cloud Kitchen</option>
+</select></div>
+<div class="fg"><label class="fl">Jenis Masakan *</label><select class="fi" onchange="save('cuisine',this.value)">
+  <option value="">— Pilih —</option>
+  <option value="indonesian">Indonesian / Nusantara</option>
+  <option value="japanese">Japanese</option>
+  <option value="italian">Italian / Western</option>
+  <option value="chinese">Chinese / Asian Fusion</option>
+  <option value="american">American / Fast Casual</option>
+  <option value="other">Other / Fusion</option>
+</select></div>
+<div class="fg"><label class="fl">Kapasitas Kursi * <span class="slider-val" id="sv_seat">${formData.seating||60}</span></label>
+<input type="range" class="fi" min="10" max="500" value="${formData.seating||60}" step="10" oninput="save('seating',+this.value);document.getElementById('sv_seat').textContent=this.value"><div class="fi-hint">10 — 500 kursi</div></div>
+<div class="fg"><label class="fl">Dining Style *</label><select class="fi" onchange="save('diningStyle',this.value)">
+  <option value="dinner_focus">Dinner-focus (70/30)</option>
+  <option value="balanced">Balanced (50/50)</option>
+  <option value="allday">All-Day (breakfast, lunch, dinner)</option>
+</select></div>
+<div class="fg span2"><label class="fl">Deskripsi Restoran</label><input class="fi" placeholder="Gambarkan konsep, suasana, dan keunikan restoran Anda..." value="${formData.desc||''}" oninput="save('desc',this.value)"></div>
+<div class="fg span2"><label class="fl">Target Pelanggan</label><input class="fi" placeholder="cth: Profesional urban 25-45 tahun, keluarga, wisatawan..." value="${formData.target||''}" oninput="save('target',this.value)"></div>
+</div>`;
+}
+
+// ── STEP 2 ──
+function stepMarket(){
+  return`<div class="form-grid">
+<div class="fg span2"><label class="fl">Deskripsi Target Market *</label><input class="fi" placeholder="Jelaskan segmen pasar yang ingin Anda sasar..." value="${formData.marketDesc||''}" oninput="save('marketDesc',this.value)"></div>
+<div class="fg"><label class="fl">Ukuran Pasar</label><select class="fi" onchange="save('marketSize',this.value)">
+  <option value="small">Kecil (niche, lokal)</option>
+  <option value="medium" selected>Sedang (area kota)</option>
+  <option value="large">Besar (metropolitan)</option>
+  <option value="xlarge">Sangat Besar (nasional)</option>
+</select></div>
+<div class="fg"><label class="fl">Tren Pasar</label><select class="fi" onchange="save('marketTrend',this.value)">
+  <option value="growing">Bertumbuh pesat</option>
+  <option value="stable">Stabil</option>
+  <option value="declining">Menurun</option>
+</select></div>
+<div class="fg"><label class="fl">Jumlah Kompetitor Langsung <span class="slider-val" id="sv_comp">${formData.compCount||prefill.comp||10}</span></label>
+<input type="range" class="fi" min="0" max="50" value="${formData.compCount||prefill.comp||10}" step="1" oninput="save('compCount',+this.value);document.getElementById('sv_comp').textContent=this.value"></div>
+<div class="fg"><label class="fl">Posisi Harga</label><select class="fi" onchange="save('pricePos',this.value)">
+  <option value="budget">Budget (Rp 30–60K/cover)</option>
+  <option value="midrange" selected>Mid-range (Rp 60–120K)</option>
+  <option value="premium">Premium (Rp 120–250K)</option>
+  <option value="luxury">Luxury (>Rp 250K)</option>
+</select></div>
+<div class="fg span2"><label class="fl">Nama Kompetitor Utama</label><input class="fi" placeholder="cth: KFC, McD, Warung Pak Budi (pisahkan dengan koma)" value="${formData.compNames||''}" oninput="save('compNames',this.value)"></div>
+<div class="fg span2"><label class="fl">Unique Value Proposition</label><input class="fi" placeholder="Apa yang membuat restoran Anda berbeda dari kompetitor?" value="${formData.uvp||''}" oninput="save('uvp',this.value)"></div>
+</div>`;
+}
+
+// ── STEP 3 ──
+function getFinancials(){
+  const seating=formData.seating||60;
+  const concept=formData.concept||'casual';
+  const costPerSeat={fine_dining:25,casual:15,quick_service:10,food_truck:5,cloud_kitchen:8};
+  const capital=seating*(costPerSeat[concept]||15)*1e6;
+  const avgCheck=formData.avgCheck||75000;
+  const cogs=(formData.cogsPct||35)/100;
+  const ramp=[.5,.5,.5,.6,.6,.6,.75,.75,.75,1,1,1];
+  const covers=seating*0.7*1.8;
+  const monthlyRevBase=covers*26*avgCheck;
+  const yr=Array.from({length:5},(_,yr)=>{
+    const mRevs=Array.from({length:12},(_,m)=>monthlyRevBase*(m<ramp.length?ramp[m]:1)*(1+yr*.05));
+    const revenue=mRevs.reduce((a,b)=>a+b,0);
+    const cogsTotal=revenue*cogs;
+    const grossProfit=revenue-cogsTotal;
+    const opex=revenue*.35;
+    const ebitda=grossProfit-opex;
+    return{yr:yr+1,revenue,cogsTotal,grossProfit,ebitda,margin:ebitda/revenue*100};
+  });
+  const personal=formData.personalInv||capital*0.5;
+  const loan=formData.loan||capital*0.5;
+  const yr1NetProfit=yr[0].ebitda;
+  const roi=yr1NetProfit/capital*100;
+  let irr=0;
+  try{
+    const cf=[-capital,...yr.map(y=>y.ebitda)];
+    let r=0.1;
+    for(let i=0;i<50;i++){const npv=cf.reduce((s,c,t)=>s+c/Math.pow(1+r,t),0);const dnpv=cf.reduce((s,c,t)=>t>0?s-t*c/Math.pow(1+r,t+1):s,0);if(Math.abs(dnpv)<1e-10)break;r=r-npv/dnpv;}
+    irr=r*100;
+  }catch(e){}
+  let be=0;let cum=0;
+  for(let m=0;m<60;m++){const mRev=monthlyRevBase*(m<12?ramp[Math.min(m,11)]:1)*(1+Math.floor(m/12)*.05);cum+=mRev*(1-cogs)-(mRev*.35);if(cum>=0&&be===0)be=m+1;}
+  return{capital,yr1Revenue:yr[0].revenue,yr1EBITDA:yr[0].ebitda,roi,irr,be,yr,monthlyRevBase,covers};
+}
+
+function stepFinancial(){
+  const fin=getFinancials();
+  return`<div class="form-grid cols3">
+<div class="fg"><label class="fl">Harga Rata-rata Cover (IDR)</label>
+<input class="fi" id="f_check" type="number" placeholder="75000" value="${formData.avgCheck||75000}" oninput="save('avgCheck',+this.value);updateFinLive()"></div>
+<div class="fg"><label class="fl">COGS % <span class="slider-val" id="sv_cogs">${formData.cogsPct||35}%</span></label>
+<input type="range" class="fi" id="sl_cogs" min="20" max="50" value="${formData.cogsPct||35}" step="1" oninput="save('cogsPct',+this.value);document.getElementById('sv_cogs').textContent=this.value+'%';updateFinLive()"></div>
+<div class="fg"><label class="fl">Investasi Pribadi (IDR)</label>
+<input class="fi" id="f_personal" type="number" placeholder="${Math.round(getFinancials().capital*0.5)}" value="${formData.personalInv||''}" oninput="save('personalInv',+this.value);updateFinLive()"></div>
+</div>
+<div style="margin:16px 0 8px;padding:12px;background:var(--bg3);border:1px solid var(--b);display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
+  ${['MODAL TOTAL','REVENUE Y1 EST','EBITDA Y1','ROI Y1'].map((l,i)=>{
+    const vals=[fin.capital,fin.yr1Revenue,fin.yr1EBITDA,fin.roi];
+    const fmt=[v=>fmtRp(v/1e6),v=>fmtRp(v/1e6),v=>fmtRp(v/1e6),v=>v.toFixed(1)+'%'];
+    const colors=['var(--a)','var(--pos)','var(--pos)','var(--t)'];
+    return`<div><div style="font-size:8px;color:var(--t3);letter-spacing:1px;margin-bottom:2px">${l}</div><div style="font-family:'Orbitron',sans-serif;font-size:13px;color:${colors[i]}" id="fin_${i}">${fmt[i](vals[i])}</div></div>`;
+  }).join('')}
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+  ${['BREAK-EVEN','IRR 5YR','PAYBACK','MODAL PINJAMAN'].map((l,i)=>{
+    const vals=[fin.be,fin.irr,fin.be,getFinancials().capital*.5];
+    const fmt=[v=>v+' bln',v=>v.toFixed(1)+'%',v=>v+' bln',v=>fmtRp(v/1e6)];
+    return`<div style="background:var(--bg3);border:1px solid var(--b);padding:8px"><div style="font-size:8px;color:var(--t3);letter-spacing:1px;margin-bottom:2px">${l}</div><div style="font-family:'Orbitron',sans-serif;font-size:12px;color:var(--a)" id="fin2_${i}">${fmt[i](vals[i])}</div></div>`;
+  }).join('')}
+</div>
+<div style="margin-bottom:12px"><div style="font-size:8px;color:var(--t3);letter-spacing:1.5px;margin-bottom:8px;text-transform:uppercase;padding-bottom:4px;border-bottom:1px solid var(--b)">SENSITIVITY ANALYSIS</div>
+<div style="display:grid;grid-template-columns:repeat(5,1fr);border:1px solid var(--b)">
+  ${['SKENARIO','COVERS ±','EBITDA Y1','ROI Y1','PAYBACK'].map(h=>`<div style="padding:5px 4px;border-right:1px solid var(--b);border-bottom:1px solid var(--b);font-size:8px;color:var(--t3);text-align:center;background:var(--bg3)">${h}</div>`).join('')}
+  ${[['BASE CASE','0%',fin.yr1EBITDA,fin.roi,fin.be,'base'],['BEST +20%','+20%',fin.yr1EBITDA*1.2,fin.roi*1.2,Math.round(fin.be*.85),'pos'],['WORST -20%','-20%',fin.yr1EBITDA*.8,fin.roi*.8,Math.round(fin.be*1.2),'neg'],['COGS +2%','+0%',fin.yr1EBITDA*.94,fin.roi*.94,Math.round(fin.be*1.08),'neg']].map(r=>
+    `<div style="padding:5px 4px;border-right:1px solid var(--b);border-bottom:1px solid var(--b);font-size:8px;text-align:center;color:var(--t3)">${r[0]}</div>
+     <div style="padding:5px 4px;border-right:1px solid var(--b);border-bottom:1px solid var(--b);font-size:8px;text-align:center;color:var(--t3)">${r[1]}</div>
+     <div style="padding:5px 4px;border-right:1px solid var(--b);border-bottom:1px solid var(--b);font-size:8px;text-align:center;color:${r[5]==='pos'?'var(--pos)':r[5]==='neg'?'var(--neg)':'var(--t)'}">${fmtRp(r[2]/1e6)}</div>
+     <div style="padding:5px 4px;border-right:1px solid var(--b);border-bottom:1px solid var(--b);font-size:8px;text-align:center;color:${r[5]==='pos'?'var(--pos)':r[5]==='neg'?'var(--neg)':'var(--t)'}">${r[3].toFixed(1)}%</div>
+     <div style="padding:5px 4px;border-right:1px solid var(--b);border-bottom:1px solid var(--b);font-size:8px;text-align:center">${r[4]} bln</div>`
+  ).join('')}
+</div></div>
+<div style="margin-bottom:8px"><div style="font-size:8px;color:var(--t3);letter-spacing:1.5px;margin-bottom:8px;text-transform:uppercase;padding-bottom:4px;border-bottom:1px solid var(--b)">KUR / LOAN SIMULATOR</div>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px">
+  <div class="fg"><label class="fl">Jenis Pinjaman</label><select class="fi" id="kur_type" onchange="updateKUR()"><option value="6">KUR Mikro (6%)</option><option value="6" selected>KUR Kecil (6%)</option><option value="9">Bank Umum (~9%)</option></select></div>
+  <div class="fg"><label class="fl">Jumlah Pinjaman <span class="slider-val" id="kur_amtlbl">${fmtRp((formData.seating||60)*15*.5)}</span></label>
+  <input type="range" class="fi" id="kur_amt" min="50" max="2000" value="${Math.round((formData.seating||60)*15*.5/1e6*10)}" step="25" oninput="updateKUR()"></div>
+  <div class="fg"><label class="fl">Tenor <span class="slider-val" id="kur_tenlbl">3 tahun</span></label>
+  <input type="range" class="fi" id="kur_tenor" min="1" max="5" value="3" step="1" oninput="updateKUR()"></div>
+</div>
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px" id="kurMetrics"></div></div>`;
+}
+
+function attachFinancialListeners(){updateFinLive();updateKUR();}
+function updateFinLive(){
+  const fin=getFinancials();
+  const fmts=[v=>fmtRp(v/1e6),v=>fmtRp(v/1e6),v=>fmtRp(v/1e6),v=>v.toFixed(1)+'%'];
+  const vals=[fin.capital,fin.yr1Revenue,fin.yr1EBITDA,fin.roi];
+  for(let i=0;i<4;i++){const el=document.getElementById('fin_'+i);if(el)el.textContent=fmts[i](vals[i]);}
+  const f2fmts=[v=>v+' bln',v=>v.toFixed(1)+'%',v=>v+' bln',v=>fmtRp(v/1e6)];
+  const f2vals=[fin.be,fin.irr,fin.be,fin.capital*.5];
+  for(let i=0;i<4;i++){const el=document.getElementById('fin2_'+i);if(el)el.textContent=f2fmts[i](f2vals[i]);}
+  updateLivePanel(2);
+}
+
+function updateKUR(){
+  const P=(parseFloat(document.getElementById('kur_amt')?.value||500))*1e6;
+  const r=parseFloat(document.getElementById('kur_type')?.value||6)/100/12;
+  const n=parseFloat(document.getElementById('kur_tenor')?.value||3)*12;
+  if(!P||!r||!n)return;
+  const monthly=P*(r*Math.pow(1+r,n))/(Math.pow(1+r,n)-1);
+  const totalPay=monthly*n;
+  const interest=totalPay-P;
+  const ebitdaMo=getFinancials().yr1EBITDA/12;
+  const dcr=ebitdaMo/monthly;
+  document.getElementById('kur_amtlbl').textContent=fmtRp(P/1e6);
+  document.getElementById('kur_tenlbl').textContent=(n/12)+' thn';
+  const dcrCol=dcr>=1.5?'var(--pos)':dcr>=1.0?'var(--a)':'var(--neg)';
+  const dcrTxt=dcr>=1.5?'AMAN':dcr>=1.0?'HATI-HATI':'RISIKO';
+  document.getElementById('kurMetrics').innerHTML=
+    `<div style="background:var(--bg3);border:1px solid var(--b);padding:7px"><div style="font-size:7px;color:var(--t3);letter-spacing:1px;margin-bottom:2px">CICILAN/BLN</div><div style="font-family:'Orbitron',sans-serif;font-size:11px;color:var(--a)">${fmtRp(monthly/1e6)}</div></div>
+     <div style="background:var(--bg3);border:1px solid var(--b);padding:7px"><div style="font-size:7px;color:var(--t3);letter-spacing:1px;margin-bottom:2px">TOTAL BUNGA</div><div style="font-family:'Orbitron',sans-serif;font-size:11px;color:var(--t)">${fmtRp(interest/1e6)}</div></div>
+     <div style="background:var(--bg3);border:1px solid var(--b);padding:7px"><div style="font-size:7px;color:var(--t3);letter-spacing:1px;margin-bottom:2px">TOTAL BAYAR</div><div style="font-family:'Orbitron',sans-serif;font-size:11px;color:var(--t)">${fmtRp(totalPay/1e6)}</div></div>
+     <div style="background:var(--bg3);border:1px solid var(--b);padding:7px"><div style="font-size:7px;color:${dcrCol};letter-spacing:1px;margin-bottom:2px">DCR · ${dcrTxt}</div><div style="font-family:'Orbitron',sans-serif;font-size:11px;color:${dcrCol}">${dcr.toFixed(2)}x</div></div>`;
+}
+
+// ── STEP 4 ──
+function stepMenu(){return`<div id="menuWrap"></div><button class="btn-add" onclick="addMenuItem()" style="margin-top:8px">+ TAMBAH ITEM MENU</button>
+<div id="menuStats" style="margin-top:12px;display:grid;grid-template-columns:repeat(4,1fr);gap:6px"></div>
+<div style="margin-top:12px"><div style="font-size:8px;color:var(--t3);letter-spacing:1.5px;margin-bottom:8px;text-transform:uppercase;padding-bottom:4px;border-bottom:1px solid var(--b)">MENU ENGINEERING MATRIX</div>
+<div style="display:grid;grid-template-columns:auto 1fr;gap:6px;align-items:start">
+<div style="font-size:7px;color:var(--t4);writing-mode:vertical-rl;transform:rotate(180deg);letter-spacing:1px;padding:0 4px;text-align:center">POP RENDAH ↑ POP TINGGI</div>
+<div>
+<div style="display:flex;justify-content:space-between;font-size:7px;color:var(--t4);padding:0 2px 3px;letter-spacing:1px"><span>CM RENDAH</span><span>CM TINGGI</span></div>
+<div id="menuMatrix" style="display:grid;grid-template-columns:1fr 1fr;grid-template-rows:auto auto;gap:4px;min-height:120px"></div></div></div></div>`;}
+
+function buildMenuTable(){
+  document.getElementById('menuWrap').innerHTML=`<table class="menu-table"><thead><tr><th>Nama Item</th><th style="width:110px">Kategori</th><th style="width:100px">Harga (IDR)</th><th style="width:70px">COGS %</th><th style="width:30px"></th></tr></thead><tbody id="menuTbody"></tbody></table>`;
+  menuItems.forEach((_,i)=>renderMenuRow(i));
+  updateMenuStats();
+}
+function renderMenuRow(i){
+  const it=menuItems[i];
+  const cats=['starter','main','dessert','beverage'];
+  const el=document.createElement('tr');
+  el.innerHTML=`<td><input value="${it.n}" oninput="menuItems[${i}].n=this.value;updateMenuStats()"></td>
+  <td><select onchange="menuItems[${i}].cat=this.value;updateMenuStats()">${cats.map(c=>`<option${it.cat===c?' selected':''}>${c}</option>`).join('')}</select></td>
+  <td><input type="number" value="${it.price}" oninput="menuItems[${i}].price=+this.value;updateMenuStats()"></td>
+  <td><input type="number" value="${it.cogs}" min="10" max="80" oninput="menuItems[${i}].cogs=+this.value;updateMenuStats()"></td>
+  <td><button class="btn-icon" onclick="removeMenuItem(${i})">×</button></td>`;
+  document.getElementById('menuTbody').appendChild(el);
+}
+function addMenuItem(){menuItems.push({n:'Item Baru',cat:'main',price:50000,cogs:30});buildMenuTable();}
+function removeMenuItem(i){if(menuItems.length>2){menuItems.splice(i,1);buildMenuTable();}}
+function updateMenuStats(){
+  const avgCM=menuItems.reduce((s,m)=>s+m.price*(1-m.cogs/100),0)/menuItems.length;
+  const avgPrice=menuItems.reduce((s,m)=>s+m.price,0)/menuItems.length;
+  const avgCogs=menuItems.reduce((s,m)=>s+m.cogs,0)/menuItems.length;
+  const ms=document.getElementById('menuStats');
+  if(ms)ms.innerHTML=[['ITEM COUNT',menuItems.length,''],['AVG COGS',avgCogs.toFixed(1)+'%',''],['AVG CM','Rp'+(avgCM/1000).toFixed(0)+'K',''],['AVG PRICE','Rp'+(avgPrice/1000).toFixed(0)+'K','']].map(([l,v])=>`<div style="background:var(--bg3);border:1px solid var(--b);padding:7px"><div style="font-size:7px;color:var(--t3);letter-spacing:1px;margin-bottom:2px">${l}</div><div style="font-family:'Orbitron',sans-serif;font-size:12px;color:var(--a)">${v}</div></div>`).join('');
+  // Matrix
+  const mm=document.getElementById('menuMatrix');
+  if(!mm)return;
+  const stars=[],plows=[],puzzles=[],dogs=[];
+  for(const m of menuItems){
+    const pop=m.price/avgPrice;const cm=m.price*(1-m.cogs/100);
+    if(pop>=1&&cm>=avgCM)stars.push(m.n);
+    else if(pop>=1&&cm<avgCM)plows.push(m.n);
+    else if(pop<1&&cm>=avgCM)puzzles.push(m.n);
+    else dogs.push(m.n);
+  }
+  const q=(items,label,color,border)=>`<div style="border:1px solid ${border};padding:7px;background:${color}"><div style="font-size:7px;letter-spacing:1.5px;color:${border};margin-bottom:4px">${label}</div>${items.map(n=>`<div style="font-size:8px;color:var(--t2)">${n}</div>`).join('')||'<div style="font-size:8px;color:var(--t4)">— kosong —</div>'}</div>`;
+  mm.innerHTML=q(puzzles,'Puzzles','rgba(77,166,255,.04)','#4DA6FF')+q(stars,'Stars ★','rgba(105,240,174,.04)','var(--pos)')+q(dogs,'Dogs','rgba(255,82,82,.04)','var(--neg)')+q(plows,'Plowhorses','rgba(255,109,0,.04)','var(--a)');
+  updateLivePanel(3);
+}
+
+// ── STEP 5 ──
+function stepSpace(){
+  return`<div class="form-grid">
+<div class="fg"><label class="fl">Total Area (m²)</label><input class="fi" type="number" placeholder="200" value="${formData.totalArea||''}" oninput="save('totalArea',+this.value);checkSpaceRatio()"></div>
+<div class="fg"><label class="fl">Area Dapur (m²)</label><input class="fi" type="number" placeholder="60" value="${formData.kitchenArea||''}" oninput="save('kitchenArea',+this.value);checkSpaceRatio()"></div>
+<div class="fg"><label class="fl">Area Dining (m²)</label><input class="fi" type="number" placeholder="120" value="${formData.diningArea||''}" oninput="save('diningArea',+this.value);checkSpaceRatio()"></div>
+<div class="fg"><label class="fl">Biaya Renovasi (IDR)</label><input class="fi" type="number" placeholder="500000000" value="${formData.renovBudget||''}" oninput="save('renovBudget',+this.value)"></div>
+<div class="fg"><label class="fl">Design Theme</label><select class="fi" onchange="save('theme',this.value)"><option>Warm Contemporary</option><option>Minimalist Modern</option><option>Rustic Industrial</option><option>Luxury Classic</option><option>Art Deco</option></select></div>
+<div class="fg"><label class="fl">Color Scheme</label><select class="fi" onchange="save('colors',this.value)"><option>Amber & Cream</option><option>Navy & Gold</option><option>Sage & Linen</option><option>Charcoal & White</option><option>Terracotta & Wood</option></select></div>
+<div class="fg span2" id="spaceRatioMsg"></div></div>`;
+}
+function checkSpaceRatio(){
+  const t=formData.totalArea,d=formData.diningArea,k=formData.kitchenArea;
+  const el=document.getElementById('spaceRatioMsg');
+  if(!el)return;
+  if(t&&d&&k){
+    const ratio=d/t;
+    const ok=t>d&&d>k&&ratio>=0.5&&ratio<=0.7;
+    el.innerHTML=`<div style="padding:7px;border:1px solid ${ok?'var(--pos)':'var(--a)'};background:${ok?'rgba(105,240,174,.04)':'var(--a3)'}"><div style="font-size:8px;color:${ok?'var(--pos)':'var(--a)'}">RASIO DINING/TOTAL: ${(ratio*100).toFixed(1)}% ${ok?'✓ OPTIMAL (50–70%)':'⚠ DISARANKAN 55–65%'}</div></div>`;
+  }else{el.innerHTML='';}
+}
+
+// ── STEP 6 ──
+function stepTeam(){
+  return`<div class="form-grid cols3">
+<div class="fg"><label class="fl">Management <span class="slider-val" id="sv_m">${formData.mgmt||2}</span></label><input type="range" class="fi" min="1" max="10" value="${formData.mgmt||2}" step="1" oninput="save('mgmt',+this.value);document.getElementById('sv_m').textContent=this.value;calcPayroll()"></div>
+<div class="fg"><label class="fl">Kitchen Staff <span class="slider-val" id="sv_k">${formData.kitchen||5}</span></label><input type="range" class="fi" min="2" max="30" value="${formData.kitchen||5}" step="1" oninput="save('kitchen',+this.value);document.getElementById('sv_k').textContent=this.value;calcPayroll()"></div>
+<div class="fg"><label class="fl">Front of House <span class="slider-val" id="sv_f">${formData.foh||6}</span></label><input type="range" class="fi" min="2" max="30" value="${formData.foh||6}" step="1" oninput="save('foh',+this.value);document.getElementById('sv_f').textContent=this.value;calcPayroll()"></div>
+<div class="fg"><label class="fl">Gaji GM / Bulan (IDR)</label><input class="fi" type="number" id="f_gm" placeholder="8000000" value="${formData.gmSal||8000000}" oninput="save('gmSal',+this.value);calcPayroll()"></div>
+<div class="fg"><label class="fl">Gaji Chef / Bulan (IDR)</label><input class="fi" type="number" id="f_chef" placeholder="5000000" value="${formData.chefSal||5000000}" oninput="save('chefSal',+this.value);calcPayroll()"></div>
+<div class="fg"><label class="fl">Gaji Server / Bulan (IDR)</label><input class="fi" type="number" id="f_srv" placeholder="3500000" value="${formData.srvSal||3500000}" oninput="save('srvSal',+this.value);calcPayroll()"></div>
+</div>
+<div style="margin-top:12px;display:grid;grid-template-columns:repeat(4,1fr);gap:6px" id="payrollResult"></div>`;
+}
+function attachTeamListeners(){calcPayroll();}
+function calcPayroll(){
+  const m=formData.mgmt||2,k=formData.kitchen||5,f=formData.foh||6;
+  const gm=formData.gmSal||8000000,chef=formData.chefSal||5000000,srv=formData.srvSal||3500000;
+  const raw=(m*gm+k*chef+f*srv);const payroll=raw*1.3;const perSeat=payroll/(formData.seating||60);
+  const el=document.getElementById('payrollResult');
+  if(!el)return;
+  el.innerHTML=[['TOTAL FTE',m+k+f+' orang'],['PAYROLL BRUTO',fmtRp(raw/1e6)],['+ BENEFITS (30%)',fmtRp((payroll-raw)/1e6)],['COST/SEAT',fmtRp(perSeat/1e6)]].map(([l,v])=>`<div style="background:var(--bg3);border:1px solid var(--b);padding:8px"><div style="font-size:8px;color:var(--t3);letter-spacing:1px;margin-bottom:2px">${l}</div><div style="font-family:'Orbitron',sans-serif;font-size:12px;color:var(--a)">${v}</div></div>`).join('');
+  formData.totalPayroll=payroll;
+  updateLivePanel(5);
+}
+
+// ── STEP 7 ──
+function stepLaunch(){
+  return`<div class="form-grid">
+<div class="fg span2"><label class="fl">Brand Tagline</label><input class="fi" placeholder="cth: Taste of Nusantara — Where Every Bite Tells a Story" value="${formData.tagline||''}" oninput="save('tagline',this.value)"></div>
+<div class="fg"><label class="fl">Budget Marketing / Bulan (IDR)</label><input class="fi" type="number" placeholder="10000000" value="${formData.mktBudget||10000000}" oninput="save('mktBudget',+this.value)"></div>
+<div class="fg"><label class="fl">Budget Grand Opening (IDR)</label><input class="fi" type="number" placeholder="25000000" value="${formData.grandBudget||25000000}" oninput="save('grandBudget',+this.value)"></div>
+<div class="fg"><label class="fl">Soft Opening Days <span class="slider-val" id="sv_so">${formData.softDays||14}</span></label>
+<input type="range" class="fi" min="1" max="30" value="${formData.softDays||14}" step="1" oninput="save('softDays',+this.value);document.getElementById('sv_so').textContent=this.value"></div>
+<div class="fg"><label class="fl">Target Social Media (followers)</label><input class="fi" type="number" placeholder="10000" value="${formData.smTarget||10000}" oninput="save('smTarget',+this.value)"></div>
+</div>
+<div style="margin-top:10px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+${['PR Launch Campaign','Influencer Strategy','Instagram Ads','TikTok Content','GoFood / GrabFood','Google My Business'].map(c=>`<label style="display:flex;align-items:center;gap:6px;padding:7px;border:1px solid var(--b);cursor:pointer;background:var(--bg3)"><input type="checkbox" style="accent-color:var(--a)"> <span style="font-size:9px;color:var(--t2)">${c}</span></label>`).join('')}
+</div>
+<div style="margin-top:10px;padding:8px;background:var(--bg3);border:1px solid var(--b);font-size:9px;color:var(--t3)">TOTAL PRE-OPENING SPEND: <span style="color:var(--a);font-family:'Orbitron',sans-serif">${fmtRp(((formData.mktBudget||10000000)+(formData.grandBudget||25000000))/1e6)}</span></div>`;
+}
+
+// ── LIVE PANEL ──
+function updateLivePanel(stepIdx){
+  document.getElementById('lpTitle').textContent=`LIVE PREVIEW — STEP ${stepIdx+1}`;
+  const body=document.getElementById('livePanelBody');
+  if(stepIdx===0){
+    body.innerHTML=`<div class="lp-section"><div class="lp-sec-title">Profil Restoran</div>
+${[['Nama',formData.name||'—'],['Kota',formData.restaurantCity||prefill.city||'—'],['Konsep',formData.concept||'—'],['Kursi',(formData.seating||60)+' seats']].map(([l,v])=>`<div class="lp-row"><span class="lp-lbl">${l}</span><span class="lp-val">${v}</span></div>`).join('')}</div>
+<div class="lp-section"><div class="lp-sec-title">Dari RestoMap</div>
+${[['Skor Lokasi',prefill.score||'—'],['Rev. Estimasi',(prefill.revM?fmtRp(prefill.revM):'—')],['Tier',tier.toUpperCase()]].map(([l,v])=>`<div class="lp-row"><span class="lp-lbl">${l}</span><span class="lp-val ${l==='Skor Lokasi'?'warn':''}">${v}</span></div>`).join('')}</div>`;
+  } else if(stepIdx===2){
+    const fin=getFinancials();
+    body.innerHTML=`<div class="lp-section"><div class="lp-sec-title">Kalkulasi Finansial</div>
+${[['Modal Total',{v:fmtRp(fin.capital/1e6),c:'warn'}],['Rev/Bln',{v:fmtRp(fin.yr1Revenue/12/1e6),c:'pos'}],['EBITDA/Bln',{v:fmtRp(fin.yr1EBITDA/12/1e6),c:'pos'}],['ROI Y1',{v:fin.roi.toFixed(1)+'%',c:'pos'}],['IRR 5yr',{v:fin.irr.toFixed(1)+'%',c:''}],['Break-even',{v:fin.be+' bln',c:'warn'}]].map(([l,{v,c}])=>`<div class="lp-row"><span class="lp-lbl">${l}</span><span class="lp-val ${c}">${v}</span></div>`).join('')}</div>
+<div class="lp-section"><div class="lp-sec-title">Proyeksi Revenue</div><div class="lp-chart-wrap"><canvas id="liveRevC"></canvas></div></div>`;
+    buildLiveRevChart(fin);
+  } else if(stepIdx===3){
+    const avgCogs=menuItems.reduce((s,m)=>s+m.cogs,0)/menuItems.length;
+    const avgCM=menuItems.reduce((s,m)=>s+m.price*(1-m.cogs/100),0)/menuItems.length;
+    body.innerHTML=`<div class="lp-section"><div class="lp-sec-title">Menu Summary</div>
+${[['Total Item',menuItems.length+' item'],['Avg COGS',avgCogs.toFixed(1)+'%'],['Avg CM/Item','Rp'+(avgCM/1000).toFixed(0)+'K']].map(([l,v])=>`<div class="lp-row"><span class="lp-lbl">${l}</span><span class="lp-val">${v}</span></div>`).join('')}</div>
+<div class="lp-section"><div class="lp-sec-title">Menu Matrix</div>
+${menuItems.map(m=>{
+  const fin2=getFinancials();const avgP=menuItems.reduce((s,m)=>s+m.price,0)/menuItems.length;
+  const avgC=menuItems.reduce((s,mm)=>s+mm.price*(1-mm.cogs/100),0)/menuItems.length;
+  const pop=m.price/avgP;const cm=m.price*(1-m.cogs/100);
+  const q=pop>=1&&cm>=avgC?'Stars':pop>=1?'Plowhorses':cm>=avgC?'Puzzles':'Dogs';
+  const qc={Stars:'var(--pos)',Plowhorses:'var(--a)',Puzzles:'var(--info)',Dogs:'var(--neg)'}[q];
+  return`<div class="lp-row"><span class="lp-lbl" style="font-size:8px">${m.n.substring(0,14)}</span><span style="font-size:7px;color:${qc}">${q}</span></div>`;
+}).join('')}</div>`;
+  } else if(stepIdx===5){
+    const fte=(formData.mgmt||2)+(formData.kitchen||5)+(formData.foh||6);
+    const payroll=formData.totalPayroll||(fte*4500000*1.3);
+    body.innerHTML=`<div class="lp-section"><div class="lp-sec-title">Team & Payroll</div>
+${[['Total FTE',fte+' orang'],['Total Payroll',fmtRp(payroll/1e6)],['Cost/Seat',fmtRp(payroll/(formData.seating||60)/1e6)]].map(([l,v])=>`<div class="lp-row"><span class="lp-lbl">${l}</span><span class="lp-val">${v}</span></div>`).join('')}</div>`;
+  } else {
+    body.innerHTML=`<div class="lp-section"><div class="lp-sec-title">Status</div><div style="font-size:9px;color:var(--t3);padding:8px 0;line-height:1.7">Step ${stepIdx+1} sedang diisi.<br>Data tersimpan otomatis.</div></div>`;
+  }
+}
+
+function buildLiveRevChart(fin){
+  const canvas2=document.getElementById('liveRevC');
+  if(!canvas2)return;
+  if(liveRevChart){liveRevChart.destroy();liveRevChart=null;}
+  const col=getComputedStyle(document.body).getPropertyValue('--a').trim();
+  const pos=getComputedStyle(document.body).getPropertyValue('--pos').trim();
+  const t3=getComputedStyle(document.body).getPropertyValue('--t3').trim();
+  const t=getComputedStyle(document.body).getPropertyValue('--t').trim();
+  liveRevChart=new Chart(canvas2,{
+    type:'line',
+    data:{labels:fin.yr.map(y=>'Y'+y.yr),datasets:[
+      {label:'Rev',data:fin.yr.map(y=>+(y.revenue/1e9).toFixed(2)),borderColor:col,pointRadius:2,borderWidth:1.5,tension:.3},
+      {label:'EBITDA',data:fin.yr.map(y=>+(y.ebitda/1e9).toFixed(2)),borderColor:pos,pointRadius:2,borderWidth:1.5,tension:.3},
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:t3,font:{size:7},usePointStyle:true,boxHeight:3}}},
+      scales:{x:{grid:{color:'rgba(255,109,0,.06)'},ticks:{color:t3,font:{size:7}},border:{color:'rgba(255,109,0,.15)'}},
+              y:{grid:{color:'rgba(255,109,0,.06)'},ticks:{color:t3,font:{size:7},callback:v=>`${v}B`},border:{color:'rgba(255,109,0,.15)'}}}}
+  });
+}
+
+// ═══ RESULTS ═══
+function renderResults(){
+  const fin=getFinancials();
+  const el=document.getElementById('resultsPage');
+  const name=formData.name||'Restoran Anda';
+  const city=formData.restaurantCity||prefill.city||'—';
+  el.innerHTML=`
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--b)">
+  <div>
+    <div style="font-family:'Orbitron',sans-serif;font-size:16px;color:var(--a)">${name.toUpperCase()}</div>
+    <div style="font-size:9px;color:var(--t3);margin-top:2px">${formData.concept||'casual'} · ${city} · Score RestoMap: ${prefill.score||'—'}/100</div>
+  </div>
+  <div style="font-size:8px;color:var(--t3);text-align:right">Selesai: ${new Date().toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'})}<br>RestoSuite Terminal v1.1</div>
+</div>
+
+<div class="res-grid">
+  ${[['MODAL TOTAL',fmtRp(fin.capital/1e6),'var(--a)','Total investasi awal'],['REVENUE Y1',fmtRp(fin.yr1Revenue/1e6),'var(--pos)','Proyeksi tahun pertama'],['EBITDA Y1',fmtRp(fin.yr1EBITDA/1e6),'var(--pos)',`Margin: ${fin.yr[0].margin.toFixed(1)}%`],['ROI Y1',fin.roi.toFixed(1)+'%','var(--t)','Return tahun 1'],['IRR 5YR',fin.irr.toFixed(1)+'%','var(--t)','Internal rate of return'],['BREAK-EVEN',fin.be+' bln','var(--a)','Bulan balik modal'],['COVERS/HARI',Math.round(fin.covers)+' covers','var(--t3)','Estimasi tamu per hari'],['SKOR LOKASI',(prefill.score||'—')+'/100','var(--t)','Dari RestoMap']].map(([l,v,c,s])=>`<div class="res-card"><div class="rc-lbl">${l}</div><div class="rc-val" style="color:${c}">${v}</div><div class="rc-sub">${s}</div></div>`).join('')}
+</div>
+
+<div class="res-charts">
+  <div class="chart-card"><div class="cc-title">REVENUE & EBITDA — 5 TAHUN</div><div class="cc-h"><canvas id="res_rev"></canvas></div></div>
+  <div class="chart-card"><div class="cc-title">BREAKDOWN MODAL</div><div class="cc-h"><canvas id="res_donut"></canvas></div></div>
+</div>
+
+<div style="font-size:8px;color:var(--t3);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid var(--b)">PROYEKSI 5 TAHUN</div>
+<table class="res-table">
+  <thead><tr><th>TAHUN</th><th>REVENUE</th><th>COGS</th><th>GROSS PROFIT</th><th>EBITDA</th><th>MARGIN</th></tr></thead>
+  <tbody>${fin.yr.map(y=>`<tr><td style="color:var(--a);font-family:'Orbitron',sans-serif">Y${y.yr}</td><td>${fmtRp(y.revenue/1e6)}</td><td style="color:var(--neg)">${fmtRp(y.cogsTotal/1e6)}</td><td>${fmtRp(y.grossProfit/1e6)}</td><td style="color:var(--pos)">${fmtRp(y.ebitda/1e6)}</td><td style="color:${y.margin>15?'var(--pos)':y.margin>8?'var(--a)':'var(--neg)'}">${y.margin.toFixed(1)}%</td></tr>`).join('')}</tbody>
+</table>
+
+<div class="action-row">
+  <button class="action-btn" onclick="exportPDF()">EXPORT BUSINESS PLAN PDF</button>
+  <button class="action-btn" onclick="exportGantt()">GANTT TIMELINE PDF</button>
+  <button class="action-btn wa-btn" onclick="shareWA()">BAGIKAN VIA WHATSAPP</button>
+  <button class="action-btn" onclick="window.location.href='restomap.html'">← KEMBALI KE RESTOMAP</button>
+</div>`;
+  buildResultCharts(fin);
+}
+
+function buildResultCharts(fin){
+  setTimeout(()=>{
+    const col=getComputedStyle(document.body).getPropertyValue('--a').trim();
+    const pos=getComputedStyle(document.body).getPropertyValue('--pos').trim();
+    const t3=getComputedStyle(document.body).getPropertyValue('--t3').trim();
+    const t=getComputedStyle(document.body).getPropertyValue('--t').trim();
+    const b='rgba(255,109,0,.08)';
+    const gridOpts={grid:{color:b},border:{color:'rgba(255,109,0,.15)'},ticks:{color:t3,font:{size:8}}};
+    const tt={backgroundColor:'#0d0d0d',borderColor:col,borderWidth:1,bodyColor:t};
+
+    const c1=document.getElementById('res_rev');
+    if(c1){if(resCharts.rev)resCharts.rev.destroy();
+    resCharts.rev=new Chart(c1,{type:'line',data:{labels:fin.yr.map(y=>'Y'+y.yr),datasets:[{label:'Revenue',data:fin.yr.map(y=>+(y.revenue/1e9).toFixed(2)),borderColor:col,backgroundColor:col+'18',fill:true,tension:.35,borderWidth:1.5,pointRadius:3},{label:'EBITDA',data:fin.yr.map(y=>+(y.ebitda/1e9).toFixed(2)),borderColor:pos,backgroundColor:pos+'10',fill:true,tension:.35,borderWidth:1.5,pointRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:t3,font:{size:8},usePointStyle:true,boxHeight:4}},tooltip:tt},scales:{x:gridOpts,y:{...gridOpts,ticks:{...gridOpts.ticks,callback:v=>v+'B'}}}}}); }
+
+    const c2=document.getElementById('res_donut');
+    if(c2){if(resCharts.donut)resCharts.donut.destroy();
+    resCharts.donut=new Chart(c2,{type:'doughnut',data:{labels:['Konstruksi 65%','Equipment 20%','Furniture 10%','Pre-Opening 5%'],datasets:[{data:[65,20,10,5],backgroundColor:[col,'rgba(105,240,174,.7)','rgba(77,166,255,.7)','rgba(255,82,82,.7)'],borderColor:'#0d0d0d',borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{position:'bottom',labels:{color:t3,font:{size:8},usePointStyle:true,boxHeight:4,padding:6}},tooltip:tt}}}); }
+  },100);
+}
+
+// ═══ EXPORT ACTIONS ═══
+function fmtRp(m){return m>=1000?`Rp${(m/1000).toFixed(1)}M`:`Rp${m}jt`;}
+function save(k,v){formData[k]=v;if(currentStep===2)updateFinLive();}
+
+function exportPDF(){
+  const fin=getFinancials();const name=formData.name||'Restoran';const city=formData.restaurantCity||prefill.city||'';
+  const html=`<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>${name} — Business Plan</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>@page{margin:0;size:A4;}*{box-sizing:border-box;margin:0;padding:0;}body{background:#030303;color:#f0ede8;font-family:'Share Tech Mono',monospace;font-size:12px;line-height:1.6;}.page{width:210mm;min-height:297mm;padding:20mm 18mm;page-break-after:always;}h1{font-family:'Orbitron',sans-serif;font-size:28px;color:#FF6D00;}.accent{color:#FF6D00;}.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:16px 0;}.card{background:#111;border:1px solid rgba(255,109,0,.2);padding:10px 12px;}.cl{font-size:9px;color:#666;letter-spacing:1px;margin-bottom:3px;}.cv{font-size:18px;font-weight:bold;}.table{width:100%;border-collapse:collapse;margin:12px 0;}.table th{font-size:9px;color:#666;padding:6px 8px;border-bottom:1px solid #1e1e1e;text-align:left;}.table td{font-size:11px;padding:6px 8px;border-bottom:1px solid #1e1e1e;color:#aaa;}.divider{border:none;border-top:1px solid #1e1e1e;margin:16px 0;}.footer{font-size:9px;color:#333;text-align:center;}
+@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}</style></head><body>
+<div class="page">
+<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px">
+  <div><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><div style="width:24px;height:24px;background:#FF6D00;border-radius:5px"></div><span style="font-family:'Orbitron',sans-serif;font-size:14px">RestoSuite</span></div>
+  <h1>${name}</h1><div style="color:#888;margin-top:4px">${formData.concept||'casual'} · ${city}</div></div>
+  <div style="text-align:right"><div style="font-size:32px;font-family:'Orbitron',sans-serif;color:#FF6D00">${prefill.score||'—'}</div><div style="font-size:11px;color:#666">Location Score</div></div>
+</div>
+<hr class="divider">
+<div class="grid4">
+  ${[['MODAL TOTAL',fmtRp(fin.capital/1e6)],['REVENUE Y1',fmtRp(fin.yr1Revenue/1e6)],['EBITDA Y1',fmtRp(fin.yr1EBITDA/1e6)],['ROI Y1',fin.roi.toFixed(1)+'%']].map(([l,v])=>`<div class="card"><div class="cl">${l}</div><div class="cv" style="color:#FF6D00">${v}</div></div>`).join('')}
+</div>
+<div class="grid4">
+  ${[['BREAK-EVEN',fin.be+' bln'],['IRR 5YR',fin.irr.toFixed(1)+'%'],['AVG CHECK','Rp'+(formData.avgCheck||75000)/1000+'K'],['KOMPETITOR',(prefill.comp||10)+' nearby']].map(([l,v])=>`<div class="card"><div class="cl">${l}</div><div class="cv">${v}</div></div>`).join('')}
+</div>
+<hr class="divider">
+<div style="font-size:10px;color:#666;letter-spacing:2px;margin-bottom:10px">PROYEKSI 5 TAHUN</div>
+<table class="table"><thead><tr><th>TAHUN</th><th>REVENUE</th><th>EBITDA</th><th>MARGIN</th><th>ROI KUMULATIF</th></tr></thead><tbody>
+${fin.yr.map((y,i)=>`<tr><td style="color:#FF6D00">Y${y.yr}</td><td>${fmtRp(y.revenue/1e6)}</td><td style="color:#69F0AE">${fmtRp(y.ebitda/1e6)}</td><td>${y.margin.toFixed(1)}%</td><td style="color:#FF6D00">${((fin.yr.slice(0,i+1).reduce((s,r)=>s+r.ebitda,0)/fin.capital)*100).toFixed(1)}%</td></tr>`).join('')}
+</tbody></table>
+<hr class="divider"><div class="footer">RestoSuite Terminal v1.1 · Dibuat ${new Date().toLocaleDateString('id-ID')} · Bukan merupakan nasihat investasi</div>
+</div></body></html>`;
+  const w=window.open('','_blank','width=900,height=700');w.document.write(html);w.document.close();w.onload=()=>setTimeout(()=>{w.focus();w.print();},600);
+}
+
+function exportGantt(){
+  const tasks=[
+    {t:'Izin & Legal',s:-6,e:-3,cat:'pre'},
+    {t:'Desain Interior',s:-5,e:-2,cat:'construction'},
+    {t:'Konstruksi & Renovasi',s:-4,e:-1,cat:'construction'},
+    {t:'Rekrutmen Tim',s:-3,e:-1,cat:'staff'},
+    {t:'Training Staff',s:-2,e:0,cat:'staff'},
+    {t:'Pengadaan Equipment',s:-3,e:-1,cat:'pre'},
+    {t:'Social Media Setup',s:-2,e:0,cat:'marketing'},
+    {t:'Soft Opening',s:0,e:0,cat:'ops'},
+    {t:'Grand Opening',s:1,e:1,cat:'marketing'},
+    {t:'Operasional Normal',s:1,e:6,cat:'ops'},
+    {t:'Review KPI Bulanan',s:2,e:6,cat:'ops'},
+    {t:'Evaluasi & Optimasi',s:3,e:6,cat:'ops'},
+  ];
+  const catColor={pre:'#FF6D00',construction:'#4DA6FF',staff:'#69F0AE',marketing:'#FF8F00',ops:'rgba(255,183,77,.7)'};
+  const months=[-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6];
+  const w=window.open('','_blank','width=1100,height=600');
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Gantt — ${formData.name||'Restoran'}</title>
+<style>*{box-sizing:border-box;margin:0;padding:0;}body{background:#030303;color:#FFB74D;font-family:'Share Tech Mono',monospace;font-size:10px;padding:24px;}
+h2{font-size:18px;color:#FF6D00;margin-bottom:4px;font-family:'Orbitron',sans-serif;}
+.sub{color:#666;font-size:9px;margin-bottom:16px;}
+.grid{display:grid;grid-template-columns:160px repeat(13,1fr);border:1px solid rgba(255,109,0,.2);}
+.cell{padding:5px 4px;border-right:1px solid rgba(255,109,0,.12);border-bottom:1px solid rgba(255,109,0,.12);font-size:9px;}
+.header{background:#111;color:rgba(255,183,77,.5);letter-spacing:.5px;text-align:center;}
+.launch{background:rgba(255,109,0,.08);color:#FF6D00;}
+.bar{height:16px;border-radius:2px;margin:1px 2px;}
+@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}
+</style></head><body>
+<h2>${formData.name||'Restoran'} — GANTT TIMELINE</h2>
+<div class="sub">${formData.restaurantCity||''} · Soft Opening: M+0 · Dibuat ${new Date().toLocaleDateString('id-ID')}</div>
+<div class="grid">
+  <div class="cell header">AKTIVITAS</div>
+  ${months.map(m=>`<div class="cell header ${m===0?'launch':''}">${m<0?m+'mo':m===0?'LAUNCH':'+'+m+'mo'}</div>`).join('')}
+  ${tasks.map(t=>`<div class="cell">${t.t}</div>${months.map(m=>`<div class="cell">${m>=t.s&&m<=t.e?`<div class="bar" style="background:${catColor[t.cat]||'#666'};width:${m===t.s||m===t.e?'80':'100'}%"></div>`:''}</div>`).join('')}`).join('')}
+</div>
+<div style="margin-top:14px;display:flex;gap:16px;font-size:9px;">
+  ${Object.entries(catColor).map(([k,c])=>`<span><span style="display:inline-block;width:10px;height:10px;background:${c};margin-right:4px;border-radius:1px;vertical-align:middle"></span>${k}</span>`).join('')}
+</div>
+</body></html>`);
+  w.document.close();w.onload=()=>setTimeout(()=>{w.focus();w.print();},600);
+}
+
+function shareWA(){
+  const fin=getFinancials();const name=formData.name||'Restoran';
+  const text=`*Business Plan — ${name}*\n📍 ${formData.restaurantCity||prefill.city||'—'} · ${formData.concept||'—'}\n\n💰 Modal: ${fmtRp(fin.capital/1e6)}\n📈 Revenue Y1: ${fmtRp(fin.yr1Revenue/1e6)}\n✅ EBITDA Y1: ${fmtRp(fin.yr1EBITDA/1e6)}\n🎯 ROI Y1: ${fin.roi.toFixed(1)}%\n⏱ Break-even: ${fin.be} bulan\n📊 Skor Lokasi: ${prefill.score||'—'}/100\n\nDibuat dengan RestoSuite Terminal`;
+  window.open('https://wa.me/?text='+encodeURIComponent(text),'_blank');
+}
+
+function rebuildLiveCharts(){if(currentStep===2)setTimeout(()=>updateLivePanel(2),100);}
+
+// ═══ INIT ═══
+setStep(0);
+</script>
+</body>
+</html>
