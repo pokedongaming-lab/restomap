@@ -193,6 +193,105 @@ canvas#map{width:100%;height:100%;cursor:crosshair;display:block;}
   </div>
 </div>
 
+<!-- SIDEBAR CONTROLS -->
+<div class="sidebar" style="width:280px;background:var(--bg2);border-right:1px solid var(--b);display:flex;flex-direction:column;overflow-y:auto;flex-shrink:0;">
+  
+  <!-- City Search -->
+  <div style="padding:12px;border-bottom:1px solid var(--b);">
+    <div style="font-size:8px;color:var(--t3);letter-spacing:1px;margin-bottom:6px;">KOTA</div>
+    <select id="citySelect" onchange="changeCity(this.value)" style="width:100%;background:var(--bg3);border:1px solid var(--b);color:var(--t);padding:8px;font-size:11px;">
+      <option value="-6.2088,106.8234">Jakarta</option>
+      <option value="-7.5755,110.8243">Semarang</option>
+      <option value="-6.9175,107.6191">Bandung</option>
+      <option value="-7.2505,112.7528">Surabaya</option>
+      <option value="1.4828,124.8421">Manado</option>
+      <option value="-5.1425,119.4125">Makassar</option>
+      <option value="3.5881,98.6739">Medan</option>
+    </select>
+  </div>
+  
+  <!-- Category Filter -->
+  <div style="padding:12px;border-bottom:1px solid var(--b);">
+    <div style="font-size:8px;color:var(--t3);letter-spacing:1px;margin-bottom:6px;">KATEGORI</div>
+    <select id="categorySelect" onchange="changeCategory(this.value)" style="width:100%;background:var(--bg3);border:1px solid var(--b);color:var(--t);padding:8px;font-size:11px;">
+      <option value="">Semua Kategori</option>
+      <option value="coffee">☕ Coffee & Cafe</option>
+      <option value="fastfood">🍔 Fast Food</option>
+      <option value="indonesian">🍳 Indonesian</option>
+      <option value="western">🥩 Western</option>
+      <option value="japanese">🍣 Japanese</option>
+      <option value="korean">🥘 Korean</option>
+      <option value="chinese">🥡 Chinese</option>
+      <option value="bakery">🧁 Bakery</option>
+      <option value="seafood">🦐 Seafood</option>
+      <option value="ramen">🍜 Ramen</option>
+    </select>
+  </div>
+  
+  <!-- Radius Selector -->
+  <div style="padding:12px;border-bottom:1px solid var(--b);">
+    <div style="font-size:8px;color:var(--t3);letter-spacing:1px;margin-bottom:6px;">
+      RADIUS: <span id="radiusValue" style="color:var(--a);">1000</span>m
+    </div>
+    <input type="range" id="radiusSlider" min="500" max="10000" step="500" value="1000" 
+      oninput="document.getElementById('radiusValue').textContent=this.value;changeRadius(this.value)"
+      style="width:100%;accent-color:var(--a);">
+    <div style="display:flex;justify-content:space-between;font-size:8px;color:var(--t4);margin-top:4px;">
+      <span>500m</span><span>10km</span>
+    </div>
+  </div>
+  
+  <!-- Brand Search -->
+  <div style="padding:12px;border-bottom:1px solid var(--b);">
+    <div style="font-size:8px;color:var(--t3);letter-spacing:1px;margin-bottom:6px;">BRAND SEARCH</div>
+    <div style="display:flex;gap:6px;">
+      <input type="text" id="brandSearch" placeholder="Cari brand..." 
+        style="flex:1;background:var(--bg3);border:1px solid var(--b);color:var(--t);padding:8px;font-size:11px;">
+      <button onclick="searchBrand()" style="background:var(--a);border:none;color:#000;padding:8px 12px;font-size:11px;cursor:pointer;">🔍</button>
+    </div>
+    <div id="brandSuggestions" style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px;">
+      <span onclick="quickBrand('starbucks')" style="font-size:9px;padding:3px 8px;background:var(--a3);color:var(--a);cursor:pointer;border-radius:3px;">Starbucks</span>
+      <span onclick="quickBrand('kfc')" style="font-size:9px;padding:3px 8px;background:var(--a3);color:var(--a);cursor:pointer;border-radius:3px;">KFC</span>
+      <span onclick="quickBrand('mcdonalds')" style="font-size:9px;padding:3px 8px;background:var(--a3);color:var(--a);cursor:pointer;border-radius:3px;">McD</span>
+      <span onclick="quickBrand('kopikenangan')" style="font-size:9px;padding:3px 8px;background:var(--a3);color:var(--a);cursor:pointer;border-radius:3px;">Kopi Kenangan</span>
+    </div>
+  </div>
+  
+  <!-- Location Criteria -->
+  <div style="padding:12px;border-bottom:1px solid var(--b);">
+    <div style="font-size:8px;color:var(--t3);letter-spacing:1px;margin-bottom:6px;">KRITERIA LOKASI</div>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <div>
+        <div style="font-size:8px;color:var(--t4);">Traffic</div>
+        <input type="range" id="critTraffic" min="0" max="100" value="70" style="width:100%;accent-color:var(--a);">
+      </div>
+      <div>
+        <div style="font-size:8px;color:var(--t4);">Daya Beli</div>
+        <input type="range" id="critBuying" min="0" max="100" value="70" style="width:100%;accent-color:var(--a);">
+      </div>
+      <div>
+        <div style="font-size:8px;color:var(--t4);">Populasi</div>
+        <input type="range" id="critPop" min="0" max="100" value="60" style="width:100%;accent-color:var(--a);">
+      </div>
+    </div>
+    <button onclick="findBestLocation()" style="width:100%;margin-top:10px;padding:8px;background:var(--a);border:none;color:#000;font-size:10px;font-weight:bold;cursor:pointer;">🎯 CARI LOKASI TERBAIK</button>
+  </div>
+  
+  <!-- Saved Locations -->
+  <div style="padding:12px;border-bottom:1px solid var(--b);flex:1;">
+    <div style="font-size:8px;color:var(--t3);letter-spacing:1px;margin-bottom:6px;">LOKASI TERSIMPAN</div>
+    <div id="savedLocations">
+      <div style="font-size:9px;color:var(--t4);text-align:center;padding:20px;">Belum ada lokasi tersimpan</div>
+    </div>
+  </div>
+  
+  <!-- Actions -->
+  <div style="padding:12px;border-top:1px solid var(--b);">
+    <button onclick="saveCurrentLocation()" style="width:100%;padding:10px;background:var(--a3);border:1px solid var(--a);color:var(--a);font-size:10px;cursor:pointer;margin-bottom:6px;">💾 SIMPAN LOKASI</button>
+    <button onclick="goToBuilder()" style="width:100%;padding:10px;background:var(--a);border:none;color:#000;font-size:10px;font-weight:bold;cursor:pointer;">→ LANJUT KE BUILDER</button>
+  </div>
+</div>
+
 <!-- MAIN APP -->
 <div class="app">
   <!-- MAP -->
@@ -1064,7 +1163,84 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
-console.log('RestoMap initialized - Click on map to analyze location');
+// ═══ SIDEBAR FUNCTIONS ═══
+let currentRadius = 1000;
+let currentCategory = '';
+let currentBrand = '';
+
+function changeCity(coords) {
+  const [lat, lng] = coords.split(',').map(Number);
+  if (map) {
+    map.setCenter({ lat, lng });
+    map.setZoom(12);
+  }
+  document.getElementById('mapCoords').textContent = `LAT: ${lat.toFixed(4)} · LNG: ${lng.toFixed(4)}`;
+}
+
+function changeRadius(radius) {
+  currentRadius = parseInt(radius);
+  if (selectedLoc) renderAnalysis(selectedLoc);
+}
+
+function changeCategory(cat) {
+  currentCategory = cat;
+  if (selectedLoc) renderAnalysis(selectedLoc);
+}
+
+function searchBrand() {
+  const query = document.getElementById('brandSearch').value;
+  if (query) {
+    currentBrand = query;
+    alert('Mencari ' + query + '...');
+  }
+}
+
+function quickBrand(brand) {
+  document.getElementById('brandSearch').value = brand;
+  searchBrand();
+}
+
+function findBestLocation() {
+  const traffic = parseInt(document.getElementById('critTraffic').value);
+  const buying = parseInt(document.getElementById('critBuying').value);
+  const pop = parseInt(document.getElementById('critPop').value);
+  const score = Math.round((traffic * 0.35 + buying * 0.35 + pop * 0.30));
+  let rating = score >= 80 ? 'EXCELLENT' : score >= 65 ? 'GOOD' : score >= 50 ? 'MODERATE' : 'RISKY';
+  alert('HASIL: Skor ' + score + '/100 - ' + rating);
+}
+
+function saveCurrentLocation() {
+  if (!selectedLoc) { alert('Pilih lokasi!'); return; }
+  const saved = JSON.parse(localStorage.getItem('restomap_saved') || '[]');
+  saved.push({ name: selectedLoc.name, lat: selectedLoc.lat, lng: selectedLoc.lng, date: new Date().toISOString() });
+  localStorage.setItem('restomap_saved', JSON.stringify(saved));
+  renderSavedLocations();
+  alert('Tersimpan!');
+}
+
+function renderSavedLocations() {
+  const saved = JSON.parse(localStorage.getItem('restomap_saved') || '[]');
+  const container = document.getElementById('savedLocations');
+  if (saved.length === 0) {
+    container.innerHTML = '<div style="font-size:9px;color:var(--t4);text-align:center;padding:20px;">Belum ada</div>';
+    return;
+  }
+  container.innerHTML = saved.map((loc, i) => '<div onclick="loadSaved(' + i + ')" style="padding:6px;background:var(--bg3);margin-bottom:4px;cursor:pointer;font-size:10px;color:var(--t);">' + loc.name + '</div>').join('');
+}
+
+function loadSaved(i) {
+  const saved = JSON.parse(localStorage.getItem('restomap_saved') || '[]');
+  const loc = saved[i];
+  if (loc && map) { map.setCenter({ lat: loc.lat, lng: loc.lng }); map.setZoom(15); }
+}
+
+function goToBuilder() {
+  if (!selectedLoc) { alert('Pilih lokasi!'); return; }
+  window.location.href = 'restobuilder.html?city=' + selectedLoc.name + '&lat=' + selectedLoc.lat + '&lng=' + selectedLoc.lng;
+}
+
+setTimeout(renderSavedLocations, 1500);
+console.log('RestoMap features loaded');
 </script>
 
 <!-- Google Maps JavaScript API -->
