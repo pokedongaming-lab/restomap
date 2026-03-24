@@ -556,7 +556,7 @@ async function renderAnalysis(lat, lng) {
     const score = factors ? Math.round((factors.population * 0.25 + factors.income * 0.25 + factors.traffic * 0.3 + (100 - factors.competition) * 0.2)) : 75;
     
     // Revenue estimate based on score
-    const revM = Math.round(score * 6.5); // roughly score * 6.5M
+    const revM = Math.round(score * 6.5 * 1000000); // rupiah per month
     
     // Update overview
     document.getElementById('scoreValue').textContent = score;
@@ -631,32 +631,6 @@ function renderCompetitors(competitors) {
       </div>
     </div>
   `).join('');
-}
-  document.getElementById('popValue').textContent = popValue.toLocaleString();
-  document.getElementById('trafficValue').textContent = trafficValue.toLocaleString() + '/jam';
-  document.getElementById('incomeValue').textContent = 'Rp ' + (incomeValue / 1000000).toFixed(0) + 'JT/th';
-  document.getElementById('densityValue').textContent = Math.floor(popValue / (currentRadius/1000)).toLocaleString() + '/km²';
-  
-  // Update Cannibal values
-  document.getElementById('cannibalRate').textContent = (Math.random() * 30).toFixed(1) + '%';
-  document.getElementById('safeDistance').textContent = (Math.random() * 2 + 0.5).toFixed(1) + ' km';
-  
-  // AI Content
-  document.getElementById('aiContent').innerHTML = `
-    <div style="font-size:9px;color:var(--t3);line-height:1.8;">
-      <div>📊 Skor: <strong style="color:var(--a)">${stats.score}/100</strong></div>
-      <div>💰 Revenue: <strong>Rp ${stats.revM.toLocaleString()}/bln</strong></div>
-      <div>⏱️ Break-even: <strong>${stats.be} bulan</strong></div>
-      <div>📈 Margin: <strong style="color:var(--pos)">${stats.margin}%</strong></div>
-      <div>👥 Populasi: <strong>${popValue.toLocaleString()}</strong></div>
-      <div>🚗 Traffic: <strong>${trafficValue.toLocaleString()}/jam</strong></div>
-      <div style="margin-top:12px;padding:8px;background:var(--a3);border:1px solid var(--b);">
-        <strong>AI Recommendation:</strong><br>
-        Lokasi ${stats.score >= 70 ? 'bagus' : 'cukup'} untuk ${selectedLoc.type}. 
-        Revenue estimate based on comparable locations.
-      </div>
-    </div>
-  `;
 }
 
 // ═══ HEATMAP ═══
@@ -756,10 +730,26 @@ function changeCity(coords) {
 function changeCategory(cat) {
   currentCategory = cat;
   console.log('Category:', cat);
+  if (selectedLoc) renderAnalysis(selectedLoc.lat, selectedLoc.lng);
 }
 
 function quickBrand(brand) {
   document.getElementById('brandSearch').value = brand;
+  currentCategory = brand;
+  if (selectedLoc) renderAnalysis(selectedLoc.lat, selectedLoc.lng);
+}
+
+function initBrandSearch() {
+  const input = document.getElementById('brandSearch');
+  if (!input) return;
+
+  input.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter') return;
+    const q = (input.value || '').trim().toLowerCase();
+    if (!q) return;
+    currentCategory = q;
+    if (selectedLoc) renderAnalysis(selectedLoc.lat, selectedLoc.lng);
+  });
 }
 
 function findBestLocation() {
@@ -849,6 +839,7 @@ updateClock();
 // ═══ INIT ═══
 window.initMap = initMap;
 setTimeout(renderSaved, 500);
+setTimeout(initBrandSearch, 500);
 </script>
 
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAzlXgIm1ofUw-A26fQp0zylxczS8oNaJk&libraries=places&callback=initMap" async defer></script>
