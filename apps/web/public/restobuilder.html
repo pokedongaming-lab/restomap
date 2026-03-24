@@ -40,6 +40,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--t);font-f
 .step-item.on .si-title{color:var(--a)}
 .step-item.done .si-title{color:var(--pos)}
 .si-status{font-size:8px;color:var(--t4)}
+.si-method{font-size:8px;color:var(--info);opacity:.9;margin-top:2px}
 .sb-footer{padding:12px;border-top:1px solid var(--b)}
 .btn-nav{width:100%;padding:12px;background:var(--a);border:none;color:#000;font-size:10px;font-weight:bold;cursor:pointer;margin-top:8px}
 .btn-back{width:100%;padding:10px;background:transparent;border:1px solid var(--a);color:var(--a);font-size:10px;cursor:pointer}
@@ -117,6 +118,9 @@ select.fi option{background:var(--bg3)}
   <div class="sidebar">
     <div class="step-list" id="stepList"></div>
     <div class="sb-footer">
+      <div style="font-size:8px;color:var(--t4);line-height:1.5;margin-bottom:8px">
+        Research basis: ROB2N · Bayes Clustering · Bayesian MMM · MILP Budget · Geo Copilot · HHI Share
+      </div>
       <button class="btn-back" id="btnBackMap" onclick="location.href='restomap.html'">← KEMBALI KE MAP</button>
     </div>
   </div>
@@ -151,24 +155,24 @@ function BL(idText, enText){ return lang === 'id' ? idText : enText; }
 
 // ═══ STEPS - NEW ORDER ═══
 const STEPS_ID = [
-  { id: 1, title: 'Concept & Basic', sub: 'Dari RestoMap' },
-  { id: 2, title: 'Market Analysis', sub: 'Dari RestoMap' },
-  { id: 3, title: 'Menu Design', sub: 'AI Assist' },
-  { id: 4, title: 'Space Design', sub: 'AI + Feng Shui' },
-  { id: 5, title: 'Operations & Team', sub: 'AI Assist' },
-  { id: 6, title: 'Launch Strategy', sub: 'AI Assist' },
-  { id: 7, title: 'Financial Model', sub: 'Calculated / Manual' },
-  { id: 8, title: 'Results & Documents', sub: 'Business Plan' },
+  { id: 1, title: 'Concept & Basic', sub: 'Pondasi dari RestoMap', method: 'Geo Copilot + baseline demand' },
+  { id: 2, title: 'Market Analysis', sub: 'Validasi pasar & kompetisi', method: 'Cluster Bayes + HHI Share + Geo Analisa' },
+  { id: 3, title: 'Menu Design', sub: 'Rancang menu + pricing', method: 'Avg cover positioning + AI menu assist' },
+  { id: 4, title: 'Space Design', sub: 'Layout & lokasi properti', method: 'Voronoi catchment + Feng Shui + rent scan' },
+  { id: 5, title: 'Operations & Team', sub: 'Struktur tim & payroll', method: 'Labor sizing + cost baseline' },
+  { id: 6, title: 'Launch Strategy', sub: 'Go-to-market & influencer', method: 'Bayesian MMM + MILP budget allocation' },
+  { id: 7, title: 'Financial Model', sub: 'Hitung skenario finansial', method: 'Posterior scenario + manual override' },
+  { id: 8, title: 'Results & Documents', sub: 'Business plan profesional', method: 'Auto summary + export-ready doc' },
 ];
 const STEPS_EN = [
-  { id: 1, title: 'Concept & Basic', sub: 'From RestoMap' },
-  { id: 2, title: 'Market Analysis', sub: 'From RestoMap' },
-  { id: 3, title: 'Menu Design', sub: 'AI Assist' },
-  { id: 4, title: 'Space Design', sub: 'AI + Feng Shui' },
-  { id: 5, title: 'Operations & Team', sub: 'AI Assist' },
-  { id: 6, title: 'Launch Strategy', sub: 'AI Assist' },
-  { id: 7, title: 'Financial Model', sub: 'Calculated / Manual' },
-  { id: 8, title: 'Results & Documents', sub: 'Business Plan' },
+  { id: 1, title: 'Concept & Basic', sub: 'Foundation from RestoMap', method: 'Geo Copilot + baseline demand' },
+  { id: 2, title: 'Market Analysis', sub: 'Validate market & competition', method: 'Bayesian Clustering + HHI Share + Geo Analysis' },
+  { id: 3, title: 'Menu Design', sub: 'Design menu & pricing', method: 'Avg-cover positioning + AI menu assist' },
+  { id: 4, title: 'Space Design', sub: 'Layout & property search', method: 'Voronoi catchment + Feng Shui + rent scan' },
+  { id: 5, title: 'Operations & Team', sub: 'Team structure & payroll', method: 'Labor sizing + cost baseline' },
+  { id: 6, title: 'Launch Strategy', sub: 'Go-to-market & influencers', method: 'Bayesian MMM + MILP budget allocation' },
+  { id: 7, title: 'Financial Model', sub: 'Compute financial scenarios', method: 'Posterior scenario + manual override' },
+  { id: 8, title: 'Results & Documents', sub: 'Professional business plan', method: 'Auto summary + export-ready doc' },
 ];
 const getSteps = () => (lang === 'id' ? STEPS_ID : STEPS_EN);
 
@@ -187,7 +191,7 @@ function renderSidebar() {
   list.innerHTML = steps.map(s => `
     <div class="step-item ${s.id === currentStep ? 'on' : ''} ${s.id < currentStep ? 'done' : ''}" onclick="goToStep(${s.id})">
       <div class="si-num">${s.id < currentStep ? '✓' : s.id}</div>
-      <div><div class="si-title">${s.title}</div><div class="si-status">${s.sub}</div></div>
+      <div><div class="si-title">${s.title}</div><div class="si-status">${s.sub}</div><div class="si-method">${s.method || ''}</div></div>
     </div>
   `).join('');
 }
@@ -206,7 +210,7 @@ function renderStep() {
   const steps = getSteps();
   document.getElementById('stepNum').textContent = 'STEP ' + currentStep;
   document.getElementById('stepTitle').textContent = steps[currentStep-1].title;
-  document.getElementById('stepSub').textContent = steps[currentStep-1].sub;
+  document.getElementById('stepSub').textContent = steps[currentStep-1].sub + ' • ' + (steps[currentStep-1].method || '');
   const body = document.getElementById('stepBody');
   switch(currentStep) {
     case 1: renderStep1(body); break;
