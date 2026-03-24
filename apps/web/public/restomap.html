@@ -411,6 +411,8 @@ let selectedLoc = null;
 let currentRadius = 1000;
 let currentCategory = '';
 let tier = 'free';
+let activeTab = 'overview';
+let renderDebounceTimer = null;
 const API_BASE = 'http://localhost:3001';
 
 // ═══ API FUNCTIONS ═══
@@ -530,10 +532,18 @@ function selectLocation(lat, lng, name) {
   document.getElementById('panel').classList.add('open');
   
   // Render analysis (API call)
-  renderAnalysis(lat, lng);
+  scheduleRenderAnalysis(lat, lng);
 }
 
 // ═══ ANALYSIS ═══
+function scheduleRenderAnalysis(lat, lng, delay = 220) {
+  if (!lat || !lng) return;
+  if (renderDebounceTimer) clearTimeout(renderDebounceTimer);
+  renderDebounceTimer = setTimeout(() => {
+    renderAnalysis(lat, lng);
+  }, delay);
+}
+
 async function renderAnalysis(lat, lng) {
   if (!lat || !lng) return;
   
@@ -602,13 +612,16 @@ async function renderAnalysis(lat, lng) {
         </div>
       </div>
     `;
-    
+
+    restoreActiveTab();
+
   } catch (e) {
     console.error('Analysis error:', e);
     // Fallback to mock
     const stats = TYPE_STATS.cbd;
     document.getElementById('scoreValue').textContent = stats.score;
     document.getElementById('phLoc').textContent = (selectedLoc.name || 'Lokasi').toUpperCase();
+    restoreActiveTab();
   }
 }
 
@@ -730,13 +743,13 @@ function changeCity(coords) {
 function changeCategory(cat) {
   currentCategory = cat;
   console.log('Category:', cat);
-  if (selectedLoc) renderAnalysis(selectedLoc.lat, selectedLoc.lng);
+  if (selectedLoc) scheduleRenderAnalysis(selectedLoc.lat, selectedLoc.lng);
 }
 
 function quickBrand(brand) {
   document.getElementById('brandSearch').value = brand;
   currentCategory = brand;
-  if (selectedLoc) renderAnalysis(selectedLoc.lat, selectedLoc.lng);
+  if (selectedLoc) scheduleRenderAnalysis(selectedLoc.lat, selectedLoc.lng);
 }
 
 function initBrandSearch() {
@@ -748,7 +761,7 @@ function initBrandSearch() {
     const q = (input.value || '').trim().toLowerCase();
     if (!q) return;
     currentCategory = q;
-    if (selectedLoc) renderAnalysis(selectedLoc.lat, selectedLoc.lng);
+    if (selectedLoc) scheduleRenderAnalysis(selectedLoc.lat, selectedLoc.lng);
   });
 }
 
@@ -816,10 +829,21 @@ function goToBuilder() {
 }
 
 function switchTab(tabName, el) {
+  activeTab = tabName;
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('on'));
   document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('on'));
   el.classList.add('on');
   document.getElementById('tab-' + tabName).classList.add('on');
+}
+
+function restoreActiveTab() {
+  const pane = document.getElementById('tab-' + activeTab);
+  const tab = Array.from(document.querySelectorAll('.tab')).find(t => t.getAttribute('onclick')?.includes(`'${activeTab}'`));
+  if (!pane || !tab) return;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('on'));
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('on'));
+  tab.classList.add('on');
+  pane.classList.add('on');
 }
 
 function setTier(t, el) {
