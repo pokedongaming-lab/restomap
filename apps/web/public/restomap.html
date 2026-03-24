@@ -412,6 +412,41 @@ let selectedLoc = null;
 let currentRadius = 1000;
 let currentCategory = '';
 let tier = 'free';
+const API_BASE = 'http://localhost:3001';
+
+// ═══ API FUNCTIONS ═══
+async function fetchCompetitors(lat, lng, radius, category) {
+  try {
+    const res = await fetch(`${API_BASE}/competitors?lat=${lat}&lng=${lng}&radius=${radius}&category=${category || ''}`);
+    const json = await res.json();
+    return json.data?.competitors || [];
+  } catch (e) {
+    console.error('API Error:', e);
+    return [];
+  }
+}
+
+async function fetchHeatmapFactors(lat, lng, radius) {
+  try {
+    const res = await fetch(`${API_BASE}/heatmap/factors?lat=${lat}&lng=${lng}&radius=${radius}`);
+    const json = await res.json();
+    return json.data?.factors || null;
+  } catch (e) {
+    console.error('API Error:', e);
+    return null;
+  }
+}
+
+async function fetchGapCategory(lat, lng, radius) {
+  try {
+    const res = await fetch(`${API_BASE}/gap-category?lat=${lat}&lng=${lng}&radius=${radius}`);
+    const json = await res.json();
+    return json.data?.categories || [];
+  } catch (e) {
+    console.error('API Error:', e);
+    return [];
+  }
+}
 
 // ═══ GOOGLE MAPS ═══
 function initMap() {
@@ -494,34 +529,109 @@ function selectLocation(lat, lng, name) {
   // Show panel
   document.getElementById('panel').classList.add('open');
   
-  // Render analysis
-  renderAnalysis();
+  // Render analysis (API call)
+  renderAnalysis(lat, lng);
 }
 
 // ═══ ANALYSIS ═══
-function renderAnalysis() {
-  if (!selectedLoc) return;
+async function renderAnalysis(lat, lng) {
+  if (!lat || !lng) return;
   
-  const stats = TYPE_STATS[selectedLoc.type] || TYPE_STATS.suburban;
+  // Show loading state
+  document.getElementById('scoreValue').textContent = '...';
+  document.getElementById('phLoc').textContent = 'LOADING...';
   
-  // Generate mock data based on location
-  const popValue = Math.floor(Math.random() * 50000) + 10000;
-  const trafficValue = Math.floor(Math.random() * 5000) + 1000;
-  const incomeValue = Math.floor(Math.random() * 50000000) + 10000000;
+  try {
+    // Fetch from API
+    const [factors, competitors, categories] = await Promise.all([
+      fetchHeatmapFactors(lat, lng, currentRadius),
+      fetchCompetitors(lat, lng, currentRadius, currentCategory),
+      fetchGapCategory(lat, lng, currentRadius)
+    ]);
+    
+    // Update state
+    selectedLoc = { ...selectedLoc, lat, lng, factors, competitors, categories };
+    
+    // Calculate score from factors
+    const score = factors ? Math.round((factors.population * 0.25 + factors.income * 0.25 + factors.traffic * 0.3 + (100 - factors.competition) * 0.2)) : 75;
+    
+    // Revenue estimate based on score
+    const revM = Math.round(score * 6.5); // roughly score * 6.5M
+    
+    // Update overview
+    document.getElementById('scoreValue').textContent = score;
+    document.getElementById('scoreRating').textContent = score >= 80 ? 'EXCELLENT' : score >= 65 ? 'GOOD' : 'MODERATE';
+    document.getElementById('revMonth').textContent = 'Rp ' + (revM / 1000000).toFixed(1) + 'JT';
+    document.getElementById('breakEven').textContent = Math.round(18 - (score / 10)) + ' bln';
+    document.getElementById('marginVal').textContent = (15 + (score / 20)).toFixed(1) + '%';
+    document.getElementById('competitorCount').textContent = (competitors?.length || 0) + ' kompetitor';
+    
+    // Update panel header
+    document.getElementById('phLoc').textContent = (selectedLoc.name || 'Lokasi Dipilih').toUpperCase();
+    document.getElementById('phSub').textContent = 'RADIUS: ' + currentRadius + 'm';
+    
+    // Update Heatmap values from API
+    if (factors) {
+      document.getElementById('popValue').textContent = Math.round(factors.population * 500).toLocaleString();
+      document.getElementById('trafficValue').textContent = Math.round(factors.traffic * 50).toLocaleString() + '/jam';
+      document.getElementById('incomeValue').textContent = 'Rp ' + Math.round(factors.income * 0.5).toFixed(0) + 'JT/th';
+      document.getElementById('densityValue').textContent = Math.round(factors.population * 5).toLocaleString() + '/km²';
+    }
+    
+    // Update Cannibal values
+    document.getElementById('cannibalRate').textContent = (Math.random() * 20 + 5).toFixed(1) + '%';
+    document.getElementById('safeDistance').textContent = (Math.random() * 1.5 + 0.5).toFixed(1) + ' km';
+    
+    // Render competitors list
+    renderCompetitors(competitors);
+    
+    // AI Content
+    document.getElementById('aiContent').innerHTML = `
+      <div style="font-size:9px;color:var(--t3);line-height:1.8;">
+        <div>📊 Skor: <strong style="color:var(--a)">${score}/100</strong></div>
+        <div>💰 Revenue: <strong>Rp ${revM.toLocaleString()}/bln</strong></div>
+        <div>⏱️ Break-even: <strong>${Math.round(18 - (score / 10))} bulan</strong></div>
+        <div>📈 Margin: <strong style="color:var(--pos)">${(15 + (score / 20)).toFixed(1)}%</strong></div>
+        <div>👥 Kompetitor: <strong>${competitors?.length || 0}</strong></div>
+        ${factors ? `<div>🚗 Traffic: <strong>${factors.traffic}/100</strong></div>` : ''}
+        ${factors ? `<div>💰 Income: <strong>${factors.income}/100</strong></div>` : ''}
+        <div style="margin-top:12px;padding:8px;background:var(--a3);border:1px solid var(--b);">
+          <strong>🤖 AI Recommendation:</strong><br>
+          Lokasi ${score >= 70 ? 'SANGAT BAGUS' : score >= 50 ? 'CUKUP BAGUS' : 'PERLU PERHATIAN'} untuk restoran.<br>
+          ${categories?.[0] ? `Terbaik: <strong>${categories[0].category}</strong>` : ''}
+        </div>
+      </div>
+    `;
+    
+  } catch (e) {
+    console.error('Analysis error:', e);
+    // Fallback to mock
+    const stats = TYPE_STATS.cbd;
+    document.getElementById('scoreValue').textContent = stats.score;
+    document.getElementById('phLoc').textContent = (selectedLoc.name || 'Lokasi').toUpperCase();
+  }
+}
+
+function renderCompetitors(competitors) {
+  const listEl = document.getElementById('competitorList');
+  if (!listEl) return;
   
-  // Update overview
-  document.getElementById('scoreValue').textContent = stats.score;
-  document.getElementById('scoreRating').textContent = stats.score >= 80 ? 'EXCELLENT' : stats.score >= 65 ? 'GOOD' : 'MODERATE';
-  document.getElementById('revMonth').textContent = 'Rp ' + (stats.revM / 1000000).toFixed(1) + 'JT';
-  document.getElementById('breakEven').textContent = stats.be + ' bln';
-  document.getElementById('marginVal').textContent = stats.margin + '%';
-  document.getElementById('competitorCount').textContent = stats.comp + ' kompetitor';
+  if (!competitors || competitors.length === 0) {
+    listEl.innerHTML = '<div style="padding:10px;color:var(--t4)">Tidak ada kompetitor</div>';
+    return;
+  }
   
-  // Update panel header
-  document.getElementById('phLoc').textContent = selectedLoc.name.toUpperCase();
-  document.getElementById('phSub').textContent = selectedLoc.type.toUpperCase() + ' · RADIUS: ' + currentRadius + 'm';
-  
-  // Update Heatmap values
+  listEl.innerHTML = competitors.slice(0, 10).map(c => `
+    <div style="background:var(--bg3);border:1px solid var(--b);padding:10px;margin-bottom:8px;border-radius:4px">
+      <div style="font-size:11px;color:var(--t);margin-bottom:4px">${c.name}</div>
+      <div style="font-size:9px;color:var(--t3);display:flex;gap:12px">
+        <span>⭐ ${c.rating || '-'}</span>
+        <span>📍 ${c.distance || '-'}m</span>
+        <span>${c.category || '-'}</span>
+      </div>
+    </div>
+  `).join('');
+}
   document.getElementById('popValue').textContent = popValue.toLocaleString();
   document.getElementById('trafficValue').textContent = trafficValue.toLocaleString() + '/jam';
   document.getElementById('incomeValue').textContent = 'Rp ' + (incomeValue / 1000000).toFixed(0) + 'JT/th';
