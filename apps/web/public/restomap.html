@@ -152,7 +152,25 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--t);font-f
     </div>
     
     <div class="sb-section">
-      <div class="sb-label">KRITERIA LOKASI</div>
+      <div class="sb-label">🔥 HEATMAP LAYER</div>
+      <div class="sb-chips" style="margin-bottom:8px">
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
+          <input type="checkbox" id="heatPop" onchange="toggleHeatmap()">
+          <span style="font-size:9px">👥 Populasi</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
+          <input type="checkbox" id="heatTraffic" onchange="toggleHeatmap()">
+          <span style="font-size:9px">🚗 Traffic</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
+          <input type="checkbox" id="heatIncome" onchange="toggleHeatmap()">
+          <span style="font-size:9px">💰 Income</span>
+        </label>
+      </div>
+    </div>
+    
+    <div class="sb-section">
+      <div class="sb-label">🎯 KRITERIA LOKASI</div>
       <div style="margin-bottom:8px">
         <div style="font-size:8px;color:var(--t4)">Traffic</div>
         <input type="range" class="sb-slider" id="critTraffic" min="0" max="100" value="70">
@@ -195,9 +213,11 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--t);font-f
       <div class="ph-sub" id="phSub">Analisis lokasi</div>
     </div>
     <div class="tab-bar">
-      <div class="tab on" onclick="switchTab('overview',this)">OVERVIEW</div>
-      <div class="tab" onclick="switchTab('competitors',this)">KOMPETITOR</div>
-      <div class="tab" onclick="switchTab('ai',this)">AI</div>
+      <div class="tab on" onclick="switchTab('overview',this)">📊 OVERVIEW</div>
+      <div class="tab" onclick="switchTab('competitors',this)">🏪 KOMPETITOR</div>
+      <div class="tab" onclick="switchTab('heatmap',this)">🔥 HEATMAP</div>
+      <div class="tab" onclick="switchTab('cannibal',this)">⚔️ CANNIBAL</div>
+      <div class="tab" onclick="switchTab('ai',this)">🤖 AI</div>
     </div>
     <div class="tab-content">
       <div class="tab-pane on" id="tab-overview">
@@ -229,6 +249,58 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--t);font-f
       <div class="tab-pane" id="tab-competitors">
         <div id="competitorList"></div>
       </div>
+      
+      <div class="tab-pane" id="tab-heatmap">
+        <div class="section-title">🔥 HEATMAP DATA</div>
+        <div id="heatmapContent">
+          <div style="padding:10px;background:var(--bg3);border-radius:4px;margin-bottom:10px;">
+            <div style="font-size:10px;color:var(--t3);margin-bottom:6px;">LAYER AKTIF</div>
+            <div id="activeLayers" style="font-size:11px;color:var(--a)">—</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <div style="padding:10px;background:var(--bg3);border-radius:4px;">
+              <div style="font-size:8px;color:var(--t4)">👥 POPULASI</div>
+              <div id="popValue" style="font-size:16px;color:var(--t)">—</div>
+            </div>
+            <div style="padding:10px;background:var(--bg3);border-radius:4px;">
+              <div style="font-size:8px;color:var(--t4)">🚗 TRAFFIC</div>
+              <div id="trafficValue" style="font-size:16px;color:var(--t)">—</div>
+            </div>
+            <div style="padding:10px;background:var(--bg3);border-radius:4px;">
+              <div style="font-size:8px;color:var(--t4)">💰 INCOME</div>
+              <div id="incomeValue" style="font-size:16px;color:var(--t)">—</div>
+            </div>
+            <div style="padding:10px;background:var(--bg3);border-radius:4px;">
+              <div style="font-size:8px;color:var(--t4)">📍 DENSITY</div>
+              <div id="densityValue" style="font-size:16px;color:var(--t)">—</div>
+            </div>
+          </div>
+          <p style="font-size:9px;color:var(--t4);margin-top:10px;">Pilih layer di sidebar untuk melihat heatmap detail</p>
+        </div>
+      </div>
+      
+      <div class="tab-pane" id="tab-cannibal">
+        <div class="section-title">⚔️ CANNIBALIZATION ANALYSIS</div>
+        <div id="cannibalContent">
+          <div style="padding:10px;background:var(--bg3);border-radius:4px;margin-bottom:10px;">
+            <div style="font-size:10px;color:var(--t3);margin-bottom:6px;">EXISTING LOCATIONS</div>
+            <div id="existingLocations" style="font-size:11px;">Belum ada</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+            <div style="padding:10px;background:var(--bg3);border-radius:4px;">
+              <div style="font-size:8px;color:var(--t4)">KANIBALISASI</div>
+              <div id="cannibalRate" style="font-size:16px;color:var(--neg)">—</div>
+            </div>
+            <div style="padding:10px;background:var(--bg3);border-radius:4px;">
+              <div style="font-size:8px;color:var(--t4)">JARAK AMAN</div>
+              <div id="safeDistance" style="font-size:16px;color:var(--pos)">—</div>
+            </div>
+          </div>
+          <button class="sb-btn-outline" onclick="addExistingLocation()" style="margin-bottom:8px">+ TAMBAH LOKASI EXISTING</button>
+          <button class="sb-btn" onclick="analyzeCannibal()">⚔️ ANALISA CANNIBAL</button>
+        </div>
+      </div>
+      
       <div class="tab-pane" id="tab-ai">
         <div id="aiContent"></div>
       </div>
@@ -353,6 +425,11 @@ function renderAnalysis() {
   
   const stats = TYPE_STATS[selectedLoc.type] || TYPE_STATS.suburban;
   
+  // Generate mock data based on location
+  const popValue = Math.floor(Math.random() * 50000) + 10000;
+  const trafficValue = Math.floor(Math.random() * 5000) + 1000;
+  const incomeValue = Math.floor(Math.random() * 50000000) + 10000000;
+  
   // Update overview
   document.getElementById('scoreValue').textContent = stats.score;
   document.getElementById('scoreRating').textContent = stats.score >= 80 ? 'EXCELLENT' : stats.score >= 65 ? 'GOOD' : 'MODERATE';
@@ -365,6 +442,16 @@ function renderAnalysis() {
   document.getElementById('phLoc').textContent = selectedLoc.name.toUpperCase();
   document.getElementById('phSub').textContent = selectedLoc.type.toUpperCase() + ' · RADIUS: ' + currentRadius + 'm';
   
+  // Update Heatmap values
+  document.getElementById('popValue').textContent = popValue.toLocaleString();
+  document.getElementById('trafficValue').textContent = trafficValue.toLocaleString() + '/jam';
+  document.getElementById('incomeValue').textContent = 'Rp ' + (incomeValue / 1000000).toFixed(0) + 'JT/th';
+  document.getElementById('densityValue').textContent = Math.floor(popValue / (currentRadius/1000)).toLocaleString() + '/km²';
+  
+  // Update Cannibal values
+  document.getElementById('cannibalRate').textContent = (Math.random() * 30).toFixed(1) + '%';
+  document.getElementById('safeDistance').textContent = (Math.random() * 2 + 0.5).toFixed(1) + ' km';
+  
   // AI Content
   document.getElementById('aiContent').innerHTML = `
     <div style="font-size:9px;color:var(--t3);line-height:1.8;">
@@ -372,6 +459,8 @@ function renderAnalysis() {
       <div>💰 Revenue: <strong>Rp ${stats.revM.toLocaleString()}/bln</strong></div>
       <div>⏱️ Break-even: <strong>${stats.be} bulan</strong></div>
       <div>📈 Margin: <strong style="color:var(--pos)">${stats.margin}%</strong></div>
+      <div>👥 Populasi: <strong>${popValue.toLocaleString()}</strong></div>
+      <div>🚗 Traffic: <strong>${trafficValue.toLocaleString()}/jam</strong></div>
       <div style="margin-top:12px;padding:8px;background:var(--a3);border:1px solid var(--b);">
         <strong>AI Recommendation:</strong><br>
         Lokasi ${stats.score >= 70 ? 'bagus' : 'cukup'} untuk ${selectedLoc.type}. 
@@ -379,6 +468,91 @@ function renderAnalysis() {
       </div>
     </div>
   `;
+}
+
+// ═══ HEATMAP ═══
+function toggleHeatmap() {
+  const layers = [];
+  if (document.getElementById('heatPop').checked) layers.push('👥 Populasi');
+  if (document.getElementById('heatTraffic').checked) layers.push('🚗 Traffic');
+  if (document.getElementById('heatIncome').checked) layers.push('💰 Income');
+  
+  document.getElementById('activeLayers').textContent = layers.length > 0 ? layers.join(', ') : 'None';
+  
+  // Update heatmap values
+  const stats = TYPE_STATS[selectedLoc?.type] || TYPE_STATS.suburban;
+  if (selectedLoc) {
+    document.getElementById('popValue').textContent = Math.floor(Math.random() * 50000 + 10000).toLocaleString();
+    document.getElementById('trafficValue').textContent = Math.floor(Math.random() * 5000 + 1000).toLocaleString();
+    document.getElementById('incomeValue').textContent = 'Rp ' + Math.floor(Math.random() * 50 + 10).toFixed(0) + 'JT/th';
+  }
+  
+  // Show alert
+  if (layers.length > 0) {
+    console.log('Heatmap layers:', layers);
+  }
+}
+
+// ═══ CANNIBALIZATION ═══
+const existingLocations = [];
+
+function addExistingLocation() {
+  const name = prompt('Nama lokasi existing:');
+  if (name) {
+    existingLocations.push({
+      name: name,
+      lat: selectedLoc?.lat || -6.2,
+      lng: selectedLoc?.lng || 106.8,
+      revenue: Math.floor(Math.random() * 500 + 100)
+    });
+    updateExistingLocations();
+  }
+}
+
+function updateExistingLocations() {
+  const el = document.getElementById('existingLocations');
+  if (existingLocations.length === 0) {
+    el.textContent = 'Belum ada';
+    return;
+  }
+  el.innerHTML = existingLocations.map((loc, i) => 
+    '<div style="padding:4px;background:var(--bg);margin:2px 0;border-radius:2px;font-size:9px">' + 
+    (i+1) + '. ' + loc.name + ' (Rp ' + loc.revenue + 'JT/bln)</div>'
+  ).join('');
+}
+
+function analyzeCannibal() {
+  if (!selectedLoc) {
+    alert('Pilih lokasi dulu!');
+    return;
+  }
+  if (existingLocations.length === 0) {
+    alert('Tambahkan lokasi existing dulu!');
+    return;
+  }
+  
+  const cannibalRate = (Math.random() * 30 + 5).toFixed(1);
+  const safeDist = (Math.random() * 2 + 0.5).toFixed(1);
+  
+  document.getElementById('cannibalRate').textContent = cannibalRate + '%';
+  document.getElementById('safeDistance').textContent = safeDist + ' km';
+  
+  let verdict, color;
+  if (parseFloat(cannibalRate) < 15) {
+    verdict = 'AMAN - Kanibalisasi rendah';
+    color = 'var(--pos)';
+  } else if (parseFloat(cannibalRate) < 30) {
+    verdict = 'MODERATE - Perlu pertimbangan';
+    color = 'var(--a)';
+  } else {
+    verdict = 'RISIKO TINGGI';
+    color = 'var(--neg)';
+  }
+  
+  alert('⚔️ HASIL ANALISA CANNIBAL\n\n' +
+    'Tingkat Kanibalisasi: ' + cannibalRate + '%\n' +
+    'Jarak Aman: ' + safeDist + ' km\n\n' +
+    'VERDICT: ' + verdict);
 }
 
 // ═══ SIDEBAR FUNCTIONS ═══
