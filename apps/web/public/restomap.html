@@ -365,12 +365,7 @@ function updateLabels() {
   // Update all translatable elements
   document.querySelectorAll('[data-i18]').forEach(el => {
     const key = el.getAttribute('data-i18');
-    if (t[key]) {
-      // Keep emoji prefix if exists, replace text after
-      const emojiMatch = el.textContent.match(/^[\u{1F300}-\u{1F9FF}]/u);
-      const prefix = emojiMatch ? emojiMatch[0] + ' ' : '';
-      el.textContent = prefix + t[key];
-    }
+    if (t[key]) el.textContent = t[key];
   });
 }
 
@@ -415,36 +410,56 @@ let activeTab = 'overview';
 let renderDebounceTimer = null;
 const API_BASE = 'http://localhost:3001';
 
+function sleep(ms) {
+  return new Promise(r => setTimeout(r, ms));
+}
+
+async function fetchWithTimeoutRetry(url, opts = {}, timeoutMs = 7000, retries = 1) {
+  let lastErr;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), timeoutMs);
+    try {
+      const res = await fetch(url, { ...opts, signal: ctrl.signal });
+      clearTimeout(t);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return await res.json();
+    } catch (e) {
+      clearTimeout(t);
+      lastErr = e;
+      if (attempt < retries) await sleep(200 * (attempt + 1));
+    }
+  }
+  throw lastErr;
+}
+
 // ═══ API FUNCTIONS ═══
 async function fetchCompetitors(lat, lng, radius, category) {
   try {
-    const res = await fetch(`${API_BASE}/competitors?lat=${lat}&lng=${lng}&radius=${radius}&category=${category || ''}`);
-    const json = await res.json();
+    const json = await fetchWithTimeoutRetry(`${API_BASE}/competitors?lat=${lat}&lng=${lng}&radius=${radius}&category=${category || ''}`);
     return json.data?.competitors || [];
   } catch (e) {
-    console.error('API Error:', e);
+    console.error('API Error competitors:', e);
     return [];
   }
 }
 
 async function fetchHeatmapFactors(lat, lng, radius) {
   try {
-    const res = await fetch(`${API_BASE}/heatmap/factors?lat=${lat}&lng=${lng}&radius=${radius}`);
-    const json = await res.json();
+    const json = await fetchWithTimeoutRetry(`${API_BASE}/heatmap/factors?lat=${lat}&lng=${lng}&radius=${radius}`);
     return json.data?.factors || null;
   } catch (e) {
-    console.error('API Error:', e);
+    console.error('API Error heatmap:', e);
     return null;
   }
 }
 
 async function fetchGapCategory(lat, lng, radius) {
   try {
-    const res = await fetch(`${API_BASE}/gap-category?lat=${lat}&lng=${lng}&radius=${radius}`);
-    const json = await res.json();
+    const json = await fetchWithTimeoutRetry(`${API_BASE}/gap-category?lat=${lat}&lng=${lng}&radius=${radius}`);
     return json.data?.categories || [];
   } catch (e) {
-    console.error('API Error:', e);
+    console.error('API Error gap-category:', e);
     return [];
   }
 }
@@ -550,6 +565,12 @@ async function renderAnalysis(lat, lng) {
   // Show loading state
   document.getElementById('scoreValue').textContent = '...';
   document.getElementById('phLoc').textContent = 'LOADING...';
+  const listEl = document.getElementById('competitorList');
+  if (listEl) listEl.innerHTML = '<div style="padding:10px;color:var(--t4)">Loading competitors...</div>';
+  const heatEl = document.getElementById('heatmapContent');
+  if (heatEl) document.getElementById('activeLayers').textContent = 'Loading...';
+  const aiEl = document.getElementById('aiContent');
+  if (aiEl) aiEl.innerHTML = '<div style="font-size:9px;color:var(--t4)">Generating insight...</div>';
   
   try {
     // Fetch from API
