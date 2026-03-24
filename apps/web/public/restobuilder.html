@@ -117,7 +117,7 @@ select.fi option{background:var(--bg3)}
   <div class="sidebar">
     <div class="step-list" id="stepList"></div>
     <div class="sb-footer">
-      <button class="btn-back" onclick="location.href='restomap.html'">← KEMBALI KE MAP</button>
+      <button class="btn-back" id="btnBackMap" onclick="location.href='restomap.html'">← KEMBALI KE MAP</button>
     </div>
   </div>
 
@@ -197,6 +197,8 @@ function setLangBuilder(nextLang){
   document.getElementById('btnLangID').className = nextLang === 'id' ? 'lang-btn on' : 'lang-btn';
   document.getElementById('btnLangEN').className = nextLang === 'en' ? 'lang-btn on' : 'lang-btn';
   document.getElementById('locationInfo').textContent = (nextLang === 'id' ? '📍 LOKASI: ' : '📍 LOCATION: ') + locationData.city.toUpperCase() + ' (' + locationData.lat.toFixed(2) + ', ' + locationData.lng.toFixed(2) + ')';
+  const btnBack = document.getElementById('btnBackMap');
+  if (btnBack) btnBack.textContent = BL('← KEMBALI KE MAP', '← BACK TO MAP');
   renderStep();
 }
 
@@ -226,9 +228,9 @@ function goToStep(n) { currentStep = n; renderStep(); }
 function renderStep1(body) {
   body.innerHTML = `
     <div class="form-grid">
-      <div class="fg"><div class="fl">NAMA RESTORAN</div><input class="fi" id="restoName" placeholder="Kedai Kopi Nusantara" value="${restaurantData.name}" onchange="restaurantData.name=this.value"></div>
+      <div class="fg"><div class="fl">${BL('NAMA RESTORAN','RESTAURANT NAME')}</div><input class="fi" id="restoName" placeholder="${BL('Kedai Kopi Nusantara','Nusantara Coffee House')}" value="${restaurantData.name}" onchange="restaurantData.name=this.value"></div>
       <div class="fg">
-        <div class="fl">KONSEP</div>
+        <div class="fl">${BL('KONSEP','CONCEPT')}</div>
         <select class="fi" onchange="restaurantData.concept=this.value">
           <option value="coffee" ${restaurantData.concept==='coffee'?'selected':''}>☕ Coffee & Cafe</option>
           <option value="fastfood">🍔 Fast Food</option>
@@ -237,10 +239,10 @@ function renderStep1(body) {
         </select>
       </div>
       <div class="fg">
-        <div class="fl">JENIS MASAKAN</div>
+        <div class="fl">${BL('JENIS MASAKAN','CUISINE TYPE')}</div>
         <select class="fi"><option>Indonesian</option><option>Western</option><option>Japanese</option><option>Korean</option><option>Chinese</option></select>
       </div>
-      <div class="fg"><div class="fl">KURSI</div><input type="number" class="fi" value="${restaurantData.seating}" onchange="restaurantData.seating=parseInt(this.value)"></div>
+      <div class="fg"><div class="fl">${BL('KURSI','SEATS')}</div><input type="number" class="fi" value="${restaurantData.seating}" onchange="restaurantData.seating=parseInt(this.value)"></div>
     </div>
     <div class="section-title">💰 ${BL('AVG CHECK (DARI RESTOMAP)','AVG CHECK (FROM RESTOMAP)')}</div>
     <div class="form-grid">
@@ -249,9 +251,9 @@ function renderStep1(body) {
     <div class="ai-box">
       <div class="ai-title">🤖 ${BL('AI - DARI DATA RESTOMAP','AI - FROM RESTOMAP DATA')}</div>
       <div class="ai-content">
-        📍 Lokasi: <strong>${locationData.city}</strong><br>
+        📍 ${BL('Lokasi','Location')}: <strong>${locationData.city}</strong><br>
         📊 Score: <strong style="color:var(--a)">${locationData.score}/100</strong><br>
-        💰 Revenue potensial: <strong>Rp ${(locationData.revenue/1000000).toFixed(0)}JT/bulan</strong>
+        💰 ${BL('Revenue potensial','Potential revenue')}: <strong>Rp ${(locationData.revenue/1000000).toFixed(0)}JT/${BL('bulan','month')}</strong>
       </div>
     </div>
     <button class="btn-nav" onclick="nextStep()">${BL('LANJUT →','NEXT →')}</button>
@@ -267,15 +269,15 @@ function renderStep2(body) {
       <div class="metric-box"><div class="mb-label">INCOME/TH</div><div class="mb-val">Rp 120JT</div></div>
     </div>
     <div class="form-grid">
-      <div class="fg"><div class="fl">TARGET MARKET</div><select class="fi"><option>Urban Professional</option><option>Family</option></select></div>
-      <div class="fg"><div class="fl">TREN</div><select class="fi"><option>Growing</option><option>Stable</option></select></div>
+      <div class="fg"><div class="fl">${BL('TARGET MARKET','TARGET MARKET')}</div><select class="fi"><option>${BL('Urban Professional','Urban Professional')}</option><option>${BL('Keluarga','Family')}</option></select></div>
+      <div class="fg"><div class="fl">${BL('TREN','TREND')}</div><select class="fi"><option>${BL('Bertumbuh','Growing')}</option><option>${BL('Stabil','Stable')}</option></select></div>
     </div>
     <div class="ai-box">
       <div class="ai-title">🤖 ${BL('AI MARKET INSIGHTS','AI MARKET INSIGHTS')}</div>
       <div class="ai-content">
-        📈 ${locationData.city} tren positif<br>
-        💰 Daya beli di atas rata-rata<br>
-        🎯 Rekomendasi: ${restaurantData.concept === 'coffee' ? 'Coffee culture' : 'Quality experience'}
+        📈 ${locationData.city} ${BL('tren positif','has positive trend')}<br>
+        💰 ${BL('Daya beli di atas rata-rata','Purchasing power above average')}<br>
+        🎯 ${BL('Rekomendasi','Recommendation')}: ${restaurantData.concept === 'coffee' ? 'Coffee culture' : 'Quality experience'}
       </div>
     </div>
     <button class="btn-nav" onclick="nextStep()">${BL('LANJUT KE MENU →','CONTINUE TO MENU →')}</button>
@@ -287,12 +289,12 @@ function renderStep3(body) {
   body.innerHTML = `
     <div class="section-title">☕ MENU (AI GENERATED)</div>
     <table class="menu-table">
-      <tr><th>Nama</th><th>Kat</th><th>Harga</th><th>COGS%</th></tr>
+      <tr><th>${BL('Nama','Name')}</th><th>${BL('Kat','Cat')}</th><th>${BL('Harga','Price')}</th><th>COGS%</th></tr>
       <tr><td><input placeholder="Espresso"></td><td><select><option>Coffee</option></select></td><td><input type="number" value="25000"></td><td><input type="number" value="30"></td></tr>
       <tr><td><input placeholder="Latte"></td><td><select><option>Coffee</option></select></td><td><input type="number" value="35000"></td><td><input type="number" value="25"></td></tr>
       <tr><td><input placeholder="Croissant"></td><td><select><option>Food</option></select></td><td><input type="number" value="28000"></td><td><input type="number" value="35"></td></tr>
     </table>
-    <button class="btn-add">+ TAMBAH ITEM</button>
+    <button class="btn-add">+ ${BL('TAMBAH ITEM','ADD ITEM')}</button>
     <div class="ai-box">
       <div class="ai-title">🤖 ${BL('AI MENU RECOMMENDATION','AI MENU RECOMMENDATION')}</div>
       <div class="ai-content">
@@ -311,12 +313,12 @@ function renderStep3(body) {
 function renderStep4(body) {
   body.innerHTML = `
     <div class="form-grid">
-      <div class="fg"><div class="fl">TOTAL AREA (M²)</div><input type="number" class="fi" value="${restaurantData.spaceArea}"></div>
-      <div class="fg"><div class="fl">KITCHEN (M²)</div><input type="number" class="fi" value="${restaurantData.kitchenArea}"></div>
+      <div class="fg"><div class="fl">${BL('TOTAL AREA (M²)','TOTAL AREA (M²)')}</div><input type="number" class="fi" value="${restaurantData.spaceArea}"></div>
+      <div class="fg"><div class="fl">${BL('DAPUR (M²)','KITCHEN (M²)')}</div><input type="number" class="fi" value="${restaurantData.kitchenArea}"></div>
     </div>
     <div class="form-grid">
-      <div class="fg"><div class="fl">SEWA/M²</div><input type="text" class="fi" value="Rp 250,000" disabled></div>
-      <div class="fg"><div class="fl">TOTAL SEWA</div><input type="text" class="fi" value="Rp ${(restaurantData.spaceArea * 250000).toLocaleString()}" disabled></div>
+      <div class="fg"><div class="fl">${BL('SEWA/M²','RENT/M²')}</div><input type="text" class="fi" value="Rp 250,000" disabled></div>
+      <div class="fg"><div class="fl">${BL('TOTAL SEWA','TOTAL RENT')}</div><input type="text" class="fi" value="Rp ${(restaurantData.spaceArea * 250000).toLocaleString()}" disabled></div>
     </div>
     <div class="ai-box">
       <div class="ai-title">🏠 AI SPACE + FENG SHUI</div>
@@ -348,15 +350,15 @@ function renderStep5(body) {
     </div>
     <div class="section-title">💰 SALARIES</div>
     <div class="form-grid">
-      <div class="fg"><div class="fl">GM / BULAN</div><input class="fi" value="${restaurantData.salaries.gm}"></div>
-      <div class="fg"><div class="fl">CHEF / BULAN</div><input class="fi" value="${restaurantData.salaries.chef}"></div>
-      <div class="fg"><div class="fl">SERVER / BULAN</div><input class="fi" value="${restaurantData.salaries.server}"></div>
+      <div class="fg"><div class="fl">GM / ${BL('BULAN','MONTH')}</div><input class="fi" value="${restaurantData.salaries.gm}"></div>
+      <div class="fg"><div class="fl">CHEF / ${BL('BULAN','MONTH')}</div><input class="fi" value="${restaurantData.salaries.chef}"></div>
+      <div class="fg"><div class="fl">SERVER / ${BL('BULAN','MONTH')}</div><input class="fi" value="${restaurantData.salaries.server}"></div>
     </div>
     <div class="ai-box">
       <div class="ai-title">🤖 ${BL('REKOMENDASI TIM AI','AI TEAM RECOMMENDATION')}</div>
       <div class="ai-content">
-        Based on <strong>${s} seats</strong>:<br>
-        Total Payroll: <strong style="color:var(--pos)">Rp ${((restaurantData.salaries.gm + restaurantData.salaries.chef + restaurantData.salaries.server)/1000000).toFixed(1)}M/bln</strong>
+        ${BL('Berdasarkan','Based on')} <strong>${s} ${BL('kursi','seats')}</strong>:<br>
+        ${BL('Total Payroll','Total Payroll')}: <strong style="color:var(--pos)">Rp ${((restaurantData.salaries.gm + restaurantData.salaries.chef + restaurantData.salaries.server)/1000000).toFixed(1)}M/${BL('bln','mo')}</strong>
       </div>
     </div>
     <button class="btn-nav" onclick="nextStep()">${BL('LANJUT KE LAUNCH →','CONTINUE TO LAUNCH →')}</button>
@@ -367,8 +369,8 @@ function renderStep5(body) {
 function renderStep6(body) {
   body.innerHTML = `
     <div class="form-grid">
-      <div class="fg"><div class="fl">MARKETING/BULN</div><input class="fi" value="${restaurantData.marketingBudget}"></div>
-      <div class="fg"><div class="fl">GRAND OPENING</div><input class="fi" value="15000000"></div>
+      <div class="fg"><div class="fl">${BL('MARKETING/BULAN','MARKETING/MONTH')}</div><input class="fi" value="${restaurantData.marketingBudget}"></div>
+      <div class="fg"><div class="fl">${BL('GRAND OPENING','GRAND OPENING')}</div><input class="fi" value="15000000"></div>
     </div>
     <div class="section-title">🎯 AI INFLUENCER RECOMMENDATIONS</div>
     <div class="result-card">
@@ -427,19 +429,19 @@ function renderStep8(body) {
     <div class="section-title">📋 BUSINESS PLAN SUMMARY</div>
     <div class="result-card">
       <div class="rc-title">📍 LOCATION (FROM RESTOMAP)</div>
-      <div class="rc-row"><span>Kota</span><span class="rc-value">${locationData.city}</span></div>
+      <div class="rc-row"><span>${BL('Kota','City')}</span><span class="rc-value">${locationData.city}</span></div>
       <div class="rc-row"><span>Score</span><span class="rc-value" style="color:var(--a)">${locationData.score}/100</span></div>
     </div>
     <div class="result-card">
       <div class="rc-title">🏪 RESTAURANT</div>
-      <div class="rc-row"><span>Nama</span><span class="rc-value">${restaurantData.name || 'TBD'}</span></div>
-      <div class="rc-row"><span>Konsep</span><span class="rc-value">${restaurantData.concept}</span></div>
-      <div class="rc-row"><span>Seating</span><span class="rc-value">${restaurantData.seating}</span></div>
+      <div class="rc-row"><span>${BL('Nama','Name')}</span><span class="rc-value">${restaurantData.name || 'TBD'}</span></div>
+      <div class="rc-row"><span>${BL('Konsep','Concept')}</span><span class="rc-value">${restaurantData.concept}</span></div>
+      <div class="rc-row"><span>${BL('Kursi','Seating')}</span><span class="rc-value">${restaurantData.seating}</span></div>
     </div>
     <div class="result-card">
       <div class="rc-title">💰 FINANCIAL</div>
       <div class="rc-row"><span>Avg Check</span><span class="rc-value">Rp ${(restaurantData.avgCheck/1000).toFixed(0)}K</span></div>
-      <div class="rc-row"><span>Est. Profit</span><span class="rc-value pos">Rp 8.5JT/bulan</span></div>
+      <div class="rc-row"><span>${BL('Estimasi Profit','Est. Profit')}</span><span class="rc-value pos">Rp 8.5JT/${BL('bulan','month')}</span></div>
     </div>
     <button class="btn-export" onclick="alert('Exporting PDF...')">📄 ${BL('EXPORT BUSINESS PLAN PDF','EXPORT BUSINESS PLAN PDF')}</button>
     <button class="btn-export" style="background:var(--a)" onclick="alert('WhatsApp share...')">📱 ${BL('BAGIKAN VIA WHATSAPP','SHARE VIA WHATSAPP')}</button>

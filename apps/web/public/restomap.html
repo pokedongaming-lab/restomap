@@ -189,26 +189,26 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--t);font-f
     <div class="sb-section">
       <div class="sb-label" data-i18="lblCriteria">🎯 KRITERIA LOKASI</div>
       <div style="margin-bottom:8px">
-        <div style="font-size:8px;color:var(--t4)">Traffic</div>
+        <div id="lblCritTraffic" style="font-size:8px;color:var(--t4)">Traffic</div>
         <input type="range" class="sb-slider" id="critTraffic" min="0" max="100" value="70">
       </div>
       <div style="margin-bottom:8px">
-        <div style="font-size:8px;color:var(--t4)">Daya Beli</div>
+        <div id="lblCritBuying" style="font-size:8px;color:var(--t4)">Daya Beli</div>
         <input type="range" class="sb-slider" id="critBuying" min="0" max="100" value="70">
       </div>
       <div style="margin-bottom:8px">
-        <div style="font-size:8px;color:var(--t4)">Populasi</div>
+        <div id="lblCritPop" style="font-size:8px;color:var(--t4)">Populasi</div>
         <input type="range" class="sb-slider" id="critPop" min="0" max="100" value="60">
       </div>
       <div style="margin-bottom:8px">
-        <div style="font-size:8px;color:var(--t4)">Jalan Utama</div>
+        <div id="lblCritMain" style="font-size:8px;color:var(--t4)">Jalan Utama</div>
         <input type="range" class="sb-slider" id="critMainRoad" min="0" max="100" value="70">
       </div>
       <div>
-        <div style="font-size:8px;color:var(--t4)">Jalan Alternatif</div>
+        <div id="lblCritAlt" style="font-size:8px;color:var(--t4)">Jalan Alternatif</div>
         <input type="range" class="sb-slider" id="critAltRoad" min="0" max="100" value="65">
       </div>
-      <button class="sb-btn" onclick="findBestLocation()">🎯 CARI LOKASI TERBAIK</button>
+      <button class="sb-btn" id="btnFindBest" onclick="findBestLocation()">🎯 CARI LOKASI TERBAIK</button>
     </div>
     
     <div class="saved-list" id="savedList">
@@ -238,11 +238,11 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--t);font-f
       <div class="ph-sub" id="phSub">Analisis lokasi</div>
     </div>
     <div class="tab-bar">
-      <div class="tab on" onclick="switchTab('overview',this)">📊 OVERVIEW</div>
-      <div class="tab" onclick="switchTab('competitors',this)">🏪 KOMPETITOR</div>
-      <div class="tab" onclick="switchTab('heatmap',this)">🔥 HEATMAP</div>
-      <div class="tab" onclick="switchTab('cannibal',this)">⚔️ CANNIBAL</div>
-      <div class="tab" onclick="switchTab('ai',this)">🤖 AI</div>
+      <div class="tab on" id="tabLblOverview" onclick="switchTab('overview',this)">📊 OVERVIEW</div>
+      <div class="tab" id="tabLblCompetitors" onclick="switchTab('competitors',this)">🏪 KOMPETITOR</div>
+      <div class="tab" id="tabLblHeatmap" onclick="switchTab('heatmap',this)">🔥 HEATMAP</div>
+      <div class="tab" id="tabLblCannibal" onclick="switchTab('cannibal',this)">⚔️ CANNIBAL</div>
+      <div class="tab" id="tabLblAi" onclick="switchTab('ai',this)">🤖 AI</div>
     </div>
     <div class="tab-content">
       <div class="tab-pane on" id="tab-overview">
@@ -269,7 +269,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--t);font-f
         </div>
         <div class="section-title" data-i18="lblComp">KOMPETITOR</div>
         <div id="competitorCount">—</div>
-        <button class="btn-builder" onclick="goToBuilder()">BUAT BUSINESS PLAN →</button>
+        <button class="btn-builder" id="btnBusinessPlan" onclick="goToBuilder()">BUAT BUSINESS PLAN →</button>
       </div>
       <div class="tab-pane" id="tab-competitors">
         <div id="competitorList"></div>
@@ -358,6 +358,35 @@ const trans = {
   }
 };
 
+const criteriaI18n = {
+  id: {
+    traffic: 'Traffic',
+    buying: 'Daya Beli',
+    pop: 'Populasi',
+    main: 'Jalan Utama',
+    alt: 'Jalan Alternatif',
+    find: '🎯 CARI LOKASI TERBAIK',
+    tabOverview: '📊 OVERVIEW',
+    tabCompetitors: '🏪 KOMPETITOR',
+    tabHeatmap: '🔥 HEATMAP',
+    tabCannibal: '⚔️ CANNIBAL',
+    tabAi: '🤖 AI'
+  },
+  en: {
+    traffic: 'Traffic',
+    buying: 'Purchasing Power',
+    pop: 'Population',
+    main: 'Main Road Access',
+    alt: 'Alternative Road Access',
+    find: '🎯 FIND BEST LOCATION',
+    tabOverview: '📊 OVERVIEW',
+    tabCompetitors: '🏪 COMPETITORS',
+    tabHeatmap: '🔥 HEATMAP',
+    tabCannibal: '⚔️ CANNIBAL',
+    tabAi: '🤖 AI'
+  }
+};
+
 const uiText = {
   id: {
     loading: 'MEMUAT...',
@@ -416,6 +445,26 @@ function updateLabels() {
 
   const heatmapHint = document.getElementById('heatmapHint');
   if (heatmapHint) heatmapHint.textContent = tt('heatmapHint');
+
+  const c = criteriaI18n[lang] || criteriaI18n.id;
+  const setTxt = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  setTxt('lblCritTraffic', c.traffic);
+  setTxt('lblCritBuying', c.buying);
+  setTxt('lblCritPop', c.pop);
+  setTxt('lblCritMain', c.main);
+  setTxt('lblCritAlt', c.alt);
+  setTxt('btnFindBest', c.find);
+  setTxt('tabLblOverview', c.tabOverview);
+  setTxt('tabLblCompetitors', c.tabCompetitors);
+  setTxt('tabLblHeatmap', c.tabHeatmap);
+  setTxt('tabLblCannibal', c.tabCannibal);
+  setTxt('tabLblAi', c.tabAi);
+  setTxt('btnBusinessPlan', trans[lang].btnToBuilder + ' →');
+
+  const phLoc = document.getElementById('phLoc');
+  if (phLoc && (phLoc.textContent === 'LOKASI DIPILIH' || phLoc.textContent === 'SELECTED LOCATION')) {
+    phLoc.textContent = lang === 'en' ? 'SELECTED LOCATION' : 'LOKASI DIPILIH';
+  }
 
   renderSaved();
   updateExistingLocations();
