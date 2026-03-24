@@ -330,23 +330,23 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--t);font-f
 const trans = {
   id: {
     lblCity: 'KOTA', lblCategory: 'KATEGORI', lblRadius: 'RADIUS', lblMeter: 'm',
-    lblCriteria: '🎯 KRITERIA LOKASI', lblBrand: 'BRAND SEARCH', lblHeatmap: '🔥 HEATMAP', 
-    lblFindBest: '🎯 CARI LOKASI TERBAIK', lblSaved: 'LOKASI TERSIMPAN', 
-    lblSave: '💾 SIMPAN', lblBuilder: '→ LANJUT KE BUILDER', lblClick: 'KLIK PETA UNTUK PILIH', 
-    lblFeasibility: 'FEASIBILITY', lblRev: 'REV/BLN', lblBE: 'BREAK-EVEN', 
-    lblMargin: 'MARGIN', lblComp: 'KOMPETITOR', lblCann: '⚔️ CANNIBAL', 
-    lblAI: '🤖 AI', lblPop: 'POPULASI', lblTraffic: 'TRAFFIC', lblIncome: 'INCOME', 
-    btnToBuilder: 'BUAT BUSINESS PLAN →'
+    lblCriteria: 'KRITERIA LOKASI', lblBrand: 'BRAND SEARCH', lblHeatmap: 'HEATMAP',
+    lblFindBest: 'CARI LOKASI TERBAIK', lblSaved: 'LOKASI TERSIMPAN',
+    lblSave: 'SIMPAN', lblBuilder: 'LANJUT KE BUILDER', lblClick: 'KLIK PETA UNTUK PILIH',
+    lblFeasibility: 'FEASIBILITY', lblRev: 'REV/BLN', lblBE: 'BREAK-EVEN',
+    lblMargin: 'MARGIN', lblComp: 'KOMPETITOR', lblCann: 'CANNIBAL',
+    lblAI: 'AI', lblPop: 'POPULASI', lblTraffic: 'TRAFFIC', lblIncome: 'INCOME',
+    btnToBuilder: 'BUAT BUSINESS PLAN'
   },
   en: {
     lblCity: 'CITY', lblCategory: 'CATEGORY', lblRadius: 'RADIUS', lblMeter: '',
-    lblCriteria: '🎯 LOCATION CRITERIA', lblBrand: 'BRAND SEARCH', lblHeatmap: '🔥 HEATMAP', 
-    lblFindBest: '🎯 FIND BEST LOCATION', lblSaved: 'SAVED LOCATIONS', 
-    lblSave: '💾 SAVE', lblBuilder: '→ GO TO BUILDER', lblClick: 'CLICK MAP TO SELECT', 
-    lblFeasibility: 'FEASIBILITY', lblRev: 'REV/MON', lblBE: 'BREAK-EVEN', 
-    lblMargin: 'MARGIN', lblComp: 'COMPETITORS', lblCann: '⚔️ CANNIBAL', 
-    lblAI: '🤖 AI', lblPop: 'POPULATION', lblTraffic: 'TRAFFIC', lblIncome: 'INCOME', 
-    btnToBuilder: 'CREATE BUSINESS PLAN →'
+    lblCriteria: 'LOCATION CRITERIA', lblBrand: 'BRAND SEARCH', lblHeatmap: 'HEATMAP',
+    lblFindBest: 'FIND BEST LOCATION', lblSaved: 'SAVED LOCATIONS',
+    lblSave: 'SAVE', lblBuilder: 'GO TO BUILDER', lblClick: 'CLICK MAP TO SELECT',
+    lblFeasibility: 'FEASIBILITY', lblRev: 'REV/MON', lblBE: 'BREAK-EVEN',
+    lblMargin: 'MARGIN', lblComp: 'COMPETITORS', lblCann: 'CANNIBAL',
+    lblAI: 'AI', lblPop: 'POPULATION', lblTraffic: 'TRAFFIC', lblIncome: 'INCOME',
+    btnToBuilder: 'CREATE BUSINESS PLAN'
   }
 };
 
@@ -385,7 +385,6 @@ function setTier(t, el) {
   tier = t;
   document.querySelectorAll('.tier-btn').forEach(b => b.classList.remove('on'));
   el.classList.add('on');
-  document.getElementById('statusText').textContent = t.toUpperCase() + ' TIER';
 }
 
 // ═══ DATA ═══
@@ -462,6 +461,7 @@ function initMap() {
     ],
     disableDefaultUI: false,
     zoomControl: true,
+    clickableIcons: false,
   });
   
   geocoder = new google.maps.Geocoder();
@@ -845,3 +845,4 @@ setTimeout(initBrandSearch, 500);
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAzlXgIm1ofUw-A26fQp0zylxczS8oNaJk&libraries=places&callback=initMap" async defer></script>
 </body>
 </html>
+
