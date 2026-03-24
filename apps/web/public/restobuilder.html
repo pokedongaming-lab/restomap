@@ -148,6 +148,15 @@ const locationData = {
   revenue: parseInt(params.get('revenue')) || 487000000,
 };
 
+const methodMetrics = {
+  bayes: parseFloat(params.get('bayes')) || 70,
+  hhi: parseFloat(params.get('hhi')) || 55,
+  voronoi: parseFloat(params.get('voronoi')) || 60,
+  cannibal: parseFloat(params.get('cannibal')) || 12,
+  mmm: parseFloat(params.get('mmm')) || 65,
+  milp: parseFloat(params.get('milp')) || 62,
+};
+
 document.getElementById('locationInfo').textContent = '📍 LOKASI: ' + locationData.city.toUpperCase() + ' (' + locationData.lat.toFixed(2) + ', ' + locationData.lng.toFixed(2) + ')';
 
 let lang = 'id';
@@ -268,9 +277,14 @@ function renderStep1(body) {
 function renderStep2(body) {
   body.innerHTML = `
     <div class="metrics-grid">
-      <div class="metric-box"><div class="mb-label">POPULASI</div><div class="mb-val">45K</div></div>
-      <div class="metric-box"><div class="mb-label">TRAFFIC/JAM</div><div class="mb-val">2.5K</div></div>
-      <div class="metric-box"><div class="mb-label">INCOME/TH</div><div class="mb-val">Rp 120JT</div></div>
+      <div class="metric-box"><div class="mb-label">${BL('BAYES DEMAND','BAYES DEMAND')}</div><div class="mb-val">${methodMetrics.bayes.toFixed(0)}</div></div>
+      <div class="metric-box"><div class="mb-label">${BL('HHI KOMPETISI','HHI COMPETITION')}</div><div class="mb-val">${methodMetrics.hhi.toFixed(0)}</div></div>
+      <div class="metric-box"><div class="mb-label">${BL('VORONOI GAP','VORONOI GAP')}</div><div class="mb-val">${methodMetrics.voronoi.toFixed(0)}</div></div>
+    </div>
+    <div class="metrics-grid">
+      <div class="metric-box"><div class="mb-label">${BL('CANNIBAL OVERLAP','CANNIBAL OVERLAP')}</div><div class="mb-val">${methodMetrics.cannibal.toFixed(1)}%</div></div>
+      <div class="metric-box"><div class="mb-label">${BL('MMM EFISIENSI','MMM EFFICIENCY')}</div><div class="mb-val">${methodMetrics.mmm.toFixed(0)}</div></div>
+      <div class="metric-box"><div class="mb-label">${BL('MILP FEASIBILITY','MILP FEASIBILITY')}</div><div class="mb-val">${methodMetrics.milp.toFixed(0)}</div></div>
     </div>
     <div class="form-grid">
       <div class="fg"><div class="fl">${BL('TARGET MARKET','TARGET MARKET')}</div><select class="fi"><option>${BL('Urban Professional','Urban Professional')}</option><option>${BL('Keluarga','Family')}</option></select></div>
@@ -280,7 +294,8 @@ function renderStep2(body) {
       <div class="ai-title">🤖 ${BL('AI MARKET INSIGHTS','AI MARKET INSIGHTS')}</div>
       <div class="ai-content">
         📈 ${locationData.city} ${BL('tren positif','has positive trend')}<br>
-        💰 ${BL('Daya beli di atas rata-rata','Purchasing power above average')}<br>
+        🧠 ${BL('Model Bayes + HHI menunjukkan tekanan kompetisi','Bayes + HHI model indicates competition pressure')} <strong>${methodMetrics.hhi.toFixed(0)}</strong><br>
+        🗺️ ${BL('Voronoi gap score','Voronoi gap score')}: <strong>${methodMetrics.voronoi.toFixed(0)}</strong><br>
         🎯 ${BL('Rekomendasi','Recommendation')}: ${restaurantData.concept === 'coffee' ? 'Coffee culture' : 'Quality experience'}
       </div>
     </div>
@@ -404,9 +419,13 @@ function renderStep6(body) {
 function renderStep7(body) {
   const rev = restaurantData.seating * restaurantData.avgCheck * 26 * 0.7;
   const cogs = rev * 0.30;
-  const labor = 25000000;
+  const laborFactor = 0.9 + (methodMetrics.cannibal > 20 ? 0.15 : 0.05);
+  const labor = Math.round(25000000 * laborFactor);
   const rent = restaurantData.spaceArea * 250000;
-  const opex = cogs + labor + rent + restaurantData.marketingBudget;
+  const mmmFactor = Math.max(0.75, Math.min(1.25, methodMetrics.mmm / 70));
+  const milpFactor = Math.max(0.75, Math.min(1.20, methodMetrics.milp / 70));
+  const optimizedMarketing = Math.round(restaurantData.marketingBudget * mmmFactor * milpFactor);
+  const opex = cogs + labor + rent + optimizedMarketing;
   const profit = rev - opex;
   body.innerHTML = `
     <div class="section-title">💰 ${BL('FINANCIAL MODEL (DARI SEMUA STEP)','FINANCIAL MODEL (FROM ALL STEPS)')}</div>
@@ -421,7 +440,7 @@ function renderStep7(body) {
       <div class="rc-row"><span>COGS (30%)</span><span class="rc-value">Rp ${(cogs/1000000).toFixed(1)}JT</span></div>
       <div class="rc-row"><span>${BL('Labor','Labor')}</span><span class="rc-value">Rp ${(labor/1000000).toFixed(1)}JT</span></div>
       <div class="rc-row"><span>${BL('Sewa','Rent')}</span><span class="rc-value">Rp ${(rent/1000000).toFixed(1)}JT</span></div>
-      <div class="rc-row"><span>${BL('Marketing','Marketing')}</span><span class="rc-value">Rp ${(restaurantData.marketingBudget/1000000).toFixed(1)}JT</span></div>
+      <div class="rc-row"><span>${BL('Marketing (MMM+MILP)','Marketing (MMM+MILP)')}</span><span class="rc-value">Rp ${(optimizedMarketing/1000000).toFixed(1)}JT</span></div>
     </div>
     <button class="btn-nav" onclick="nextStep()">${BL('LANJUT KE RESULTS →','CONTINUE TO RESULTS →')}</button>
   `;

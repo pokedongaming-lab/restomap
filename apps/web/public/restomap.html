@@ -681,8 +681,32 @@ async function renderAnalysis(lat, lng) {
       fetchGapCategory(lat, lng, currentRadius)
     ]);
     
+    // Derive method scores to sync with RestoBuilder modules
+    const competitionCount = competitors?.length || 0;
+    const hhiProxy = Math.min(100, Math.round(Math.max(0, 100 - competitionCount * 3.2)));
+    const bayesDemand = factors ? Math.round((factors.population * 0.45 + factors.income * 0.30 + factors.traffic * 0.25)) : 70;
+    const voronoiGap = Math.min(100, Math.max(0, Math.round((categories?.[0]?.gapScore ?? 50))));
+    const cannibalPct = Math.round((Math.random() * 20 + 5) * 10) / 10;
+    const mmmEfficiency = Math.min(100, Math.round((bayesDemand * 0.55 + hhiProxy * 0.45)));
+    const milpFeasible = Math.min(100, Math.round((mmmEfficiency * 0.6 + voronoiGap * 0.4)));
+
     // Update state
-    selectedLoc = { ...selectedLoc, lat, lng, factors, competitors, categories };
+    selectedLoc = {
+      ...selectedLoc,
+      lat,
+      lng,
+      factors,
+      competitors,
+      categories,
+      methodScores: {
+        bayesDemand,
+        hhiProxy,
+        voronoiGap,
+        cannibalPct,
+        mmmEfficiency,
+        milpFeasible
+      }
+    };
     
     // Calculate score from factors
     const score = factors ? Math.round((factors.population * 0.25 + factors.income * 0.25 + factors.traffic * 0.3 + (100 - factors.competition) * 0.2)) : 75;
@@ -711,7 +735,7 @@ async function renderAnalysis(lat, lng) {
     }
     
     // Update Cannibal values
-    document.getElementById('cannibalRate').textContent = (Math.random() * 20 + 5).toFixed(1) + '%';
+    document.getElementById('cannibalRate').textContent = cannibalPct.toFixed(1) + '%';
     document.getElementById('safeDistance').textContent = (Math.random() * 1.5 + 0.5).toFixed(1) + ' km';
     
     // Render competitors list
@@ -974,7 +998,30 @@ function deleteSaved(i) {
 
 function goToBuilder() {
   if (!selectedLoc) { alert('Pilih lokasi dulu!'); return; }
-  window.location.href = 'restobuilder.html?city=' + selectedLoc.name + '&lat=' + selectedLoc.lat + '&lng=' + selectedLoc.lng;
+
+  const score = parseInt(document.getElementById('scoreValue').textContent || '75', 10) || 75;
+  const revTxt = (document.getElementById('revMonth').textContent || '').replace(/[^0-9.]/g, '');
+  const revJt = parseFloat(revTxt) || 0;
+  const revenue = Math.round(revJt * 1000000);
+  const ms = selectedLoc.methodScores || {};
+
+  const q = new URLSearchParams({
+    city: selectedLoc.name || 'Lokasi Dipilih',
+    lat: String(selectedLoc.lat),
+    lng: String(selectedLoc.lng),
+    radius: String(currentRadius),
+    category: String(currentCategory || 'all'),
+    score: String(score),
+    revenue: String(revenue),
+    bayes: String(ms.bayesDemand ?? ''),
+    hhi: String(ms.hhiProxy ?? ''),
+    voronoi: String(ms.voronoiGap ?? ''),
+    cannibal: String(ms.cannibalPct ?? ''),
+    mmm: String(ms.mmmEfficiency ?? ''),
+    milp: String(ms.milpFeasible ?? '')
+  });
+
+  window.location.href = 'restobuilder.html?' + q.toString();
 }
 
 function switchTab(tabName, el) {
