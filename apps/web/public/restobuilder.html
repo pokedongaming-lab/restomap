@@ -121,6 +121,7 @@ select.fi option{background:var(--bg3)}
       <div style="font-size:8px;color:var(--t4);line-height:1.5;margin-bottom:8px">
         Research basis: ROB2N · Bayes Clustering · Bayesian MMM · MILP Budget · Geo Copilot · HHI Share
       </div>
+      <div id="stdParamBox" style="background:var(--bg3);border:1px solid var(--b);padding:8px;margin-bottom:8px;font-size:8px;line-height:1.6;color:var(--t3)"></div>
       <button class="btn-back" id="btnBackMap" onclick="location.href='restomap.html'">← KEMBALI KE MAP</button>
     </div>
   </div>
@@ -148,13 +149,26 @@ const locationData = {
   revenue: parseInt(params.get('revenue')) || 487000000,
 };
 
+const STANDARD_PARAMS = {
+  bayes: 70,
+  hhi: 55,
+  voronoi: 60,
+  cannibal: 12,
+  mmm: 65,
+  milp: 62,
+  targetMarginPct: 18,
+  targetPaybackMonths: 18,
+  defaultRadiusM: 1000,
+  defaultAvgCheck: 35000
+};
+
 const methodMetrics = {
-  bayes: parseFloat(params.get('bayes')) || 70,
-  hhi: parseFloat(params.get('hhi')) || 55,
-  voronoi: parseFloat(params.get('voronoi')) || 60,
-  cannibal: parseFloat(params.get('cannibal')) || 12,
-  mmm: parseFloat(params.get('mmm')) || 65,
-  milp: parseFloat(params.get('milp')) || 62,
+  bayes: parseFloat(params.get('bayes')) || STANDARD_PARAMS.bayes,
+  hhi: parseFloat(params.get('hhi')) || STANDARD_PARAMS.hhi,
+  voronoi: parseFloat(params.get('voronoi')) || STANDARD_PARAMS.voronoi,
+  cannibal: parseFloat(params.get('cannibal')) || STANDARD_PARAMS.cannibal,
+  mmm: parseFloat(params.get('mmm')) || STANDARD_PARAMS.mmm,
+  milp: parseFloat(params.get('milp')) || STANDARD_PARAMS.milp,
 };
 
 document.getElementById('locationInfo').textContent = '📍 LOKASI: ' + locationData.city.toUpperCase() + ' (' + locationData.lat.toFixed(2) + ', ' + locationData.lng.toFixed(2) + ')';
@@ -205,6 +219,18 @@ function renderSidebar() {
   `).join('');
 }
 
+function renderStandardParams(){
+  const box = document.getElementById('stdParamBox');
+  if(!box) return;
+  box.innerHTML = `
+    <div style="color:var(--a);margin-bottom:4px">${BL('PARAMETER STANDAR','STANDARD PARAMETERS')}</div>
+    <div>Bayes: <strong>${STANDARD_PARAMS.bayes}</strong> · HHI: <strong>${STANDARD_PARAMS.hhi}</strong></div>
+    <div>Voronoi: <strong>${STANDARD_PARAMS.voronoi}</strong> · Cannibal: <strong>${STANDARD_PARAMS.cannibal}%</strong></div>
+    <div>MMM: <strong>${STANDARD_PARAMS.mmm}</strong> · MILP: <strong>${STANDARD_PARAMS.milp}</strong></div>
+    <div>${BL('Target Margin','Target Margin')}: <strong>${STANDARD_PARAMS.targetMarginPct}%</strong> · ${BL('Payback','Payback')}: <strong>${STANDARD_PARAMS.targetPaybackMonths} ${BL('bulan','months')}</strong></div>
+  `;
+}
+
 function setLangBuilder(nextLang){
   lang = nextLang;
   document.getElementById('btnLangID').className = nextLang === 'id' ? 'lang-btn on' : 'lang-btn';
@@ -212,10 +238,12 @@ function setLangBuilder(nextLang){
   document.getElementById('locationInfo').textContent = (nextLang === 'id' ? '📍 LOKASI: ' : '📍 LOCATION: ') + locationData.city.toUpperCase() + ' (' + locationData.lat.toFixed(2) + ', ' + locationData.lng.toFixed(2) + ')';
   const btnBack = document.getElementById('btnBackMap');
   if (btnBack) btnBack.textContent = BL('← KEMBALI KE MAP', '← BACK TO MAP');
+  renderStandardParams();
   renderStep();
 }
 
 function renderStep() {
+  renderStandardParams();
   const steps = getSteps();
   document.getElementById('stepNum').textContent = 'STEP ' + currentStep;
   document.getElementById('stepTitle').textContent = steps[currentStep-1].title;
