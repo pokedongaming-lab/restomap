@@ -466,6 +466,20 @@ function renderStep8(body) {
       <div class="rc-row"><span>${BL('Avg Check','Avg Check')}</span><span class="rc-value">Rp ${(restaurantData.avgCheck/1000).toFixed(0)}K</span></div>
       <div class="rc-row"><span>${BL('Estimasi Profit','Est. Profit')}</span><span class="rc-value pos">Rp 8.5JT/${BL('bulan','month')}</span></div>
     </div>
+
+    <div class="result-card">
+      <div class="rc-title">🧭 ${BL('METHOD TRACE','METHOD TRACE')}</div>
+      <div class="rc-row"><span>Bayes Demand</span><span class="rc-value">${methodMetrics.bayes.toFixed(1)}</span></div>
+      <div class="rc-row"><span>HHI Competition</span><span class="rc-value">${methodMetrics.hhi.toFixed(1)}</span></div>
+      <div class="rc-row"><span>Voronoi Gap</span><span class="rc-value">${methodMetrics.voronoi.toFixed(1)}</span></div>
+      <div class="rc-row"><span>Cannibal Overlap</span><span class="rc-value">${methodMetrics.cannibal.toFixed(1)}%</span></div>
+      <div class="rc-row"><span>MMM Efficiency</span><span class="rc-value">${methodMetrics.mmm.toFixed(1)}</span></div>
+      <div class="rc-row"><span>MILP Feasibility</span><span class="rc-value">${methodMetrics.milp.toFixed(1)}</span></div>
+      <div style="margin-top:8px;font-size:9px;color:var(--t4);line-height:1.6">
+        ${BL('Trace ini menjelaskan asal-usul skor untuk sinkronisasi RestoMap → RestoBuilder.','This trace explains score lineage for RestoMap → RestoBuilder synchronization.')}
+      </div>
+    </div>
+
     <button class="btn-export" onclick="alert('Exporting PDF...')">📄 ${BL('EXPORT BUSINESS PLAN PDF','EXPORT BUSINESS PLAN PDF')}</button>
     <button class="btn-export" style="background:var(--a)" onclick="alert('WhatsApp share...')">📱 ${BL('BAGIKAN VIA WHATSAPP','SHARE VIA WHATSAPP')}</button>
   `;
