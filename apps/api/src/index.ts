@@ -1,22 +1,34 @@
 import Fastify from 'fastify'
 import cors from '@fastify/cors'
 import jwt from '@fastify/jwt'
-import { healthRoute } from './routes/health'
-import { authRoutes } from './routes/auth'
-import { scoringRoutes } from './routes/scoring'
-import { reportRoutes } from './routes/reports'
-import { competitorRoutes } from './routes/competitors'
-import { savedLocationsRoutes } from './routes/locations'
-import { heatmapRoutes } from './routes/heatmap'
-import { gapCategoryRoutes } from './routes/gapCategory'
-import { cityAverageRoutes } from './routes/cityAverage'
-import { sentimentRoutes } from './routes/sentiment'
-import { quadrantRoutes } from './routes/quadrant'
-import { bayesianRoutes } from './routes/bayesian'
-import { analyzeRoutes } from './routes/analyze'
-import { rebRoutes } from './routes/reb'
+import dotenv from 'dotenv'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 async function start() {
+  // Load env from repo root first, then fallback to local cwd
+  const __filename = fileURLToPath(import.meta.url)
+  const __dirname = path.dirname(__filename)
+  const rootEnv = path.resolve(__dirname, '../../../.env')
+  dotenv.config({ path: rootEnv })
+  dotenv.config()
+
+  const healthModule = await import('./routes/health')
+  const healthRoute = healthModule.healthRoute
+  const { authRoutes } = await import('./routes/auth')
+  const { scoringRoutes } = await import('./routes/scoring')
+  const { reportRoutes } = await import('./routes/reports')
+  const { competitorRoutes } = await import('./routes/competitors')
+  const { savedLocationsRoutes } = await import('./routes/locations')
+  const { heatmapRoutes } = await import('./routes/heatmap')
+  const { gapCategoryRoutes } = await import('./routes/gapCategory')
+  const { cityAverageRoutes } = await import('./routes/cityAverage')
+  const { sentimentRoutes } = await import('./routes/sentiment')
+  const { quadrantRoutes } = await import('./routes/quadrant')
+  const { bayesianRoutes } = await import('./routes/bayesian')
+  const { analyzeRoutes } = await import('./routes/analyze')
+  const { rebRoutes } = await import('./routes/reb')
+
   const app = Fastify({ logger: true })
 
   await app.register(cors, {
