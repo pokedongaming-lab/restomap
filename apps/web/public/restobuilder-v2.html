@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RestoMap — RestoSuite</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root{--bg:#030303;--bg2:#0a0a0a;--bg3:#111;--panel:#0d0d0d;--b:rgba(255,109,0,.15);--b2:rgba(255,109,0,.38);--a:#FF6D00;--a2:#FF8F00;--a3:rgba(255,109,0,.07);--t:#FFB74D;--t2:#FFA726;--t3:rgba(255,183,77,.45);--t4:rgba(255,183,77,.15);--pos:#69F0AE;--neg:#FF5252;--info:#4DA6FF;}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--t);font-family:'Share Tech Mono',monospace;font-size:11px}
+.tb{display:flex;align-items:center;height:38px;background:var(--bg2);border-bottom:1px solid var(--b2)}
+.tb-logo{padding:0 14px;height:100%;border-right:1px solid var(--b)}
+.logo-t{font-family:'Orbitron',sans-serif;font-size:12px;font-weight:700;color:var(--a);letter-spacing:3px}
+.logo-s{font-size:8px;color:var(--t3)}
+.nav-links{display:flex;height:100%;border-right:1px solid var(--b)}
+.nl{padding:0 16px;height:100%;display:flex;align-items:center;font-size:10px;cursor:pointer;color:var(--t3);border-right:1px solid var(--b)}
+.nl:hover{color:var(--t);background:var(--a3)}
+.nl.active{color:var(--a);border-bottom:2px solid var(--a)}
+.tb-dot{width:6px;height:6px;border-radius:50%;background:var(--a);animation:blink 1.4s infinite;margin:0 5px}
+.tb-status{font-size:9px;color:var(--t3);padding:0 12px;border-right:1px solid var(--b)}
+.tb-clock{font-family:'Orbitron',sans-serif;font-size:11px;color:var(--a);padding:0 12px;border-right:1px solid var(--b);letter-spacing:1px}
+.tier-group{display:flex;align-items:center;gap:0;padding:0 10px;border-right:1px solid var(--b)}
+.tier-btn{padding:3px 9px;font-size:8px;cursor:pointer;border:1px solid var(--b);color:var(--t3);background:none;font-family:inherit;letter-spacing:1px}
+.tier-btn:hover{color:var(--a)}
+.tier-btn.on{background:var(--a3);border-color:var(--a);color:var(--a)}
+.theme-grp{display:flex;align-items:center;gap:5px;padding:0 12px}
+.tc{width:13px;height:13px;border-radius:2px;cursor:pointer;border:1px solid transparent}
+.tc:hover,.tc.on{border-color:var(--t);transform:scale(1.25)}
+.spacer{flex:1}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.12}}
+
+.app{display:flex;height:calc(100vh - 38px)}
+.sidebar{width:280px;background:var(--bg2);border-right:1px solid var(--b);display:flex;flex-direction:column;overflow-y:auto}
+.sb-section{padding:12px;border-bottom:1px solid var(--b)}
+.sb-label{font-size:8px;color:var(--t3);letter-spacing:1px;margin-bottom:6px}
+.sb-select,.sb-input{width:100%;background:var(--bg3);border:1px solid var(--b);color:var(--t);padding:8px;font-size:11px;font-family:inherit}
+.sb-slider{width:100%;accent-color:var(--a)}
+.sb-range{display:flex;justify-content:space-between;font-size:8px;color:var(--t4);margin-top:4px}
+.sb-btn{width:100%;padding:10px;background:var(--a);border:none;color:#000;font-size:10px;font-weight:bold;cursor:pointer;margin-top:8px}
+.sb-btn-outline{width:100%;padding:10px;background:var(--a3);border:1px solid var(--a);color:var(--a);font-size:10px;cursor:pointer;margin-top:6px}
+.sb-chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.sb-chip{font-size:9px;padding:3px 8px;background:var(--a3);color:var(--a);cursor:pointer;border-radius:3px}
+.saved-list{flex:1;overflow-y:auto;padding:12px}
+.saved-item{display:flex;justify-content:space-between;align-items:center;padding:6px;background:var(--bg3);margin-bottom:4px;border-radius:4px;cursor:pointer}
+.saved-name{font-size:10px;color:var(--t)}
+.saved-coords{font-size:8px;color:var(--t4)}
+
+.map-wrap{flex:1;position:relative;overflow:hidden}
+#map{width:100%;height:100%}
+.map-coords{position:absolute;bottom:10px;left:10px;background:rgba(0,0,0,.8);border:1px solid var(--b);padding:5px 10px;font-size:9px;color:var(--t3);letter-spacing:1px;z-index:10}
+.map-search{position:absolute;top:10px;left:60px;z-index:10;width:200px}
+.map-search input{width:100%;background:var(--bg2);border:1px solid var(--b2);color:var(--t);padding:8px 12px;font-size:11px;border-radius:4px}
+
+.panel{width:0;background:var(--panel);border-left:1px solid var(--b2);display:flex;flex-direction:column;overflow:hidden;transition:width .4s;flex-shrink:0}
+.panel.open{width:400px}
+.ph{padding:10px 14px;border-bottom:1px solid var(--b);background:var(--a3)}
+.ph-loc{font-family:'Orbitron',sans-serif;font-size:11px;color:var(--a);letter-spacing:1px}
+.ph-sub{font-size:9px;color:var(--t3);margin-top:2px}
+.ph-coords{font-size:8px;color:var(--t4);margin-top:3px}
+.tab-bar{display:flex;border-bottom:1px solid var(--b);background:var(--bg2)}
+.tab{flex:1;padding:7px 4px;text-align:center;font-size:8px;cursor:pointer;color:var(--t3);border-bottom:2px solid transparent}
+.tab:hover{color:var(--t);background:var(--a3)}
+.tab.on{color:var(--a);border-bottom-color:var(--a)}
+.tab-content{flex:1;overflow-y:auto}
+.tab-pane{display:none;padding:12px}
+.tab-pane.on{display:block}
+
+.score-row{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.score-big{font-family:'Orbitron',sans-serif;font-size:48px;font-weight:700;color:var(--a);line-height:1}
+.score-label{font-size:8px;color:var(--t3);letter-spacing:1px}
+.score-rating{font-size:11px;color:var(--a);letter-spacing:1px}
+.metrics-row{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:12px}
+.metric-box{background:var(--bg3);border:1px solid var(--b);padding:7px 8px}
+.mb-label{font-size:8px;color:var(--t3);margin-bottom:2px}
+.mb-val{font-family:'Orbitron',sans-serif;font-size:13px}
+.mb-val.pos{color:var(--pos)}
+.section-title{font-size:8px;color:var(--t4);letter-spacing:2px;text-transform:uppercase;margin:12px 0 8px;padding-bottom:4px;border-bottom:1px solid var(--b)}
+
+.btn-builder{width:100%;padding:12px;background:var(--a);border:none;color:#000;font-size:11px;font-weight:bold;cursor:pointer;margin-top:10px}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="tb">
+  <div class="tb-logo">
+    <div class="logo-t">RestoSuite</div>
+    <div class="logo-s">TERMINAL v2.0</div>
+  </div>
+  <div class="nav-links">
+    <div class="nl active">RestoMap</div>
+    <a class="nl" href="restobuilder.html">RestoBuilder</a>
+  </div>
+  <div class="tb-dot"></div>
+  <div class="tb-status">LIVE DATA · INDONESIA</div>
+  <div class="tb-clock" id="clock">--:--:--</div>
+  <div class="spacer"></div>
+  <div class="tier-group">
+    <button class="tier-btn on" onclick="setTier('free',this)">FREE</button>
+    <button class="tier-btn" onclick="setTier('basic',this)">BASIC</button>
+    <button class="tier-btn" onclick="setTier('pro',this)">PRO</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div class="app">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sb-section">
+      <div class="sb-label">KOTA</div>
+      <select class="sb-select" id="citySelect" onchange="changeCity(this.value)">
+        <option value="-6.2088,106.8234">Jakarta</option>
+        <option value="-7.5755,110.8243">Semarang</option>
+        <option value="-6.9175,107.6191">Bandung</option>
+        <option value="-7.2505,112.7528">Surabaya</option>
+        <option value="1.4828,124.8421">Manado</option>
+        <option value="-5.1425,119.4125">Makassar</option>
+        <option value="3.5881,98.6739">Medan</option>
+      </select>
+    </div>
+    
+    <div class="sb-section">
+      <div class="sb-label">KATEGORI</div>
+      <select class="sb-select" id="categorySelect" onchange="changeCategory(this.value)">
+        <option value="">Semua Kategori</option>
+        <option value="coffee">☕ Coffee & Cafe</option>
+        <option value="fastfood">🍔 Fast Food</option>
+        <option value="indonesian">🍳 Indonesian</option>
+        <option value="western">🥩 Western</option>
+        <option value="japanese">🍣 Japanese</option>
+        <option value="korean">🥘 Korean</option>
+      </select>
+    </div>
+    
+    <div class="sb-section">
+      <div class="sb-label">RADIUS: <span id="radiusValue">1000</span>m</div>
+      <input type="range" class="sb-slider" id="radiusSlider" min="500" max="10000" step="500" value="1000" oninput="document.getElementById('radiusValue').textContent=this.value;currentRadius=parseInt(this.value)">
+      <div class="sb-range"><span>500m</span><span>10km</span></div>
+    </div>
+    
+    <div class="sb-section">
+      <div class="sb-label">BRAND SEARCH</div>
+      <input type="text" class="sb-input" id="brandSearch" placeholder="Cari brand...">
+      <div class="sb-chips">
+        <span class="sb-chip" onclick="quickBrand('starbucks')">Starbucks</span>
+        <span class="sb-chip" onclick="quickBrand('kfc')">KFC</span>
+        <span class="sb-chip" onclick="quickBrand('mcdonalds')">McD</span>
+        <span class="sb-chip" onclick="quickBrand('kopikenangan')">Kopi Kenangan</span>
+      </div>
+    </div>
+    
+    <div class="sb-section">
+      <div class="sb-label">🔥 HEATMAP LAYER</div>
+      <div class="sb-chips" style="margin-bottom:8px">
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
+          <input type="checkbox" id="heatPop" onchange="toggleHeatmap()">
+          <span style="font-size:9px">👥 Populasi</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
+          <input type="checkbox" id="heatTraffic" onchange="toggleHeatmap()">
+          <span style="font-size:9px">🚗 Traffic</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
+          <input type="checkbox" id="heatIncome" onchange="toggleHeatmap()">
+          <span style="font-size:9px">💰 Income</span>
+        </label>
+      </div>
+    </div>
+    
+    <div class="sb-section">
+      <div class="sb-label">🎯 KRITERIA LOKASI</div>
+      <div style="margin-bottom:8px">
+        <div style="font-size:8px;color:var(--t4)">Traffic</div>
+        <input type="range" class="sb-slider" id="critTraffic" min="0" max="100" value="70">
+      </div>
+      <div style="margin-bottom:8px">
+        <div style="font-size:8px;color:var(--t4)">Daya Beli</div>
+        <input type="range" class="sb-slider" id="critBuying" min="0" max="100" value="70">
+      </div>
+      <div>
+        <div style="font-size:8px;color:var(--t4)">Populasi</div>
+        <input type="range" class="sb-slider" id="critPop" min="0" max="100" value="60">
+      </div>
+      <button class="sb-btn" onclick="findBestLocation()">🎯 CARI LOKASI TERBAIK</button>
+    </div>
+    
+    <div class="saved-list" id="savedList">
+      <div class="sb-label">LOKASI TERSIMPAN</div>
+      <div id="savedItems"></div>
+    </div>
+    
+    <div class="sb-section">
+      <button class="sb-btn-outline" onclick="saveLocation()">💾 SIMPAN LOKASI</button>
+      <button class="sb-btn" onclick="goToBuilder()">→ LANJUT KE BUILDER</button>
+    </div>
+  </div>
+  
+  <!-- MAP -->
+  <div class="map-wrap">
+    <div id="map"></div>
+    <div class="map-search">
+      <input type="text" id="searchBox" placeholder="Cari lokasi...">
+    </div>
+    <div class="map-coords" id="mapCoords">KLIK PETA UNTUK PILIH LOKASI</div>
+  </div>
+  
+  <!-- PANEL -->
+  <div class="panel" id="panel">
+    <div class="ph">
+      <div class="ph-loc" id="phLoc">—</div>
+      <div class="ph-sub" id="phSub">Analisis lokasi</div>
+    </div>
+    <div class="tab-bar">
+      <div class="tab on" onclick="switchTab('overview',this)">📊 OVERVIEW</div>
+      <div class="tab" onclick="switchTab('competitors',this)">🏪 KOMPETITOR</div>
+      <div class="tab" onclick="switchTab('heatmap',this)">🔥 HEATMAP</div>
+      <div class="tab" onclick="switchTab('cannibal',this)">⚔️ CANNIBAL</div>
+      <div class="tab" onclick="switchTab('ai',this)">🤖 AI</div>
+    </div>
+    <div class="tab-content">
+      <div class="tab-pane on" id="tab-overview">
+        <div class="score-row">
+          <div class="score-big" id="scoreValue">—</div>
+          <div>
+            <div class="score-label">FEASIBILITY</div>
+            <div class="score-rating" id="scoreRating">—</div>
+          </div>
+        </div>
+        <div class="metrics-row">
+          <div class="metric-box">
+            <div class="mb-label">REV/BLN</div>
+            <div class="mb-val" id="revMonth">—</div>
+          </div>
+          <div class="metric-box">
+            <div class="mb-label">BREAK-EVEN</div>
+            <div class="mb-val" id="breakEven">—</div>
+          </div>
+          <div class="metric-box">
+            <div class="mb-label">MARGIN</div>
+            <div class="mb-val pos" id="marginVal">—</div>
+          </div>
+        </div>
+        <div class="section-title">KOMPETITOR</div>
+        <div id="competitorCount">—</div>
+        <button class="btn-builder" onclick="goToBuilder()">BUAT BUSINESS PLAN →</button>
+      </div>
+      <div class="tab-pane" id="tab-competitors">
+        <div id="competitorList"></div>
+      </div>
+      
+      <div class="tab-pane" id="tab-heatmap">
+        <div class="section-title">🔥 HEATMAP DATA</div>
+        <div id="heatmapContent">
+          <div style="padding:10px;background:var(--bg3);border-radius:4px;margin-bottom:10px;">
+            <div style="font-size:10px;color:var(--t3);margin-bottom:6px;">LAYER AKTIF</div>
+            <div id="activeLayers" style="font-size:11px;color:var(--a)">—</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <div style="padding:10px;background:var(--bg3);border-radius:4px;">
+              <div style="font-size:8px;color:var(--t4)">👥 POPULASI</div>
+              <div id="popValue" style="font-size:16px;color:var(--t)">—</div>
+            </div>
+            <div style="padding:10px;background:var(--bg3);border-radius:4px;">
+              <div style="font-size:8px;color:var(--t4)">🚗 TRAFFIC</div>
+              <div id="trafficValue" style="font-size:16px;color:var(--t)">—</div>
+            </div>
+            <div style="padding:10px;background:var(--bg3);border-radius:4px;">
+              <div style="font-size:8px;color:var(--t4)">💰 INCOME</div>
+              <div id="incomeValue" style="font-size:16px;color:var(--t)">—</div>
+            </div>
+            <div style="padding:10px;background:var(--bg3);border-radius:4px;">
+              <div style="font-size:8px;color:var(--t4)">📍 DENSITY</div>
+              <div id="densityValue" style="font-size:16px;color:var(--t)">—</div>
+            </div>
+          </div>
+          <p style="font-size:9px;color:var(--t4);margin-top:10px;">Pilih layer di sidebar untuk melihat heatmap detail</p>
+        </div>
+      </div>
+      
+      <div class="tab-pane" id="tab-cannibal">
+        <div class="section-title">⚔️ CANNIBALIZATION ANALYSIS</div>
+        <div id="cannibalContent">
+          <div style="padding:10px;background:var(--bg3);border-radius:4px;margin-bottom:10px;">
+            <div style="font-size:10px;color:var(--t3);margin-bottom:6px;">EXISTING LOCATIONS</div>
+            <div id="existingLocations" style="font-size:11px;">Belum ada</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+            <div style="padding:10px;background:var(--bg3);border-radius:4px;">
+              <div style="font-size:8px;color:var(--t4)">KANIBALISASI</div>
+              <div id="cannibalRate" style="font-size:16px;color:var(--neg)">—</div>
+            </div>
+            <div style="padding:10px;background:var(--bg3);border-radius:4px;">
+              <div style="font-size:8px;color:var(--t4)">JARAK AMAN</div>
+              <div id="safeDistance" style="font-size:16px;color:var(--pos)">—</div>
+            </div>
+          </div>
+          <button class="sb-btn-outline" onclick="addExistingLocation()" style="margin-bottom:8px">+ TAMBAH LOKASI EXISTING</button>
+          <button class="sb-btn" onclick="analyzeCannibal()">⚔️ ANALISA CANNIBAL</button>
+        </div>
+      </div>
+      
+      <div class="tab-pane" id="tab-ai">
+        <div id="aiContent"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══ DATA ═══
+const LOCS = [
+  {id:'sudirman',name:'Sudirman CBD',sub:'Premium',lat:-6.2088,lng:106.8234,type:'cbd'},
+  {id:'thamrin',name:'Thamrin',sub:'Central',lat:-6.1944,lng:106.8229,type:'cbd'},
+  {id:'scbd',name:'SCBD',sub:'Premium',lat:-6.2267,lng:106.8053,type:'premium'},
+  {id:'kemang',name:'Kemang',sub:'Trendy',lat:-6.2600,lng:106.8152,type:'trendy'},
+  {id:'pk_indah',name:'Pondok Indah',sub:'Premium',lat:-6.2863,lng:106.7771,type:'premium'},
+  {id:'depok',name:'Depok',sub:'Suburb',lat:-6.4025,lng:106.7942,type:'suburban'},
+  {id:'bekasi',name:'Bekasi',sub:'East',lat:-6.2383,lng:106.9756,type:'suburban'},
+];
+
+const TYPE_STATS = {
+  cbd:{score:78,revM:487,be:14,comp:28,check:74,margin:18.3},
+  premium:{score:82,revM:620,be:18,comp:20,check:95,margin:21.5},
+  trendy:{score:74,revM:415,be:13,comp:22,check:68,margin:17.1},
+  suburban:{score:60,revM:238,be:10,comp:9,check:42,margin:14.0},
+};
+
+// ═══ STATE ═══
+let map, marker, geocoder;
+let selectedLoc = null;
+let currentRadius = 1000;
+let currentCategory = '';
+let tier = 'free';
+
+// ═══ GOOGLE MAPS ═══
+function initMap() {
+  const jakarta = { lat: -6.2088, lng: 106.8456 };
+  
+  map = new google.maps.Map(document.getElementById('map'), {
+    center: jakarta,
+    zoom: 12,
+    styles: [
+      { elementType: "geometry", stylers: [{ color: "#1a1a1a" }] },
+      { elementType: "labels.text.stroke", stylers: [{ color: "#1a1a1a" }] },
+      { elementType: "labels.text.fill", stylers: [{ color: "#746855" }] },
+    ],
+    disableDefaultUI: false,
+    zoomControl: true,
+  });
+  
+  geocoder = new google.maps.Geocoder();
+  
+  // Click listener
+  map.addListener('click', (e) => {
+    const lat = e.latLng.lat();
+    const lng = e.latLng.lng();
+    selectLocation(lat, lng, 'Lokasi Dipilih');
+  });
+  
+  // Add markers for predefined locations
+  LOCS.forEach(loc => {
+    const m = new google.maps.Marker({
+      position: { lat: loc.lat, lng: loc.lng },
+      map: map,
+      title: loc.name,
+      icon: {
+        path: google.maps.SymbolPath.CIRCLE,
+        scale: 6,
+        fillColor: '#FF6D00',
+        fillOpacity: 0.7,
+      },
+    });
+    m.addListener('click', () => {
+      selectLocation(loc.lat, loc.lng, loc.name);
+    });
+  });
+  
+  // Search box
+  const searchBox = document.getElementById('searchBox');
+  searchBox.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+      geocoder.geocode({ address: searchBox.value + ', Indonesia' }, (results, status) => {
+        if (status === 'OK' && results[0]) {
+          const loc = results[0].geometry.location;
+          map.setCenter(loc);
+          map.setZoom(14);
+          selectLocation(loc.lat(), loc.lng(), searchBox.value);
+        }
+      });
+    }
+  });
+  
+  console.log('Google Maps loaded');
+}
+
+function selectLocation(lat, lng, name) {
+  // Remove old marker
+  if (marker) marker.setMap(null);
+  
+  // Add new marker
+  marker = new google.maps.Marker({
+    position: { lat, lng },
+    map: map,
+    animation: google.maps.Animation.DROP,
+  });
+  
+  // Update state
+  selectedLoc = { lat, lng, name, type: 'cbd' };
+  
+  // Update coords display
+  document.getElementById('mapCoords').textContent = `LAT: ${lat.toFixed(5)} · LNG: ${lng.toFixed(5)}`;
+  
+  // Show panel
+  document.getElementById('panel').classList.add('open');
+  
+  // Render analysis
+  renderAnalysis();
+}
+
+// ═══ ANALYSIS ═══
+function renderAnalysis() {
+  if (!selectedLoc) return;
+  
+  const stats = TYPE_STATS[selectedLoc.type] || TYPE_STATS.suburban;
+  
+  // Generate mock data based on location
+  const popValue = Math.floor(Math.random() * 50000) + 10000;
+  const trafficValue = Math.floor(Math.random() * 5000) + 1000;
+  const incomeValue = Math.floor(Math.random() * 50000000) + 10000000;
+  
+  // Update overview
+  document.getElementById('scoreValue').textContent = stats.score;
+  document.getElementById('scoreRating').textContent = stats.score >= 80 ? 'EXCELLENT' : stats.score >= 65 ? 'GOOD' : 'MODERATE';
+  document.getElementById('revMonth').textContent = 'Rp ' + (stats.revM / 1000000).toFixed(1) + 'JT';
+  document.getElementById('breakEven').textContent = stats.be + ' bln';
+  document.getElementById('marginVal').textContent = stats.margin + '%';
+  document.getElementById('competitorCount').textContent = stats.comp + ' kompetitor';
+  
+  // Update panel header
+  document.getElementById('phLoc').textContent = selectedLoc.name.toUpperCase();
+  document.getElementById('phSub').textContent = selectedLoc.type.toUpperCase() + ' · RADIUS: ' + currentRadius + 'm';
+  
+  // Update Heatmap values
+  document.getElementById('popValue').textContent = popValue.toLocaleString();
+  document.getElementById('trafficValue').textContent = trafficValue.toLocaleString() + '/jam';
+  document.getElementById('incomeValue').textContent = 'Rp ' + (incomeValue / 1000000).toFixed(0) + 'JT/th';
+  document.getElementById('densityValue').textContent = Math.floor(popValue / (currentRadius/1000)).toLocaleString() + '/km²';
+  
+  // Update Cannibal values
+  document.getElementById('cannibalRate').textContent = (Math.random() * 30).toFixed(1) + '%';
+  document.getElementById('safeDistance').textContent = (Math.random() * 2 + 0.5).toFixed(1) + ' km';
+  
+  // AI Content
+  document.getElementById('aiContent').innerHTML = `
+    <div style="font-size:9px;color:var(--t3);line-height:1.8;">
+      <div>📊 Skor: <strong style="color:var(--a)">${stats.score}/100</strong></div>
+      <div>💰 Revenue: <strong>Rp ${stats.revM.toLocaleString()}/bln</strong></div>
+      <div>⏱️ Break-even: <strong>${stats.be} bulan</strong></div>
+      <div>📈 Margin: <strong style="color:var(--pos)">${stats.margin}%</strong></div>
+      <div>👥 Populasi: <strong>${popValue.toLocaleString()}</strong></div>
+      <div>🚗 Traffic: <strong>${trafficValue.toLocaleString()}/jam</strong></div>
+      <div style="margin-top:12px;padding:8px;background:var(--a3);border:1px solid var(--b);">
+        <strong>AI Recommendation:</strong><br>
+        Lokasi ${stats.score >= 70 ? 'bagus' : 'cukup'} untuk ${selectedLoc.type}. 
+        Revenue estimate based on comparable locations.
+      </div>
+    </div>
+  `;
+}
+
+// ═══ HEATMAP ═══
+function toggleHeatmap() {
+  const layers = [];
+  if (document.getElementById('heatPop').checked) layers.push('👥 Populasi');
+  if (document.getElementById('heatTraffic').checked) layers.push('🚗 Traffic');
+  if (document.getElementById('heatIncome').checked) layers.push('💰 Income');
+  
+  document.getElementById('activeLayers').textContent = layers.length > 0 ? layers.join(', ') : 'None';
+  
+  // Update heatmap values
+  const stats = TYPE_STATS[selectedLoc?.type] || TYPE_STATS.suburban;
+  if (selectedLoc) {
+    document.getElementById('popValue').textContent = Math.floor(Math.random() * 50000 + 10000).toLocaleString();
+    document.getElementById('trafficValue').textContent = Math.floor(Math.random() * 5000 + 1000).toLocaleString();
+    document.getElementById('incomeValue').textContent = 'Rp ' + Math.floor(Math.random() * 50 + 10).toFixed(0) + 'JT/th';
+  }
+  
+  // Show alert
+  if (layers.length > 0) {
+    console.log('Heatmap layers:', layers);
+  }
+}
+
+// ═══ CANNIBALIZATION ═══
+const existingLocations = [];
+
+function addExistingLocation() {
+  const name = prompt('Nama lokasi existing:');
+  if (name) {
+    existingLocations.push({
+      name: name,
+      lat: selectedLoc?.lat || -6.2,
+      lng: selectedLoc?.lng || 106.8,
+      revenue: Math.floor(Math.random() * 500 + 100)
+    });
+    updateExistingLocations();
+  }
+}
+
+function updateExistingLocations() {
+  const el = document.getElementById('existingLocations');
+  if (existingLocations.length === 0) {
+    el.textContent = 'Belum ada';
+    return;
+  }
+  el.innerHTML = existingLocations.map((loc, i) => 
+    '<div style="padding:4px;background:var(--bg);margin:2px 0;border-radius:2px;font-size:9px">' + 
+    (i+1) + '. ' + loc.name + ' (Rp ' + loc.revenue + 'JT/bln)</div>'
+  ).join('');
+}
+
+function analyzeCannibal() {
+  if (!selectedLoc) {
+    alert('Pilih lokasi dulu!');
+    return;
+  }
+  if (existingLocations.length === 0) {
+    alert('Tambahkan lokasi existing dulu!');
+    return;
+  }
+  
+  const cannibalRate = (Math.random() * 30 + 5).toFixed(1);
+  const safeDist = (Math.random() * 2 + 0.5).toFixed(1);
+  
+  document.getElementById('cannibalRate').textContent = cannibalRate + '%';
+  document.getElementById('safeDistance').textContent = safeDist + ' km';
+  
+  let verdict, color;
+  if (parseFloat(cannibalRate) < 15) {
+    verdict = 'AMAN - Kanibalisasi rendah';
+    color = 'var(--pos)';
+  } else if (parseFloat(cannibalRate) < 30) {
+    verdict = 'MODERATE - Perlu pertimbangan';
+    color = 'var(--a)';
+  } else {
+    verdict = 'RISIKO TINGGI';
+    color = 'var(--neg)';
+  }
+  
+  alert('⚔️ HASIL ANALISA CANNIBAL\n\n' +
+    'Tingkat Kanibalisasi: ' + cannibalRate + '%\n' +
+    'Jarak Aman: ' + safeDist + ' km\n\n' +
+    'VERDICT: ' + verdict);
+}
+
+// ═══ SIDEBAR FUNCTIONS ═══
+function changeCity(coords) {
+  const [lat, lng] = coords.split(',').map(Number);
+  if (map) {
+    map.setCenter({ lat, lng });
+    map.setZoom(12);
+  }
+}
+
+function changeCategory(cat) {
+  currentCategory = cat;
+  console.log('Category:', cat);
+}
+
+function quickBrand(brand) {
+  document.getElementById('brandSearch').value = brand;
+}
+
+function findBestLocation() {
+  const traffic = parseInt(document.getElementById('critTraffic').value);
+  const buying = parseInt(document.getElementById('critBuying').value);
+  const pop = parseInt(document.getElementById('critPop').value);
+  const score = Math.round((traffic * 0.35 + buying * 0.35 + pop * 0.30));
+  
+  // Find best location
+  const best = LOCS.reduce((a, b) => {
+    const sa = TYPE_STATS[a.type]?.score || 60;
+    const sb = TYPE_STATS[b.type]?.score || 60;
+    return sa > sb ? a : b;
+  });
+  
+  selectLocation(best.lat, best.lng, best.name);
+  alert('Skor: ' + score + '/100 - Lokasi terbaik: ' + best.name);
+}
+
+function saveLocation() {
+  if (!selectedLoc) { alert('Pilih lokasi dulu!'); return; }
+  const saved = JSON.parse(localStorage.getItem('restomap_saved') || '[]');
+  saved.push({ name: selectedLoc.name, lat: selectedLoc.lat, lng: selectedLoc.lng });
+  localStorage.setItem('restomap_saved', JSON.stringify(saved));
+  renderSaved();
+  alert('Tersimpan!');
+}
+
+function renderSaved() {
+  const saved = JSON.parse(localStorage.getItem('restomap_saved') || '[]');
+  const container = document.getElementById('savedItems');
+  if (saved.length === 0) {
+    container.innerHTML = '<div style="font-size:9px;color:var(--t4);text-align:center;padding:10px;">Belum ada</div>';
+    return;
+  }
+  container.innerHTML = saved.map((loc, i) => 
+    '<div class="saved-item" onclick="loadSaved(' + i + ')">' +
+      '<div><div class="saved-name">' + loc.name + '</div><div class="saved-coords">' + loc.lat.toFixed(4) + ', ' + loc.lng.toFixed(4) + '</div></div>' +
+      '<button onclick="event.stopPropagation();deleteSaved(' + i + ')" style="background:none;border:none;color:var(--neg);cursor:pointer">✕</button>' +
+    '</div>'
+  ).join('');
+}
+
+function loadSaved(i) {
+  const saved = JSON.parse(localStorage.getItem('restomap_saved') || '[]');
+  const loc = saved[i];
+  if (loc && map) {
+    map.setCenter({ lat: loc.lat, lng: loc.lng });
+    map.setZoom(15);
+    selectLocation(loc.lat, loc.lng, loc.name);
+  }
+}
+
+function deleteSaved(i) {
+  const saved = JSON.parse(localStorage.getItem('restomap_saved') || '[]');
+  saved.splice(i, 1);
+  localStorage.setItem('restomap_saved', JSON.stringify(saved));
+  renderSaved();
+}
+
+function goToBuilder() {
+  if (!selectedLoc) { alert('Pilih lokasi dulu!'); return; }
+  window.location.href = 'restobuilder.html?city=' + selectedLoc.name + '&lat=' + selectedLoc.lat + '&lng=' + selectedLoc.lng;
+}
+
+function switchTab(tabName, el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('on'));
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('on'));
+  el.classList.add('on');
+  document.getElementById('tab-' + tabName).classList.add('on');
+}
+
+function setTier(t, el) {
+  tier = t;
+  document.querySelectorAll('.tier-btn').forEach(b => b.classList.remove('on'));
+  el.classList.add('on');
+}
+
+// ═══ CLOCK ═══
+function updateClock() {
+  const now = new Date();
+  document.getElementById('clock').textContent = now.toLocaleTimeString('id-ID');
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ═══ INIT ═══
+window.initMap = initMap;
+setTimeout(renderSaved, 500);
+</script>
+
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAzlXgIm1ofUw-A26fQp0zylxczS8oNaJk&libraries=places&callback=initMap" async defer></script>
+</body>
+</html>
