@@ -82,6 +82,10 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--t);font-f
 .section-title{font-size:8px;color:var(--t4);letter-spacing:2px;text-transform:uppercase;margin:12px 0 8px;padding-bottom:4px;border-bottom:1px solid var(--b)}
 
 .btn-builder{width:100%;padding:12px;background:var(--a);border:none;color:#000;font-size:11px;font-weight:bold;cursor:pointer;margin-top:10px}
+/* THEMES */
+.th-matrix{--bg:#000500;--bg2:#000a00;--bg3:#001100;--b:rgba(0,255,65,.14);--a:#00FF41;--t:#00E676}
+.th-arctic{--bg:#000B14;--bg2:#001122;--b:rgba(0,229,255,.14);--a:#00E5FF;--t:#80DEEA}
+.th-ember{--bg:#0D0000;--bg2:#150000;--b:rgba(255,61,0,.16);--a:#FF3D00;--t:#FFAB91}
 </style>
 </head>
 <body>
@@ -104,6 +108,16 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--t);font-f
     <button class="tier-btn on" onclick="setTier('free',this)">FREE</button>
     <button class="tier-btn" onclick="setTier('basic',this)">BASIC</button>
     <button class="tier-btn" onclick="setTier('pro',this)">PRO</button>
+  </div>
+  <div class="lang-grp">
+    <button class="lang-btn on" id="btnLangID" onclick="setLang('id')">ID</button>
+    <button class="lang-btn" id="btnLangEN" onclick="setLang('en')">EN</button>
+  </div>
+  <div class="theme-grp">
+    <div class="tc on" style="background:#FF6D00" onclick="setTheme('')" title="Bloomberg"></div>
+    <div class="tc" style="background:#00FF41" onclick="setTheme('th-matrix')" title="Matrix"></div>
+    <div class="tc" style="background:#00E5FF" onclick="setTheme('th-arctic')" title="Arctic"></div>
+    <div class="tc" style="background:#FF3D00" onclick="setTheme('th-ember')" title="Ember"></div>
   </div>
 </div>
 
@@ -312,6 +326,61 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--t);font-f
 </div>
 
 <script>
+// ═══ TRANSLATIONS ═══
+const trans = {
+  id: {
+    lblCity: 'KOTA', lblCategory: 'KATEGORI', lblRadius: 'RADIUS', lblCriteria: 'KRITERIA LOKASI',
+    lblBrand: 'BRAND SEARCH', lblHeatmap: '🔥 HEATMAP', lblFindBest: 'CARI LOKASI TERBAIK',
+    lblSaved: 'LOKASI TERSIMPAN', lblSave: 'SIMPAN', lblBuilder: 'LANJUT KE BUILDER',
+    lblClick: 'KLIK PETA UNTUK PILIH', lblFeasibility: 'FEASIBILITY', lblRev: 'REV/BLN',
+    lblBE: 'BREAK-EVEN', lblMargin: 'MARGIN', lblComp: 'KOMPETITOR',
+    lblCann: 'CANNIBAL', lblAI: 'AI', lblPop: 'POPULASI', lblTraffic: 'TRAFFIC',
+    lblIncome: 'INCOME', btnToBuilder: 'BUAT BUSINESS PLAN →'
+  },
+  en: {
+    lblCity: 'CITY', lblCategory: 'CATEGORY', lblRadius: 'RADIUS', lblCriteria: 'LOCATION CRITERIA',
+    lblBrand: 'BRAND SEARCH', lblHeatmap: '🔥 HEATMAP', lblFindBest: 'FIND BEST LOCATION',
+    lblSaved: 'SAVED LOCATIONS', lblSave: 'SAVE', lblBuilder: 'GO TO BUILDER',
+    lblClick: 'CLICK MAP TO SELECT', lblFeasibility: 'FEASIBILITY', lblRev: 'REV/MON',
+    lblBE: 'BREAK-EVEN', lblMargin: 'MARGIN', lblComp: 'COMPETITORS',
+    lblCann: 'CANNIBAL', lblAI: 'AI', lblPop: 'POPULATION', lblTraffic: 'TRAFFIC',
+    lblIncome: 'INCOME', btnToBuilder: 'CREATE BUSINESS PLAN →'
+  }
+};
+
+let lang = 'id';
+let theme = '';
+
+function setLang(l) {
+  lang = l;
+  document.getElementById('btnLangID').className = l === 'id' ? 'lang-btn on' : 'lang-btn';
+  document.getElementById('btnLangEN').className = l === 'en' ? 'lang-btn on' : 'lang-btn';
+  updateLabels();
+}
+
+function updateLabels() {
+  const t = trans[lang];
+  // Update all translatable elements
+  document.querySelectorAll('[data-i18]').forEach(el => {
+    const key = el.getAttribute('data-i18');
+    if (t[key]) el.textContent = t[key];
+  });
+}
+
+function setTheme(t) {
+  theme = t;
+  document.body.className = t;
+  document.querySelectorAll('.tc').forEach(el => el.classList.remove('on'));
+  event.target.classList.add('on');
+}
+
+function setTier(t, el) {
+  tier = t;
+  document.querySelectorAll('.tier-btn').forEach(b => b.classList.remove('on'));
+  el.classList.add('on');
+  document.getElementById('statusText').textContent = t.toUpperCase() + ' TIER';
+}
+
 // ═══ DATA ═══
 const LOCS = [
   {id:'sudirman',name:'Sudirman CBD',sub:'Premium',lat:-6.2088,lng:106.8234,type:'cbd'},
