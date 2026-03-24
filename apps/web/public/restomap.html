@@ -292,7 +292,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--t);font-f
               <div id="densityValue" style="font-size:16px;color:var(--t)">—</div>
             </div>
           </div>
-          <p style="font-size:9px;color:var(--t4);margin-top:10px;">Pilih layer di sidebar untuk melihat heatmap detail</p>
+          <p id="heatmapHint" style="font-size:9px;color:var(--t4);margin-top:10px;">Pilih layer di sidebar untuk melihat heatmap detail</p>
         </div>
       </div>
       
@@ -350,6 +350,39 @@ const trans = {
   }
 };
 
+const uiText = {
+  id: {
+    loading: 'MEMUAT...',
+    loadingCompetitors: 'Memuat kompetitor...',
+    loadingHeatmap: 'Memuat heatmap...',
+    generatingInsight: 'Menyusun insight AI...',
+    noCompetitors: 'Tidak ada kompetitor',
+    noSaved: 'Belum ada',
+    heatmapHint: 'Pilih layer di sidebar untuk melihat heatmap detail',
+    locationAnalysis: 'Analisis lokasi',
+    selectedLocation: 'Lokasi Dipilih',
+    radius: 'RADIUS',
+    competitorsUnit: 'kompetitor'
+  },
+  en: {
+    loading: 'LOADING...',
+    loadingCompetitors: 'Loading competitors...',
+    loadingHeatmap: 'Loading heatmap...',
+    generatingInsight: 'Generating AI insight...',
+    noCompetitors: 'No competitors found',
+    noSaved: 'No saved locations',
+    heatmapHint: 'Select layers in sidebar to view detailed heatmap',
+    locationAnalysis: 'Location analysis',
+    selectedLocation: 'Selected Location',
+    radius: 'RADIUS',
+    competitorsUnit: 'competitors'
+  }
+};
+
+function tt(key) {
+  return (uiText[lang] && uiText[lang][key]) || (uiText.id && uiText.id[key]) || key;
+}
+
 let lang = 'id';
 let theme = '';
 
@@ -367,6 +400,17 @@ function updateLabels() {
     const key = el.getAttribute('data-i18');
     if (t[key]) el.textContent = t[key];
   });
+
+  const phSub = document.getElementById('phSub');
+  if (phSub && (!selectedLoc || phSub.textContent === 'Analisis lokasi' || phSub.textContent === 'Location analysis')) {
+    phSub.textContent = tt('locationAnalysis');
+  }
+
+  const heatmapHint = document.getElementById('heatmapHint');
+  if (heatmapHint) heatmapHint.textContent = tt('heatmapHint');
+
+  renderSaved();
+  updateExistingLocations();
 }
 
 function setTheme(t) {
@@ -564,13 +608,13 @@ async function renderAnalysis(lat, lng) {
   
   // Show loading state
   document.getElementById('scoreValue').textContent = '...';
-  document.getElementById('phLoc').textContent = 'LOADING...';
+  document.getElementById('phLoc').textContent = tt('loading');
   const listEl = document.getElementById('competitorList');
-  if (listEl) listEl.innerHTML = '<div style="padding:10px;color:var(--t4)">Loading competitors...</div>';
+  if (listEl) listEl.innerHTML = `<div style="padding:10px;color:var(--t4)">${tt('loadingCompetitors')}</div>`;
   const heatEl = document.getElementById('heatmapContent');
-  if (heatEl) document.getElementById('activeLayers').textContent = 'Loading...';
+  if (heatEl) document.getElementById('activeLayers').textContent = tt('loadingHeatmap');
   const aiEl = document.getElementById('aiContent');
-  if (aiEl) aiEl.innerHTML = '<div style="font-size:9px;color:var(--t4)">Generating insight...</div>';
+  if (aiEl) aiEl.innerHTML = `<div style="font-size:9px;color:var(--t4)">${tt('generatingInsight')}</div>`;
   
   try {
     // Fetch from API
@@ -595,11 +639,11 @@ async function renderAnalysis(lat, lng) {
     document.getElementById('revMonth').textContent = 'Rp ' + (revM / 1000000).toFixed(1) + 'JT';
     document.getElementById('breakEven').textContent = Math.round(18 - (score / 10)) + ' bln';
     document.getElementById('marginVal').textContent = (15 + (score / 20)).toFixed(1) + '%';
-    document.getElementById('competitorCount').textContent = (competitors?.length || 0) + ' kompetitor';
+    document.getElementById('competitorCount').textContent = (competitors?.length || 0) + ' ' + tt('competitorsUnit');
     
     // Update panel header
-    document.getElementById('phLoc').textContent = (selectedLoc.name || 'Lokasi Dipilih').toUpperCase();
-    document.getElementById('phSub').textContent = 'RADIUS: ' + currentRadius + 'm';
+    document.getElementById('phLoc').textContent = (selectedLoc.name || tt('selectedLocation')).toUpperCase();
+    document.getElementById('phSub').textContent = tt('radius') + ': ' + currentRadius + 'm';
     
     // Update Heatmap values from API
     if (factors) {
@@ -651,7 +695,9 @@ function renderCompetitors(competitors) {
   if (!listEl) return;
   
   if (!competitors || competitors.length === 0) {
-    listEl.innerHTML = '<div style="padding:10px;color:var(--t4)">Tidak ada kompetitor</div>';
+    const q = (currentCategory || '').trim();
+    const extra = q ? `<div style="font-size:9px;color:var(--t4);margin-top:6px">Brand: <strong>${q}</strong>. Coba naikkan radius atau ganti keyword.</div>` : '';
+    listEl.innerHTML = `<div style="padding:10px;color:var(--t4)">${tt('noCompetitors')}${extra}</div>`;
     return;
   }
   
@@ -709,7 +755,7 @@ function addExistingLocation() {
 function updateExistingLocations() {
   const el = document.getElementById('existingLocations');
   if (existingLocations.length === 0) {
-    el.textContent = 'Belum ada';
+    el.textContent = tt('noSaved');
     return;
   }
   el.innerHTML = existingLocations.map((loc, i) => 
@@ -816,7 +862,7 @@ function renderSaved() {
   const saved = JSON.parse(localStorage.getItem('restomap_saved') || '[]');
   const container = document.getElementById('savedItems');
   if (saved.length === 0) {
-    container.innerHTML = '<div style="font-size:9px;color:var(--t4);text-align:center;padding:10px;">Belum ada</div>';
+    container.innerHTML = `<div style="font-size:9px;color:var(--t4);text-align:center;padding:10px;">${tt('noSaved')}</div>`;
     return;
   }
   container.innerHTML = saved.map((loc, i) => 
@@ -885,6 +931,7 @@ updateClock();
 window.initMap = initMap;
 setTimeout(renderSaved, 500);
 setTimeout(initBrandSearch, 500);
+setTimeout(updateLabels, 50);
 </script>
 
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAzlXgIm1ofUw-A26fQp0zylxczS8oNaJk&libraries=places&callback=initMap" async defer></script>
