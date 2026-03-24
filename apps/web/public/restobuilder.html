@@ -321,18 +321,18 @@ function renderStep4(body) {
       <div class="fg"><div class="fl">${BL('TOTAL SEWA','TOTAL RENT')}</div><input type="text" class="fi" value="Rp ${(restaurantData.spaceArea * 250000).toLocaleString()}" disabled></div>
     </div>
     <div class="ai-box">
-      <div class="ai-title">🏠 AI SPACE + FENG SHUI</div>
+      <div class="ai-title">🏠 ${BL('AI SPACE + FENG SHUI','AI SPACE + FENG SHUI')}</div>
       <div class="ai-content">
-        <strong>Layout:</strong><br>
-        • Kitchen: North (fire)<br>
-        • Cashier: Near entrance (wealth)<br>
-        • Seating: East (natural light)<br><br>
+        <strong>${BL('Layout','Layout')}:</strong><br>
+        • ${BL('Dapur: Utara (elemen api)','Kitchen: North (fire element)')}<br>
+        • ${BL('Kasir: Dekat pintu masuk (wealth)','Cashier: Near entrance (wealth)')}<br>
+        • ${BL('Area duduk: Timur (natural light)','Seating: East (natural light)')}<br><br>
         <strong>Feng Shui:</strong><br>
-        • Keep entrance clear<br>
-        • Plants: Southeast<br>
-        • Warm lighting
+        • ${BL('Jaga area masuk tetap lega','Keep entrance clear')}<br>
+        • ${BL('Tanaman: Tenggara','Plants: Southeast')}<br>
+        • ${BL('Pencahayaan hangat','Warm lighting')}
       </div>
-      <button class="ai-btn">🎲 GENERATE AI LAYOUT</button>
+      <button class="ai-btn">🎲 ${BL('GENERATE LAYOUT AI','GENERATE AI LAYOUT')}</button>
     </div>
     <button class="btn-nav" onclick="nextStep()">${BL('LANJUT KE OPERATIONS →','CONTINUE TO OPERATIONS →')}</button>
   `;
@@ -372,24 +372,24 @@ function renderStep6(body) {
       <div class="fg"><div class="fl">${BL('MARKETING/BULAN','MARKETING/MONTH')}</div><input class="fi" value="${restaurantData.marketingBudget}"></div>
       <div class="fg"><div class="fl">${BL('GRAND OPENING','GRAND OPENING')}</div><input class="fi" value="15000000"></div>
     </div>
-    <div class="section-title">🎯 AI INFLUENCER RECOMMENDATIONS</div>
+    <div class="section-title">🎯 ${BL('REKOMENDASI AI INFLUENCER','AI INFLUENCER RECOMMENDATIONS')}</div>
     <div class="result-card">
-      <div class="rc-title">📱 FOOD BLOGGER</div>
-      <div class="rc-row"><span>Reach</span><span class="rc-value">10K-50K</span></div>
-      <div class="rc-row"><span>Rate Card</span><span class="rc-value">Rp 500K-1JT</span></div>
+      <div class="rc-title">📱 ${BL('FOOD BLOGGER','FOOD BLOGGER')}</div>
+      <div class="rc-row"><span>${BL('Jangkauan','Reach')}</span><span class="rc-value">10K-50K</span></div>
+      <div class="rc-row"><span>${BL('Rate Card','Rate Card')}</span><span class="rc-value">Rp 500K-1JT</span></div>
     </div>
     <div class="result-card">
-      <div class="rc-title">📱 LIFESTYLE INFLUENCER</div>
-      <div class="rc-row"><span>Reach</span><span class="rc-value">50K-200K</span></div>
-      <div class="rc-row"><span>Rate Card</span><span class="rc-value">Rp 2JT-5JT</span></div>
+      <div class="rc-title">📱 ${BL('LIFESTYLE INFLUENCER','LIFESTYLE INFLUENCER')}</div>
+      <div class="rc-row"><span>${BL('Jangkauan','Reach')}</span><span class="rc-value">50K-200K</span></div>
+      <div class="rc-row"><span>${BL('Rate Card','Rate Card')}</span><span class="rc-value">Rp 2JT-5JT</span></div>
     </div>
     <div class="ai-box">
       <div class="ai-title">🤖 ${BL('AI LAUNCH STRATEGY','AI LAUNCH STRATEGY')}</div>
       <div class="ai-content">
-        • Week 1-2: Soft opening<br>
-        • Week 3: Food blogger tasting<br>
-        • Week 4: Grand opening<br>
-        • Budget: 60% digital, 40% offline
+        • ${BL('Minggu 1-2: Soft opening','Week 1-2: Soft opening')}<br>
+        • ${BL('Minggu 3: Sesi tasting food blogger','Week 3: Food blogger tasting')}<br>
+        • ${BL('Minggu 4: Grand opening','Week 4: Grand opening')}<br>
+        • ${BL('Budget: 60% digital, 40% offline','Budget: 60% digital, 40% offline')}
       </div>
     </div>
     <button class="btn-nav" onclick="nextStep()">${BL('LANJUT KE FINANCIAL →','CONTINUE TO FINANCIAL →')}</button>
@@ -405,19 +405,19 @@ function renderStep7(body) {
   const opex = cogs + labor + rent + restaurantData.marketingBudget;
   const profit = rev - opex;
   body.innerHTML = `
-    <div class="section-title">💰 FINANCIAL MODEL (FROM ALL STEPS)</div>
+    <div class="section-title">💰 ${BL('FINANCIAL MODEL (DARI SEMUA STEP)','FINANCIAL MODEL (FROM ALL STEPS)')}</div>
     <div class="metrics-grid">
-      <div class="metric-box"><div class="mb-label">REVENUE</div><div class="mb-val">Rp ${(rev/1000000).toFixed(1)}JT</div></div>
+      <div class="metric-box"><div class="mb-label">${BL('REVENUE','REVENUE')}</div><div class="mb-val">Rp ${(rev/1000000).toFixed(1)}JT</div></div>
       <div class="metric-box"><div class="mb-label">OPEX</div><div class="mb-val">Rp ${(opex/1000000).toFixed(1)}JT</div></div>
-      <div class="metric-box"><div class="mb-label">PROFIT</div><div class="mb-val ${profit>0?'pos':'neg'}">${profit>0?'+':'Rp '}${(profit>0?profit/1000000:profit/1000000).toFixed(1)}JT</div></div>
+      <div class="metric-box"><div class="mb-label">${BL('PROFIT','PROFIT')}</div><div class="mb-val ${profit>0?'pos':'neg'}">${profit>0?'+':'Rp '}${(profit>0?profit/1000000:profit/1000000).toFixed(1)}JT</div></div>
     </div>
     <div class="result-card">
-      <div class="rc-title">📊 BREAKDOWN</div>
-      <div class="rc-row"><span>Revenue</span><span class="rc-value">Rp ${(rev/1000000).toFixed(1)}JT</span></div>
+      <div class="rc-title">📊 ${BL('RINCIAN','BREAKDOWN')}</div>
+      <div class="rc-row"><span>${BL('Revenue','Revenue')}</span><span class="rc-value">Rp ${(rev/1000000).toFixed(1)}JT</span></div>
       <div class="rc-row"><span>COGS (30%)</span><span class="rc-value">Rp ${(cogs/1000000).toFixed(1)}JT</span></div>
-      <div class="rc-row"><span>Labor</span><span class="rc-value">Rp ${(labor/1000000).toFixed(1)}JT</span></div>
-      <div class="rc-row"><span>Rent</span><span class="rc-value">Rp ${(rent/1000000).toFixed(1)}JT</span></div>
-      <div class="rc-row"><span>Marketing</span><span class="rc-value">Rp ${(restaurantData.marketingBudget/1000000).toFixed(1)}JT</span></div>
+      <div class="rc-row"><span>${BL('Labor','Labor')}</span><span class="rc-value">Rp ${(labor/1000000).toFixed(1)}JT</span></div>
+      <div class="rc-row"><span>${BL('Sewa','Rent')}</span><span class="rc-value">Rp ${(rent/1000000).toFixed(1)}JT</span></div>
+      <div class="rc-row"><span>${BL('Marketing','Marketing')}</span><span class="rc-value">Rp ${(restaurantData.marketingBudget/1000000).toFixed(1)}JT</span></div>
     </div>
     <button class="btn-nav" onclick="nextStep()">${BL('LANJUT KE RESULTS →','CONTINUE TO RESULTS →')}</button>
   `;
@@ -426,21 +426,21 @@ function renderStep7(body) {
 // STEP 8: RESULTS & EXPORT
 function renderStep8(body) {
   body.innerHTML = `
-    <div class="section-title">📋 BUSINESS PLAN SUMMARY</div>
+    <div class="section-title">📋 ${BL('RINGKASAN BUSINESS PLAN','BUSINESS PLAN SUMMARY')}</div>
     <div class="result-card">
-      <div class="rc-title">📍 LOCATION (FROM RESTOMAP)</div>
+      <div class="rc-title">📍 ${BL('LOKASI (DARI RESTOMAP)','LOCATION (FROM RESTOMAP)')}</div>
       <div class="rc-row"><span>${BL('Kota','City')}</span><span class="rc-value">${locationData.city}</span></div>
-      <div class="rc-row"><span>Score</span><span class="rc-value" style="color:var(--a)">${locationData.score}/100</span></div>
+      <div class="rc-row"><span>${BL('Skor','Score')}</span><span class="rc-value" style="color:var(--a)">${locationData.score}/100</span></div>
     </div>
     <div class="result-card">
-      <div class="rc-title">🏪 RESTAURANT</div>
+      <div class="rc-title">🏪 ${BL('RESTAURANT','RESTAURANT')}</div>
       <div class="rc-row"><span>${BL('Nama','Name')}</span><span class="rc-value">${restaurantData.name || 'TBD'}</span></div>
       <div class="rc-row"><span>${BL('Konsep','Concept')}</span><span class="rc-value">${restaurantData.concept}</span></div>
       <div class="rc-row"><span>${BL('Kursi','Seating')}</span><span class="rc-value">${restaurantData.seating}</span></div>
     </div>
     <div class="result-card">
-      <div class="rc-title">💰 FINANCIAL</div>
-      <div class="rc-row"><span>Avg Check</span><span class="rc-value">Rp ${(restaurantData.avgCheck/1000).toFixed(0)}K</span></div>
+      <div class="rc-title">💰 ${BL('FINANCIAL','FINANCIAL')}</div>
+      <div class="rc-row"><span>${BL('Avg Check','Avg Check')}</span><span class="rc-value">Rp ${(restaurantData.avgCheck/1000).toFixed(0)}K</span></div>
       <div class="rc-row"><span>${BL('Estimasi Profit','Est. Profit')}</span><span class="rc-value pos">Rp 8.5JT/${BL('bulan','month')}</span></div>
     </div>
     <button class="btn-export" onclick="alert('Exporting PDF...')">📄 ${BL('EXPORT BUSINESS PLAN PDF','EXPORT BUSINESS PLAN PDF')}</button>
