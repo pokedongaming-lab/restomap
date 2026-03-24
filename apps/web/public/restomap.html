@@ -126,7 +126,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--t);font-f
   <!-- SIDEBAR -->
   <div class="sidebar">
     <div class="sb-section">
-      <div class="sb-label">KOTA</div>
+      <div class="sb-label" data-i18="lblCity">KOTA</div>
       <select class="sb-select" id="citySelect" onchange="changeCity(this.value)">
         <option value="-6.2088,106.8234">Jakarta</option>
         <option value="-7.5755,110.8243">Semarang</option>
@@ -139,7 +139,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--t);font-f
     </div>
     
     <div class="sb-section">
-      <div class="sb-label">KATEGORI</div>
+      <div class="sb-label" data-i18="lblCategory">KATEGORI</div>
       <select class="sb-select" id="categorySelect" onchange="changeCategory(this.value)">
         <option value="">Semua Kategori</option>
         <option value="coffee">☕ Coffee & Cafe</option>
@@ -152,13 +152,13 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--t);font-f
     </div>
     
     <div class="sb-section">
-      <div class="sb-label">RADIUS: <span id="radiusValue">1000</span>m</div>
+      <div class="sb-label" data-i18="lblRadius">RADIUS</div>: <span id="radiusValue">1000</span><span data-i18="lblMeter">m</span>
       <input type="range" class="sb-slider" id="radiusSlider" min="500" max="10000" step="500" value="1000" oninput="document.getElementById('radiusValue').textContent=this.value;currentRadius=parseInt(this.value)">
       <div class="sb-range"><span>500m</span><span>10km</span></div>
     </div>
     
     <div class="sb-section">
-      <div class="sb-label">BRAND SEARCH</div>
+      <div class="sb-label" data-i18="lblBrand">BRAND SEARCH</div>
       <input type="text" class="sb-input" id="brandSearch" placeholder="Cari brand...">
       <div class="sb-chips">
         <span class="sb-chip" onclick="quickBrand('starbucks')">Starbucks</span>
@@ -169,7 +169,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--t);font-f
     </div>
     
     <div class="sb-section">
-      <div class="sb-label">🔥 HEATMAP LAYER</div>
+      <div class="sb-label" data-i18="lblHeatmap">🔥 HEATMAP</div>
       <div class="sb-chips" style="margin-bottom:8px">
         <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
           <input type="checkbox" id="heatPop" onchange="toggleHeatmap()">
@@ -187,7 +187,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--t);font-f
     </div>
     
     <div class="sb-section">
-      <div class="sb-label">🎯 KRITERIA LOKASI</div>
+      <div class="sb-label" data-i18="lblCriteria">🎯 KRITERIA LOKASI</div>
       <div style="margin-bottom:8px">
         <div style="font-size:8px;color:var(--t4)">Traffic</div>
         <input type="range" class="sb-slider" id="critTraffic" min="0" max="100" value="70">
@@ -204,13 +204,13 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--t);font-f
     </div>
     
     <div class="saved-list" id="savedList">
-      <div class="sb-label">LOKASI TERSIMPAN</div>
+      <div class="sb-label" data-i18="lblSaved">LOKASI TERSIMPAN</div>
       <div id="savedItems"></div>
     </div>
     
     <div class="sb-section">
-      <button class="sb-btn-outline" onclick="saveLocation()">💾 SIMPAN LOKASI</button>
-      <button class="sb-btn" onclick="goToBuilder()">→ LANJUT KE BUILDER</button>
+      <button class="sb-btn-outline" onclick="saveLocation()" data-i18="lblSave">💾 SIMPAN LOKASI</button>
+      <button class="sb-btn" onclick="goToBuilder()" data-i18="lblBuilder">→ LANJUT KE BUILDER</button>
     </div>
   </div>
   
@@ -220,7 +220,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--t);font-f
     <div class="map-search">
       <input type="text" id="searchBox" placeholder="Cari lokasi...">
     </div>
-    <div class="map-coords" id="mapCoords">KLIK PETA UNTUK PILIH LOKASI</div>
+    <div class="map-coords" id="mapCoords" data-i18="lblClick">KLIK PETA UNTUK PILIH LOKASI</div>
   </div>
   
   <!-- PANEL -->
@@ -241,25 +241,25 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--t);font-f
         <div class="score-row">
           <div class="score-big" id="scoreValue">—</div>
           <div>
-            <div class="score-label">FEASIBILITY</div>
+            <div class="score-label" data-i18="lblFeasibility">FEASIBILITY</div>
             <div class="score-rating" id="scoreRating">—</div>
           </div>
         </div>
         <div class="metrics-row">
           <div class="metric-box">
-            <div class="mb-label">REV/BLN</div>
+            <div class="mb-label" data-i18="lblRev">REV/BLN</div>
             <div class="mb-val" id="revMonth">—</div>
           </div>
           <div class="metric-box">
-            <div class="mb-label">BREAK-EVEN</div>
+            <div class="mb-label" data-i18="lblBE">BREAK-EVEN</div>
             <div class="mb-val" id="breakEven">—</div>
           </div>
           <div class="metric-box">
-            <div class="mb-label">MARGIN</div>
+            <div class="mb-label" data-i18="lblMargin">MARGIN</div>
             <div class="mb-val pos" id="marginVal">—</div>
           </div>
         </div>
-        <div class="section-title">KOMPETITOR</div>
+        <div class="section-title" data-i18="lblComp">KOMPETITOR</div>
         <div id="competitorCount">—</div>
         <button class="btn-builder" onclick="goToBuilder()">BUAT BUSINESS PLAN →</button>
       </div>
@@ -329,22 +329,24 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--t);font-f
 // ═══ TRANSLATIONS ═══
 const trans = {
   id: {
-    lblCity: 'KOTA', lblCategory: 'KATEGORI', lblRadius: 'RADIUS', lblCriteria: 'KRITERIA LOKASI',
-    lblBrand: 'BRAND SEARCH', lblHeatmap: '🔥 HEATMAP', lblFindBest: 'CARI LOKASI TERBAIK',
-    lblSaved: 'LOKASI TERSIMPAN', lblSave: 'SIMPAN', lblBuilder: 'LANJUT KE BUILDER',
-    lblClick: 'KLIK PETA UNTUK PILIH', lblFeasibility: 'FEASIBILITY', lblRev: 'REV/BLN',
-    lblBE: 'BREAK-EVEN', lblMargin: 'MARGIN', lblComp: 'KOMPETITOR',
-    lblCann: 'CANNIBAL', lblAI: 'AI', lblPop: 'POPULASI', lblTraffic: 'TRAFFIC',
-    lblIncome: 'INCOME', btnToBuilder: 'BUAT BUSINESS PLAN →'
+    lblCity: 'KOTA', lblCategory: 'KATEGORI', lblRadius: 'RADIUS', lblMeter: 'm',
+    lblCriteria: '🎯 KRITERIA LOKASI', lblBrand: 'BRAND SEARCH', lblHeatmap: '🔥 HEATMAP', 
+    lblFindBest: '🎯 CARI LOKASI TERBAIK', lblSaved: 'LOKASI TERSIMPAN', 
+    lblSave: '💾 SIMPAN', lblBuilder: '→ LANJUT KE BUILDER', lblClick: 'KLIK PETA UNTUK PILIH', 
+    lblFeasibility: 'FEASIBILITY', lblRev: 'REV/BLN', lblBE: 'BREAK-EVEN', 
+    lblMargin: 'MARGIN', lblComp: 'KOMPETITOR', lblCann: '⚔️ CANNIBAL', 
+    lblAI: '🤖 AI', lblPop: 'POPULASI', lblTraffic: 'TRAFFIC', lblIncome: 'INCOME', 
+    btnToBuilder: 'BUAT BUSINESS PLAN →'
   },
   en: {
-    lblCity: 'CITY', lblCategory: 'CATEGORY', lblRadius: 'RADIUS', lblCriteria: 'LOCATION CRITERIA',
-    lblBrand: 'BRAND SEARCH', lblHeatmap: '🔥 HEATMAP', lblFindBest: 'FIND BEST LOCATION',
-    lblSaved: 'SAVED LOCATIONS', lblSave: 'SAVE', lblBuilder: 'GO TO BUILDER',
-    lblClick: 'CLICK MAP TO SELECT', lblFeasibility: 'FEASIBILITY', lblRev: 'REV/MON',
-    lblBE: 'BREAK-EVEN', lblMargin: 'MARGIN', lblComp: 'COMPETITORS',
-    lblCann: 'CANNIBAL', lblAI: 'AI', lblPop: 'POPULATION', lblTraffic: 'TRAFFIC',
-    lblIncome: 'INCOME', btnToBuilder: 'CREATE BUSINESS PLAN →'
+    lblCity: 'CITY', lblCategory: 'CATEGORY', lblRadius: 'RADIUS', lblMeter: '',
+    lblCriteria: '🎯 LOCATION CRITERIA', lblBrand: 'BRAND SEARCH', lblHeatmap: '🔥 HEATMAP', 
+    lblFindBest: '🎯 FIND BEST LOCATION', lblSaved: 'SAVED LOCATIONS', 
+    lblSave: '💾 SAVE', lblBuilder: '→ GO TO BUILDER', lblClick: 'CLICK MAP TO SELECT', 
+    lblFeasibility: 'FEASIBILITY', lblRev: 'REV/MON', lblBE: 'BREAK-EVEN', 
+    lblMargin: 'MARGIN', lblComp: 'COMPETITORS', lblCann: '⚔️ CANNIBAL', 
+    lblAI: '🤖 AI', lblPop: 'POPULATION', lblTraffic: 'TRAFFIC', lblIncome: 'INCOME', 
+    btnToBuilder: 'CREATE BUSINESS PLAN →'
   }
 };
 
@@ -363,7 +365,12 @@ function updateLabels() {
   // Update all translatable elements
   document.querySelectorAll('[data-i18]').forEach(el => {
     const key = el.getAttribute('data-i18');
-    if (t[key]) el.textContent = t[key];
+    if (t[key]) {
+      // Keep emoji prefix if exists, replace text after
+      const emojiMatch = el.textContent.match(/^[\u{1F300}-\u{1F9FF}]/u);
+      const prefix = emojiMatch ? emojiMatch[0] + ' ' : '';
+      el.textContent = prefix + t[key];
+    }
   });
 }
 
