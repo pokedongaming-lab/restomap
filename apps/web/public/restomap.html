@@ -196,9 +196,17 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--t);font-f
         <div style="font-size:8px;color:var(--t4)">Daya Beli</div>
         <input type="range" class="sb-slider" id="critBuying" min="0" max="100" value="70">
       </div>
-      <div>
+      <div style="margin-bottom:8px">
         <div style="font-size:8px;color:var(--t4)">Populasi</div>
         <input type="range" class="sb-slider" id="critPop" min="0" max="100" value="60">
+      </div>
+      <div style="margin-bottom:8px">
+        <div style="font-size:8px;color:var(--t4)">Jalan Utama</div>
+        <input type="range" class="sb-slider" id="critMainRoad" min="0" max="100" value="70">
+      </div>
+      <div>
+        <div style="font-size:8px;color:var(--t4)">Jalan Alternatif</div>
+        <input type="range" class="sb-slider" id="critAltRoad" min="0" max="100" value="65">
       </div>
       <button class="sb-btn" onclick="findBestLocation()">🎯 CARI LOKASI TERBAIK</button>
     </div>
@@ -661,6 +669,11 @@ async function renderAnalysis(lat, lng) {
     renderCompetitors(competitors);
     
     // AI Content
+    const nearest = (competitors || []).slice(0, 4);
+    const voronoiHint = nearest.length > 0
+      ? nearest.map((c, i) => `${i+1}. ${c.name} (${c.distance || '-'}m)`).join('<br>')
+      : 'Belum ada titik kompetitor terdekat';
+
     document.getElementById('aiContent').innerHTML = `
       <div style="font-size:9px;color:var(--t3);line-height:1.8;">
         <div>📊 Skor: <strong style="color:var(--a)">${score}/100</strong></div>
@@ -670,6 +683,19 @@ async function renderAnalysis(lat, lng) {
         <div>👥 Kompetitor: <strong>${competitors?.length || 0}</strong></div>
         ${factors ? `<div>🚗 Traffic: <strong>${factors.traffic}/100</strong></div>` : ''}
         ${factors ? `<div>💰 Income: <strong>${factors.income}/100</strong></div>` : ''}
+
+        <div style="margin-top:12px;padding:8px;background:var(--bg3);border:1px solid var(--b);">
+          <strong>🧭 Geospatial Voronoi (proxy)</strong><br>
+          <span style="color:var(--t4)">Nearest influence zones:</span><br>
+          ${voronoiHint}
+        </div>
+
+        <div style="margin-top:12px;padding:8px;background:var(--bg3);border:1px solid var(--b);">
+          <strong>⚔️ Cannibalization Check</strong><br>
+          Perkiraan overlap demand: <strong>${document.getElementById('cannibalRate').textContent || '-'}</strong><br>
+          Safe radius: <strong>${document.getElementById('safeDistance').textContent || '-'}</strong>
+        </div>
+
         <div style="margin-top:12px;padding:8px;background:var(--a3);border:1px solid var(--b);">
           <strong>🤖 AI Recommendation:</strong><br>
           Lokasi ${score >= 70 ? 'SANGAT BAGUS' : score >= 50 ? 'CUKUP BAGUS' : 'PERLU PERHATIAN'} untuk restoran.<br>
@@ -836,17 +862,24 @@ function findBestLocation() {
   const traffic = parseInt(document.getElementById('critTraffic').value);
   const buying = parseInt(document.getElementById('critBuying').value);
   const pop = parseInt(document.getElementById('critPop').value);
-  const score = Math.round((traffic * 0.35 + buying * 0.35 + pop * 0.30));
-  
-  // Find best location
-  const best = LOCS.reduce((a, b) => {
-    const sa = TYPE_STATS[a.type]?.score || 60;
-    const sb = TYPE_STATS[b.type]?.score || 60;
-    return sa > sb ? a : b;
+  const mainRoad = parseInt(document.getElementById('critMainRoad').value);
+  const altRoad = parseInt(document.getElementById('critAltRoad').value);
+
+  const targetScore = Math.round((traffic * 0.27 + buying * 0.25 + pop * 0.2 + mainRoad * 0.18 + altRoad * 0.10));
+
+  // Find best location by weighted similarity to user criteria
+  const best = LOCS.reduce((bestLoc, loc) => {
+    const base = TYPE_STATS[loc.type]?.score || 60;
+    const roadFit = (loc.type === 'cbd' || loc.type === 'premium') ? (mainRoad * 0.6 + altRoad * 0.4) : (mainRoad * 0.4 + altRoad * 0.6);
+    const fit = Math.round(base * 0.55 + traffic * 0.15 + buying * 0.15 + pop * 0.10 + roadFit * 0.05);
+    const bestBase = TYPE_STATS[bestLoc.type]?.score || 60;
+    const bestRoadFit = (bestLoc.type === 'cbd' || bestLoc.type === 'premium') ? (mainRoad * 0.6 + altRoad * 0.4) : (mainRoad * 0.4 + altRoad * 0.6);
+    const bestFit = Math.round(bestBase * 0.55 + traffic * 0.15 + buying * 0.15 + pop * 0.10 + bestRoadFit * 0.05);
+    return fit > bestFit ? loc : bestLoc;
   });
-  
+
   selectLocation(best.lat, best.lng, best.name);
-  alert('Skor: ' + score + '/100 - Lokasi terbaik: ' + best.name);
+  alert('Skor Kriteria: ' + targetScore + '/100\nLokasi terbaik: ' + best.name + '\nTraffic ' + traffic + ' · Daya Beli ' + buying + ' · Populasi ' + pop + '\nJalan Utama ' + mainRoad + ' · Jalan Alternatif ' + altRoad);
 }
 
 function saveLocation() {

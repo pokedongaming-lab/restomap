@@ -21,6 +21,9 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--t);font-f
 .tb-status{font-size:9px;color:var(--t3);padding:0 12px;border-right:1px solid var(--b)}
 .tb-clock{font-family:'Orbitron',sans-serif;font-size:11px;color:var(--a);padding:0 12px;border-right:1px solid var(--b);letter-spacing:1px}
 .spacer{flex:1}
+.lang-grp{display:flex;align-items:center;gap:4px;padding:0 10px;border-left:1px solid var(--b)}
+.lang-btn{font-size:9px;cursor:pointer;padding:2px 6px;border:1px solid var(--b);color:var(--t3);background:none}
+.lang-btn.on{background:var(--a);border-color:var(--a);color:#000}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.12}}
 
 .app{display:flex;height:calc(100vh - 38px)}
@@ -104,6 +107,10 @@ select.fi option{background:var(--bg3)}
   <div class="tb-status" id="locationInfo">LOKASI: —</div>
   <div class="tb-clock" id="clock">--:--:--</div>
   <div class="spacer"></div>
+  <div class="lang-grp">
+    <button class="lang-btn on" id="btnLangID" onclick="setLangBuilder('id')">ID</button>
+    <button class="lang-btn" id="btnLangEN" onclick="setLangBuilder('en')">EN</button>
+  </div>
 </div>
 
 <div class="app">
@@ -137,19 +144,33 @@ const locationData = {
   revenue: parseInt(params.get('revenue')) || 487000000,
 };
 
-document.getElementById('locationInfo').textContent = '📍 ' + locationData.city.toUpperCase() + ' (' + locationData.lat.toFixed(2) + ', ' + locationData.lng.toFixed(2) + ')';
+document.getElementById('locationInfo').textContent = '📍 LOKASI: ' + locationData.city.toUpperCase() + ' (' + locationData.lat.toFixed(2) + ', ' + locationData.lng.toFixed(2) + ')';
+
+let lang = 'id';
+function BL(idText, enText){ return lang === 'id' ? idText : enText; }
 
 // ═══ STEPS - NEW ORDER ═══
-const STEPS = [
+const STEPS_ID = [
   { id: 1, title: 'Concept & Basic', sub: 'Dari RestoMap' },
   { id: 2, title: 'Market Analysis', sub: 'Dari RestoMap' },
-  { id: 3, title: 'Menu Design', sub: 'AI Help' },
+  { id: 3, title: 'Menu Design', sub: 'AI Assist' },
   { id: 4, title: 'Space Design', sub: 'AI + Feng Shui' },
-  { id: 5, title: 'Operations & Team', sub: 'AI Help' },
-  { id: 6, title: 'Launch Strategy', sub: 'AI Help' },
-  { id: 7, title: 'Financial Model', sub: 'Calculated' },
-  { id: 8, title: 'Results & Export', sub: 'Business Plan' },
+  { id: 5, title: 'Operations & Team', sub: 'AI Assist' },
+  { id: 6, title: 'Launch Strategy', sub: 'AI Assist' },
+  { id: 7, title: 'Financial Model', sub: 'Calculated / Manual' },
+  { id: 8, title: 'Results & Documents', sub: 'Business Plan' },
 ];
+const STEPS_EN = [
+  { id: 1, title: 'Concept & Basic', sub: 'From RestoMap' },
+  { id: 2, title: 'Market Analysis', sub: 'From RestoMap' },
+  { id: 3, title: 'Menu Design', sub: 'AI Assist' },
+  { id: 4, title: 'Space Design', sub: 'AI + Feng Shui' },
+  { id: 5, title: 'Operations & Team', sub: 'AI Assist' },
+  { id: 6, title: 'Launch Strategy', sub: 'AI Assist' },
+  { id: 7, title: 'Financial Model', sub: 'Calculated / Manual' },
+  { id: 8, title: 'Results & Documents', sub: 'Business Plan' },
+];
+const getSteps = () => (lang === 'id' ? STEPS_ID : STEPS_EN);
 
 let currentStep = 1;
 let restaurantData = {
@@ -162,7 +183,8 @@ let restaurantData = {
 
 function renderSidebar() {
   const list = document.getElementById('stepList');
-  list.innerHTML = STEPS.map(s => `
+  const steps = getSteps();
+  list.innerHTML = steps.map(s => `
     <div class="step-item ${s.id === currentStep ? 'on' : ''} ${s.id < currentStep ? 'done' : ''}" onclick="goToStep(${s.id})">
       <div class="si-num">${s.id < currentStep ? '✓' : s.id}</div>
       <div><div class="si-title">${s.title}</div><div class="si-status">${s.sub}</div></div>
@@ -170,10 +192,19 @@ function renderSidebar() {
   `).join('');
 }
 
+function setLangBuilder(nextLang){
+  lang = nextLang;
+  document.getElementById('btnLangID').className = nextLang === 'id' ? 'lang-btn on' : 'lang-btn';
+  document.getElementById('btnLangEN').className = nextLang === 'en' ? 'lang-btn on' : 'lang-btn';
+  document.getElementById('locationInfo').textContent = (nextLang === 'id' ? '📍 LOKASI: ' : '📍 LOCATION: ') + locationData.city.toUpperCase() + ' (' + locationData.lat.toFixed(2) + ', ' + locationData.lng.toFixed(2) + ')';
+  renderStep();
+}
+
 function renderStep() {
+  const steps = getSteps();
   document.getElementById('stepNum').textContent = 'STEP ' + currentStep;
-  document.getElementById('stepTitle').textContent = STEPS[currentStep-1].title;
-  document.getElementById('stepSub').textContent = STEPS[currentStep-1].sub;
+  document.getElementById('stepTitle').textContent = steps[currentStep-1].title;
+  document.getElementById('stepSub').textContent = steps[currentStep-1].sub;
   const body = document.getElementById('stepBody');
   switch(currentStep) {
     case 1: renderStep1(body); break;
@@ -199,7 +230,7 @@ function renderStep1(body) {
       <div class="fg">
         <div class="fl">KONSEP</div>
         <select class="fi" onchange="restaurantData.concept=this.value">
-          <option value="coffee" ${restaurantData.concept==='coffee'?'selected'}>☕ Coffee & Cafe</option>
+          <option value="coffee" ${restaurantData.concept==='coffee'?'selected':''}>☕ Coffee & Cafe</option>
           <option value="fastfood">🍔 Fast Food</option>
           <option value="casual">🍽️ Casual Dining</option>
           <option value="fine">🍷 Fine Dining</option>
@@ -211,19 +242,19 @@ function renderStep1(body) {
       </div>
       <div class="fg"><div class="fl">KURSI</div><input type="number" class="fi" value="${restaurantData.seating}" onchange="restaurantData.seating=parseInt(this.value)"></div>
     </div>
-    <div class="section-title">💰 AVG CHECK (DARI RESTOMAP)</div>
+    <div class="section-title">💰 ${BL('AVG CHECK (DARI RESTOMAP)','AVG CHECK (FROM RESTOMAP)')}</div>
     <div class="form-grid">
       <div class="fg"><div class="fl">AVG CHECK (RP)</div><input type="number" class="fi" value="${restaurantData.avgCheck}" onchange="restaurantData.avgCheck=parseInt(this.value)"></div>
     </div>
     <div class="ai-box">
-      <div class="ai-title">🤖 AI - DARI DATA RESTOMAP</div>
+      <div class="ai-title">🤖 ${BL('AI - DARI DATA RESTOMAP','AI - FROM RESTOMAP DATA')}</div>
       <div class="ai-content">
         📍 Lokasi: <strong>${locationData.city}</strong><br>
         📊 Score: <strong style="color:var(--a)">${locationData.score}/100</strong><br>
         💰 Revenue potensial: <strong>Rp ${(locationData.revenue/1000000).toFixed(0)}JT/bulan</strong>
       </div>
     </div>
-    <button class="btn-nav" onclick="nextStep()">LANJUT →</button>
+    <button class="btn-nav" onclick="nextStep()">${BL('LANJUT →','NEXT →')}</button>
   `;
 }
 
@@ -240,14 +271,14 @@ function renderStep2(body) {
       <div class="fg"><div class="fl">TREN</div><select class="fi"><option>Growing</option><option>Stable</option></select></div>
     </div>
     <div class="ai-box">
-      <div class="ai-title">🤖 AI MARKET INSIGHTS</div>
+      <div class="ai-title">🤖 ${BL('AI MARKET INSIGHTS','AI MARKET INSIGHTS')}</div>
       <div class="ai-content">
         📈 ${locationData.city} tren positif<br>
         💰 Daya beli di atas rata-rata<br>
         🎯 Rekomendasi: ${restaurantData.concept === 'coffee' ? 'Coffee culture' : 'Quality experience'}
       </div>
     </div>
-    <button class="btn-nav" onclick="nextStep()">LANJUT KE MENU →</button>
+    <button class="btn-nav" onclick="nextStep()">${BL('LANJUT KE MENU →','CONTINUE TO MENU →')}</button>
   `;
 }
 
@@ -263,7 +294,7 @@ function renderStep3(body) {
     </table>
     <button class="btn-add">+ TAMBAH ITEM</button>
     <div class="ai-box">
-      <div class="ai-title">🤖 AI MENU RECOMMENDATION</div>
+      <div class="ai-title">🤖 ${BL('AI MENU RECOMMENDATION','AI MENU RECOMMENDATION')}</div>
       <div class="ai-content">
         Based on avg check <strong>Rp ${(restaurantData.avgCheck/1000).toFixed(0)}K</strong>:<br>
         • Best sellers: Espresso, Latte, Cold Brew<br>
@@ -272,7 +303,7 @@ function renderStep3(body) {
       </div>
       <button class="ai-btn">🎲 GENERATE AI MENU</button>
     </div>
-    <button class="btn-nav" onclick="nextStep()">LANJUT KE SPACE →</button>
+    <button class="btn-nav" onclick="nextStep()">${BL('LANJUT KE SPACE →','CONTINUE TO SPACE →')}</button>
   `;
 }
 
@@ -301,7 +332,7 @@ function renderStep4(body) {
       </div>
       <button class="ai-btn">🎲 GENERATE AI LAYOUT</button>
     </div>
-    <button class="btn-nav" onclick="nextStep()">LANJUT KE OPERATIONS →</button>
+    <button class="btn-nav" onclick="nextStep()">${BL('LANJUT KE OPERATIONS →','CONTINUE TO OPERATIONS →')}</button>
   `;
 }
 
@@ -309,7 +340,7 @@ function renderStep4(body) {
 function renderStep5(body) {
   const s = restaurantData.seating;
   body.innerHTML = `
-    <div class="section-title">👥 AI TEAM RECOMMENDATION</div>
+    <div class="section-title">👥 ${BL('REKOMENDASI TIM AI','AI TEAM RECOMMENDATION')}</div>
     <div class="form-grid">
       <div class="fg"><div class="fl">MANAGEMENT</div><input class="fi" value="1" disabled></div>
       <div class="fg"><div class="fl">CHEF</div><input class="fi" value="${Math.ceil(s/20)}" disabled></div>
@@ -322,13 +353,13 @@ function renderStep5(body) {
       <div class="fg"><div class="fl">SERVER / BULAN</div><input class="fi" value="${restaurantData.salaries.server}"></div>
     </div>
     <div class="ai-box">
-      <div class="ai-title">🤖 AI TEAM RECOMMENDATION</div>
+      <div class="ai-title">🤖 ${BL('REKOMENDASI TIM AI','AI TEAM RECOMMENDATION')}</div>
       <div class="ai-content">
         Based on <strong>${s} seats</strong>:<br>
         Total Payroll: <strong style="color:var(--pos)">Rp ${((restaurantData.salaries.gm + restaurantData.salaries.chef + restaurantData.salaries.server)/1000000).toFixed(1)}M/bln</strong>
       </div>
     </div>
-    <button class="btn-nav" onclick="nextStep()">LANJUT KE LAUNCH →</button>
+    <button class="btn-nav" onclick="nextStep()">${BL('LANJUT KE LAUNCH →','CONTINUE TO LAUNCH →')}</button>
   `;
 }
 
@@ -351,7 +382,7 @@ function renderStep6(body) {
       <div class="rc-row"><span>Rate Card</span><span class="rc-value">Rp 2JT-5JT</span></div>
     </div>
     <div class="ai-box">
-      <div class="ai-title">🤖 AI LAUNCH STRATEGY</div>
+      <div class="ai-title">🤖 ${BL('AI LAUNCH STRATEGY','AI LAUNCH STRATEGY')}</div>
       <div class="ai-content">
         • Week 1-2: Soft opening<br>
         • Week 3: Food blogger tasting<br>
@@ -359,7 +390,7 @@ function renderStep6(body) {
         • Budget: 60% digital, 40% offline
       </div>
     </div>
-    <button class="btn-nav" onclick="nextStep()">LANJUT KE FINANCIAL →</button>
+    <button class="btn-nav" onclick="nextStep()">${BL('LANJUT KE FINANCIAL →','CONTINUE TO FINANCIAL →')}</button>
   `;
 }
 
@@ -386,7 +417,7 @@ function renderStep7(body) {
       <div class="rc-row"><span>Rent</span><span class="rc-value">Rp ${(rent/1000000).toFixed(1)}JT</span></div>
       <div class="rc-row"><span>Marketing</span><span class="rc-value">Rp ${(restaurantData.marketingBudget/1000000).toFixed(1)}JT</span></div>
     </div>
-    <button class="btn-nav" onclick="nextStep()">LANJUT KE RESULTS →</button>
+    <button class="btn-nav" onclick="nextStep()">${BL('LANJUT KE RESULTS →','CONTINUE TO RESULTS →')}</button>
   `;
 }
 
@@ -410,15 +441,15 @@ function renderStep8(body) {
       <div class="rc-row"><span>Avg Check</span><span class="rc-value">Rp ${(restaurantData.avgCheck/1000).toFixed(0)}K</span></div>
       <div class="rc-row"><span>Est. Profit</span><span class="rc-value pos">Rp 8.5JT/bulan</span></div>
     </div>
-    <button class="btn-export" onclick="alert('Exporting PDF...')">📄 EXPORT BUSINESS PLAN PDF</button>
-    <button class="btn-export" style="background:var(--a)" onclick="alert('WhatsApp share...')">📱 SHARE VIA WHATSAPP</button>
+    <button class="btn-export" onclick="alert('Exporting PDF...')">📄 ${BL('EXPORT BUSINESS PLAN PDF','EXPORT BUSINESS PLAN PDF')}</button>
+    <button class="btn-export" style="background:var(--a)" onclick="alert('WhatsApp share...')">📱 ${BL('BAGIKAN VIA WHATSAPP','SHARE VIA WHATSAPP')}</button>
   `;
 }
 
 // INIT
 renderStep();
 setInterval(() => {
-  document.getElementById('clock').textContent = new Date().toLocaleTimeString('id-ID');
+  document.getElementById('clock').textContent = new Date().toLocaleTimeString(lang === 'id' ? 'id-ID' : 'en-US');
 }, 1000);
 </script>
 </body>
