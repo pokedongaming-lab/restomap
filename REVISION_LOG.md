@@ -5,7 +5,7 @@ Format versi yang dipakai:
 - Contoh: `REV-20260325-01`
 
 ## REV-20260325-18
-- Commit: `(pending)`
+- Commit: `92b86bd`
 - Scope: Top-N visualization behavior
 - Changes:
   - Untuk Top 3/Top 5, nonaktifkan auto-select titik #1
