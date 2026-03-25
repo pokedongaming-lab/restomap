@@ -5,7 +5,7 @@ Format versi yang dipakai:
 - Contoh: `REV-20260325-01`
 
 ## REV-20260326-04
-- Commit: `(pending)`
+- Commit: `e22ea10`
 - Scope: Main road weight fix for best-location ranking
 - Changes:
   - Perkuat pengaruh slider `Jalan Utama` pada scoring final kandidat
