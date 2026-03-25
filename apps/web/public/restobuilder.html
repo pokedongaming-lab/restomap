@@ -780,31 +780,65 @@ function renderStep5(body) {
 
 // STEP 6: LAUNCH STRATEGY (AI)
 function renderStep6(body) {
+  const marketScore = builderModel.marketAnalysis?.objectiveScore || 65;
+  const conceptBoost = restaurantData.concept === 'coffee' ? 1.08 : restaurantData.concept === 'fine' ? 0.95 : 1.0;
+  const baseBudget = Math.round((restaurantData.marketingBudget || 5000000) * conceptBoost * (marketScore >= 75 ? 1.12 : 1));
+  const digital = Math.round(baseBudget * 0.62);
+  const offline = baseBudget - digital;
+  const influencer = Math.round(baseBudget * 0.28);
+
+  builderModel.launch = {
+    budget: { total: baseBudget, digital, offline, influencer },
+    framework: {
+      objective: marketScore >= 75 ? 'Aggressive capture' : 'Selective capture',
+      channelMix: ['Meta Ads','Google Search','Local KOL','Community Activation']
+    },
+    plan30d: [
+      'D1-D7: soft opening + seeding content',
+      'D8-D14: ads optimization + UGC boost',
+      'D15-D21: KOL push + promo bundle',
+      'D22-D30: retention push + review campaign'
+    ]
+  };
+
   body.innerHTML = `
+    <div class="metrics-grid">
+      <div class="metric-box"><div class="mb-label">${BL('TOTAL BUDGET','TOTAL BUDGET')}</div><div class="mb-val">Rp ${(baseBudget/1000000).toFixed(1)}JT</div></div>
+      <div class="metric-box"><div class="mb-label">${BL('DIGITAL','DIGITAL')}</div><div class="mb-val">Rp ${(digital/1000000).toFixed(1)}JT</div></div>
+      <div class="metric-box"><div class="mb-label">${BL('OFFLINE','OFFLINE')}</div><div class="mb-val">Rp ${(offline/1000000).toFixed(1)}JT</div></div>
+    </div>
+
     <div class="form-grid">
-      <div class="fg"><div class="fl">${BL('MARKETING/BULAN','MARKETING/MONTH')}</div><input class="fi" value="${restaurantData.marketingBudget}"></div>
+      <div class="fg"><div class="fl">${BL('MARKETING/BULAN','MARKETING/MONTH')}</div><input class="fi" value="${baseBudget}" onchange="restaurantData.marketingBudget=parseInt(this.value)||restaurantData.marketingBudget"></div>
       <div class="fg"><div class="fl">${BL('GRAND OPENING','GRAND OPENING')}</div><input class="fi" value="15000000"></div>
     </div>
-    <div class="section-title">🎯 ${BL('REKOMENDASI AI INFLUENCER','AI INFLUENCER RECOMMENDATIONS')}</div>
+
+    <div class="section-title">🎯 ${BL('FRAMEWORK MARKETING','MARKETING FRAMEWORK')}</div>
     <div class="result-card">
-      <div class="rc-title">📱 ${BL('FOOD BLOGGER','FOOD BLOGGER')}</div>
-      <div class="rc-row"><span>${BL('Jangkauan','Reach')}</span><span class="rc-value">10K-50K</span></div>
-      <div class="rc-row"><span>${BL('Rate Card','Rate Card')}</span><span class="rc-value">Rp 500K-1JT</span></div>
+      <div class="rc-row"><span>${BL('Objective','Objective')}</span><span class="rc-value">${builderModel.launch.framework.objective}</span></div>
+      <div class="rc-row"><span>${BL('Channel Mix','Channel Mix')}</span><span class="rc-value">${builderModel.launch.framework.channelMix.join(', ')}</span></div>
+      <div class="rc-row"><span>${BL('Influencer Budget','Influencer Budget')}</span><span class="rc-value">Rp ${(influencer/1000000).toFixed(1)}JT</span></div>
     </div>
+
+    <div class="section-title">📱 ${BL('DIGITAL MARKETING STRATEGY','DIGITAL MARKETING STRATEGY')}</div>
     <div class="result-card">
-      <div class="rc-title">📱 ${BL('LIFESTYLE INFLUENCER','LIFESTYLE INFLUENCER')}</div>
-      <div class="rc-row"><span>${BL('Jangkauan','Reach')}</span><span class="rc-value">50K-200K</span></div>
-      <div class="rc-row"><span>${BL('Rate Card','Rate Card')}</span><span class="rc-value">Rp 2JT-5JT</span></div>
+      <div class="rc-row"><span>Meta Ads</span><span class="rc-value">${BL('Awareness + Retargeting','Awareness + Retargeting')}</span></div>
+      <div class="rc-row"><span>Google Search</span><span class="rc-value">${BL('Intent capture','Intent capture')}</span></div>
+      <div class="rc-row"><span>Content</span><span class="rc-value">${BL('Daily reels + review proof','Daily reels + review proof')}</span></div>
     </div>
+
+    <div class="section-title">📆 ${BL('30 DAYS LAUNCH WIN','30 DAYS LAUNCH WIN')}</div>
     <div class="ai-box">
       <div class="ai-title">🤖 ${BL('AI LAUNCH STRATEGY','AI LAUNCH STRATEGY')}</div>
       <div class="ai-content">
-        • ${BL('Minggu 1-2: Soft opening','Week 1-2: Soft opening')}<br>
-        • ${BL('Minggu 3: Sesi tasting food blogger','Week 3: Food blogger tasting')}<br>
-        • ${BL('Minggu 4: Grand opening','Week 4: Grand opening')}<br>
-        • ${BL('Budget: 60% digital, 40% offline','Budget: 60% digital, 40% offline')}
+        • ${builderModel.launch.plan30d[0]}<br>
+        • ${builderModel.launch.plan30d[1]}<br>
+        • ${builderModel.launch.plan30d[2]}<br>
+        • ${builderModel.launch.plan30d[3]}
       </div>
+      <button class="ai-btn" onclick="alert('${BL('Rekomendasi launch diperbarui','Launch recommendation refreshed')}')">🎲 ${BL('GENERATE STRATEGY AI','GENERATE AI STRATEGY')}</button>
     </div>
+
     <button class="btn-nav" onclick="nextStep()">${BL('LANJUT KE FINANCIAL →','CONTINUE TO FINANCIAL →')}</button>
   `;
 }

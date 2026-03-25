@@ -4,6 +4,18 @@ Format versi yang dipakai:
 - `REV-YYYYMMDD-XX`
 - Contoh: `REV-20260325-01`
 
+## REV-20260325-36
+- Commit: `(pending)`
+- Scope: Batch B.5 Launch Strategy
+- Changes:
+  - Step 6 ditingkatkan dengan budget recommendation berbasis market score + concept
+  - Tambah framework marketing (objective + channel mix)
+  - Tambah digital marketing strategy block
+  - Tambah 30-days launch win plan
+  - Simpan hasil ke `builderModel.launch`
+- Reason:
+  - Menjalankan Batch B.5 sesuai arahan user (launch strategy detail + AI/manual support)
+
 ## REV-20260325-35
 - Commit: `977959b`
 - Scope: Batch B.4 Operations & Team
