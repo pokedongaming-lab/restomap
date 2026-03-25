@@ -234,6 +234,12 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--t);font-f
     
     <div class="sb-section">
       <button class="sb-btn-outline" onclick="saveLocation()" data-i18="lblSave">💾 SIMPAN LOKASI</button>
+      <div class="sb-label" style="margin-top:10px">HASIL TOP</div>
+      <select class="sb-select" id="topNSelect" style="margin-bottom:6px">
+        <option value="1">Top 1</option>
+        <option value="3">Top 3</option>
+        <option value="5" selected>Top 5</option>
+      </select>
       <button class="sb-btn" id="btnFindBestTop" onclick="findBestLocation()">🎯 CARI LOKASI TERBAIK</button>
     </div>
   </div>
@@ -969,14 +975,15 @@ function findBestLocation() {
     };
   });
 
-  const top5 = cityCandidates.sort((a,b) => b.fitScore - a.fitScore).slice(0,5);
+  const topN = parseInt(document.getElementById('topNSelect')?.value || '5', 10);
+  const bestList = cityCandidates.sort((a,b) => b.fitScore - a.fitScore).slice(0, topN);
 
   // Clear previous best markers
   bestMarkers.forEach(m => m.setMap(null));
   bestMarkers = [];
 
-  // Draw top-5 markers
-  top5.forEach((loc, idx) => {
+  // Draw top-N markers
+  bestList.forEach((loc, idx) => {
     const m = new google.maps.Marker({
       position: { lat: loc.lat, lng: loc.lng },
       map,
@@ -996,20 +1003,20 @@ function findBestLocation() {
   });
 
   // Fit map to top-5 area
-  if (top5.length && map) {
+  if (bestList.length && map) {
     const bounds = new google.maps.LatLngBounds();
-    top5.forEach(l => bounds.extend({ lat: l.lat, lng: l.lng }));
+    bestList.forEach(l => bounds.extend({ lat: l.lat, lng: l.lng }));
     map.fitBounds(bounds, 80);
   }
 
   // Auto-select best #1
-  const best = top5[0];
+  const best = bestList[0];
   if (best) selectLocation(best.lat, best.lng, best.name);
 
   // Show summary in competitors tab
   const listEl = document.getElementById('competitorList');
   if (listEl) {
-    listEl.innerHTML = top5.map((l, i) => `
+    listEl.innerHTML = bestList.map((l, i) => `
       <div style="background:var(--bg3);border:1px solid var(--b);padding:10px;margin-bottom:8px;border-radius:4px">
         <div style="font-size:11px;color:${i===0?'var(--a)':'var(--t)'};margin-bottom:4px">#${i+1} ${l.name}</div>
         <div style="font-size:9px;color:var(--t3);display:flex;gap:12px">
@@ -1020,7 +1027,7 @@ function findBestLocation() {
     `).join('');
   }
 
-  alert('Top 5 lokasi terbaik di ' + city.name + ' berhasil dibuat.\n#1: ' + (best?.name || '-') + ' (Score ' + (best?.fitScore || '-') + ')');
+  alert('Top ' + topN + ' lokasi terbaik di ' + city.name + ' berhasil dibuat.\n#1: ' + (best?.name || '-') + ' (Score ' + (best?.fitScore || '-') + ')');
 }
 
 function saveLocation() {

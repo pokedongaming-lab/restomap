@@ -4,6 +4,16 @@ Format versi yang dipakai:
 - `REV-YYYYMMDD-XX`
 - Contoh: `REV-20260325-01`
 
+## REV-20260325-16
+- Commit: `(pending)`
+- Scope: Top-N best-location selector (RestoMap)
+- Changes:
+  - Tambah selector hasil `Top 1 / Top 3 / Top 5`
+  - `Cari Lokasi Terbaik` mengikuti nilai selector Top-N
+  - Marker, fit-bounds, ringkasan panel, dan alert disesuaikan dengan Top-N terpilih
+- Reason:
+  - Permintaan user untuk fleksibilitas jumlah kandidat lokasi terbaik
+
 ## REV-20260325-15
 - Commit: `1ec52ff`
 - Scope: Best-location UX overhaul (RestoMap)
