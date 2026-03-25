@@ -5,7 +5,7 @@ Format versi yang dipakai:
 - Contoh: `REV-20260325-01`
 
 ## REV-20260325-23
-- Commit: `(pending)`
+- Commit: `8b98e3f`
 - Scope: Financial Assumptions panel
 - Changes:
   - Tambah panel `Asumsi Finansial` di Overview
