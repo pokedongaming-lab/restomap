@@ -5,7 +5,7 @@ Format versi yang dipakai:
 - Contoh: `REV-20260325-01`
 
 ## REV-20260325-20
-- Commit: `(pending)`
+- Commit: `cdfa892`
 - Scope: Heatmap + Voronoi visual overlays
 - Changes:
   - Tambah layer visual heatmap langsung di map (Populasi, Traffic, Income)
