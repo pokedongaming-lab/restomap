@@ -5,7 +5,7 @@ Format versi yang dipakai:
 - Contoh: `REV-20260325-01`
 
 ## REV-20260325-22
-- Commit: `(pending)`
+- Commit: `eed68c8`
 - Scope: Realistic financial formulas (RestoMap)
 - Changes:
   - Formula revenue/breakeven/margin diganti ke model operasional realistis
