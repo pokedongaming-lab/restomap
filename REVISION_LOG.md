@@ -5,7 +5,7 @@ Format versi yang dipakai:
 - Contoh: `REV-20260325-01`
 
 ## REV-20260325-47
-- Commit: `(pending)`
+- Commit: `287f67f`
 - Scope: Street-priority ranking + alasan pemilihan
 - Changes:
   - Tambah normalisasi nama jalan dan `streetPriority` score berbasis fit score + kepadatan road/POI sekitar
