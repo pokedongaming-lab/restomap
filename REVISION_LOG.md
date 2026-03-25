@@ -4,6 +4,17 @@ Format versi yang dipakai:
 - `REV-YYYYMMDD-XX`
 - Contoh: `REV-20260325-01`
 
+## REV-20260325-44
+- Commit: `(pending)`
+- Scope: City-specific coastal exclusion guard
+- Changes:
+  - Tambah `coastGuard` per kota pantai untuk membatasi marker agar tidak melewati sisi pesisir tertentu
+  - Tambah `applyCoastGuard()` untuk clamp kandidat ke zona darat aman sebelum dan sesudah inland adjustment
+  - Candidate generation, inland adjustment, dan fallback kini semuanya lewat coast guard
+  - Manado diberi guard spesifik untuk mencegah marker jatuh ke sisi barat/pantai/pelabuhan
+- Reason:
+  - Menangani kasus nyata marker #3 yang masih jatuh ke pantai/laut meski sudah ada inland + POI validation
+
 ## REV-20260325-43
 - Commit: `77cefb3`
 - Scope: POI/Road-only candidate validation
