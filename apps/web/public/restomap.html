@@ -541,6 +541,7 @@ const CITY_PRESETS = {
 // ═══ STATE ═══
 let map, marker, geocoder;
 let selectedLoc = null;
+let bestMarkers = [];
 let currentRadius = 1000;
 let currentCategory = '';
 let currentCityKey = 'jakarta';
@@ -627,24 +628,6 @@ function initMap() {
     const lat = e.latLng.lat();
     const lng = e.latLng.lng();
     selectLocation(lat, lng, 'Lokasi Dipilih');
-  });
-  
-  // Add markers for predefined locations
-  LOCS.forEach(loc => {
-    const m = new google.maps.Marker({
-      position: { lat: loc.lat, lng: loc.lng },
-      map: map,
-      title: loc.name,
-      icon: {
-        path: google.maps.SymbolPath.CIRCLE,
-        scale: 6,
-        fillColor: '#FF6D00',
-        fillOpacity: 0.7,
-      },
-    });
-    m.addListener('click', () => {
-      selectLocation(loc.lat, loc.lng, loc.name);
-    });
   });
   
 
@@ -963,37 +946,81 @@ function findBestLocation() {
   const mainRoad = parseInt(document.getElementById('critMainRoad').value);
   const altRoad = parseInt(document.getElementById('critAltRoad').value);
 
-  const targetScore = Math.round((traffic * 0.27 + buying * 0.25 + pop * 0.2 + mainRoad * 0.18 + altRoad * 0.10));
-
-  // Generate city-local candidates so result always follows selected city
   const city = CITY_PRESETS[currentCityKey] || CITY_PRESETS.jakarta;
-  const hotspots = city.hotspots || ['Pusat Kota','CBD','Commercial Hub','Transit Hub'];
-  const cityCandidates = hotspots.map((h, idx) => {
-    const latJitter = (idx - 1.5) * 0.018;
-    const lngJitter = (1.5 - idx) * 0.018;
-    const types = ['cbd','premium','commercial','suburban'];
+  const types = ['cbd','premium','commercial','trendy','suburban'];
+
+  // Generate 12 city-local candidates
+  const cityCandidates = Array.from({ length: 12 }).map((_, idx) => {
+    const ring = 0.008 + (idx % 4) * 0.006;
+    const ang = (idx / 12) * Math.PI * 2;
+    const latJitter = Math.cos(ang) * ring;
+    const lngJitter = Math.sin(ang) * ring;
     const type = types[idx % types.length];
+    const base = TYPE_STATS[type]?.score || 60;
+    const roadFit = (type === 'cbd' || type === 'premium') ? (mainRoad * 0.6 + altRoad * 0.4) : (mainRoad * 0.4 + altRoad * 0.6);
+    const fitScore = Math.round(base * 0.55 + traffic * 0.15 + buying * 0.15 + pop * 0.10 + roadFit * 0.05);
     return {
       id: `${currentCityKey}_${idx}`,
-      name: `${h}, ${city.name}`,
+      name: `${city.hotspots[idx % city.hotspots.length]}, ${city.name}`,
       lat: city.lat + latJitter,
       lng: city.lng + lngJitter,
-      type
+      type,
+      fitScore,
     };
   });
 
-  const best = cityCandidates.reduce((bestLoc, loc) => {
-    const base = TYPE_STATS[loc.type]?.score || 60;
-    const roadFit = (loc.type === 'cbd' || loc.type === 'premium') ? (mainRoad * 0.6 + altRoad * 0.4) : (mainRoad * 0.4 + altRoad * 0.6);
-    const fit = Math.round(base * 0.55 + traffic * 0.15 + buying * 0.15 + pop * 0.10 + roadFit * 0.05);
-    const bestBase = TYPE_STATS[bestLoc.type]?.score || 60;
-    const bestRoadFit = (bestLoc.type === 'cbd' || bestLoc.type === 'premium') ? (mainRoad * 0.6 + altRoad * 0.4) : (mainRoad * 0.4 + altRoad * 0.6);
-    const bestFit = Math.round(bestBase * 0.55 + traffic * 0.15 + buying * 0.15 + pop * 0.10 + bestRoadFit * 0.05);
-    return fit > bestFit ? loc : bestLoc;
+  const top5 = cityCandidates.sort((a,b) => b.fitScore - a.fitScore).slice(0,5);
+
+  // Clear previous best markers
+  bestMarkers.forEach(m => m.setMap(null));
+  bestMarkers = [];
+
+  // Draw top-5 markers
+  top5.forEach((loc, idx) => {
+    const m = new google.maps.Marker({
+      position: { lat: loc.lat, lng: loc.lng },
+      map,
+      label: { text: String(idx + 1), color: '#fff', fontWeight: '700' },
+      title: `${idx+1}. ${loc.name} (${loc.fitScore})`,
+      icon: {
+        path: google.maps.SymbolPath.CIRCLE,
+        scale: 9,
+        fillColor: idx === 0 ? '#FF6D00' : '#1e88e5',
+        fillOpacity: 0.9,
+        strokeColor: '#0b1220',
+        strokeWeight: 2,
+      },
+    });
+    m.addListener('click', () => selectLocation(loc.lat, loc.lng, loc.name));
+    bestMarkers.push(m);
   });
 
-  selectLocation(best.lat, best.lng, best.name);
-  alert('Skor Kriteria: ' + targetScore + '/100\nLokasi terbaik: ' + best.name + '\nTraffic ' + traffic + ' · Daya Beli ' + buying + ' · Populasi ' + pop + '\nJalan Utama ' + mainRoad + ' · Jalan Alternatif ' + altRoad);
+  // Fit map to top-5 area
+  if (top5.length && map) {
+    const bounds = new google.maps.LatLngBounds();
+    top5.forEach(l => bounds.extend({ lat: l.lat, lng: l.lng }));
+    map.fitBounds(bounds, 80);
+  }
+
+  // Auto-select best #1
+  const best = top5[0];
+  if (best) selectLocation(best.lat, best.lng, best.name);
+
+  // Show summary in competitors tab
+  const listEl = document.getElementById('competitorList');
+  if (listEl) {
+    listEl.innerHTML = top5.map((l, i) => `
+      <div style="background:var(--bg3);border:1px solid var(--b);padding:10px;margin-bottom:8px;border-radius:4px">
+        <div style="font-size:11px;color:${i===0?'var(--a)':'var(--t)'};margin-bottom:4px">#${i+1} ${l.name}</div>
+        <div style="font-size:9px;color:var(--t3);display:flex;gap:12px">
+          <span>📊 Score ${l.fitScore}</span>
+          <span>📍 ${l.lat.toFixed(4)}, ${l.lng.toFixed(4)}</span>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  alert('Top 5 lokasi terbaik di ' + city.name + ' berhasil dibuat.\n#1: ' + (best?.name || '-') + ' (Score ' + (best?.fitScore || '-') + ')');
 }
 
 function saveLocation() {

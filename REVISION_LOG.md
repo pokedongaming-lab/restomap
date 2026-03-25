@@ -4,6 +4,18 @@ Format versi yang dipakai:
 - `REV-YYYYMMDD-XX`
 - Contoh: `REV-20260325-01`
 
+## REV-20260325-15
+- Commit: `(pending)`
+- Scope: Best-location UX overhaul (RestoMap)
+- Changes:
+  - Hapus marker hotspot default hitam-oranye (predefined markers)
+  - Tombol `Cari Lokasi Terbaik` sekarang menghasilkan 5 titik terbaik pada kota terpilih
+  - Top-5 ditampilkan sebagai marker bernomor (1–5) di map
+  - Auto-fit bounds ke area top-5 dan auto-select titik #1
+  - Ringkasan top-5 ditampilkan di panel (tab competitor list)
+- Reason:
+  - Permintaan user agar map lebih clean dan hasil best-location berupa 5 kandidat, bukan 1 titik
+
 ## REV-20260325-14
 - Commit: `623b598`
 - Scope: CTA position refinement (RestoMap)
