@@ -5,7 +5,7 @@ Format versi yang dipakai:
 - Contoh: `REV-20260325-01`
 
 ## REV-20260326-10
-- Commit: `(pending)`
+- Commit: `5b22e29`
 - Scope: Batch Map Infra C — unify criteria and heatmap controls
 - Changes:
   - Gabungkan konsep heatmap driver ke blok kriteria (hapus dependensi checkbox layer terpisah)
