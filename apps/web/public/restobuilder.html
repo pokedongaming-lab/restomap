@@ -714,26 +714,66 @@ function renderStep4(body) {
 // STEP 5: OPERATIONS (AI)
 function renderStep5(body) {
   const s = restaurantData.seating;
+
+  if (!builderModel.operations.departments) {
+    builderModel.operations = {
+      departments: [
+        {name:'Accounting & Finance', headcount:1, monthly:9000000},
+        {name:'Human Capital', headcount:1, monthly:7000000},
+        {name:'Operation', headcount:Math.max(3, Math.ceil(s/12)), monthly:24000000},
+        {name:'Sales & Marketing', headcount:2, monthly:12000000},
+      ],
+      sop: [],
+      tasks: []
+    };
+  }
+
+  const deps = builderModel.operations.departments;
+  const totalPayroll = deps.reduce((sum,d)=> sum + (d.monthly||0), 0);
+
+  const depRows = deps.map((d, i) => `
+    <tr>
+      <td><input value="${d.name}" onchange="builderModel.operations.departments[${i}].name=this.value"></td>
+      <td><input type="number" value="${d.headcount}" onchange="builderModel.operations.departments[${i}].headcount=parseInt(this.value)||1"></td>
+      <td><input type="number" value="${d.monthly}" onchange="builderModel.operations.departments[${i}].monthly=parseInt(this.value)||0"></td>
+    </tr>
+  `).join('');
+
+  const sop = deps.map(d => `${d.name}: SOP harian, SOP weekly review, SOP escalation`).join('<br>');
+  const tasks = deps.map(d => `${d.name}: KPI tracking, budget check, issue follow-up`).join('<br>');
+  builderModel.operations.sop = deps.map(d => ({department:d.name, sop:['Daily SOP','Weekly SOP','Escalation SOP']}));
+  builderModel.operations.tasks = deps.map(d => ({department:d.name, tasks:['KPI tracking','Budget check','Issue follow-up']}));
+
   body.innerHTML = `
-    <div class="section-title">👥 ${BL('REKOMENDASI TIM AI','AI TEAM RECOMMENDATION')}</div>
-    <div class="form-grid">
-      <div class="fg"><div class="fl">MANAGEMENT</div><input class="fi" value="1" disabled></div>
-      <div class="fg"><div class="fl">CHEF</div><input class="fi" value="${Math.ceil(s/20)}" disabled></div>
-      <div class="fg"><div class="fl">SERVER/FOH</div><input class="fi" value="${Math.ceil(s/10)}" disabled></div>
+    <div class="metrics-grid">
+      <div class="metric-box"><div class="mb-label">${BL('TOTAL DEPARTEMEN','TOTAL DEPARTMENTS')}</div><div class="mb-val">${deps.length}</div></div>
+      <div class="metric-box"><div class="mb-label">${BL('TOTAL HEADCOUNT','TOTAL HEADCOUNT')}</div><div class="mb-val">${deps.reduce((s,x)=>s+(x.headcount||0),0)}</div></div>
+      <div class="metric-box"><div class="mb-label">${BL('TOTAL PAYROLL / BULAN','TOTAL PAYROLL / MONTH')}</div><div class="mb-val">Rp ${(totalPayroll/1000000).toFixed(1)}JT</div></div>
     </div>
-    <div class="section-title">💰 SALARIES</div>
-    <div class="form-grid">
-      <div class="fg"><div class="fl">GM / ${BL('BULAN','MONTH')}</div><input class="fi" value="${restaurantData.salaries.gm}"></div>
-      <div class="fg"><div class="fl">CHEF / ${BL('BULAN','MONTH')}</div><input class="fi" value="${restaurantData.salaries.chef}"></div>
-      <div class="fg"><div class="fl">SERVER / ${BL('BULAN','MONTH')}</div><input class="fi" value="${restaurantData.salaries.server}"></div>
-    </div>
+
+    <div class="section-title">🏢 ${BL('STRUKTUR DIVISI','DIVISION STRUCTURE')}</div>
+    <table class="menu-table">
+      <tr><th>${BL('Divisi','Division')}</th><th>HC</th><th>${BL('Biaya/Bulan','Cost/Month')}</th></tr>
+      ${depRows}
+    </table>
+    <button class="btn-add" onclick="builderModel.operations.departments.push({name:'New Department',headcount:1,monthly:5000000}); renderStep()">+ ${BL('TAMBAH DIVISI','ADD DIVISION')}</button>
+
     <div class="ai-box">
-      <div class="ai-title">🤖 ${BL('REKOMENDASI TIM AI','AI TEAM RECOMMENDATION')}</div>
+      <div class="ai-title">🤖 ${BL('AI EFFICIENCY RECOMMENDATION','AI EFFICIENCY RECOMMENDATION')}</div>
       <div class="ai-content">
-        ${BL('Berdasarkan','Based on')} <strong>${s} ${BL('kursi','seats')}</strong>:<br>
-        ${BL('Total Payroll','Total Payroll')}: <strong style="color:var(--pos)">Rp ${((restaurantData.salaries.gm + restaurantData.salaries.chef + restaurantData.salaries.server)/1000000).toFixed(1)}M/${BL('bln','mo')}</strong>
+        ${BL('Berdasarkan','Based on')} <strong>${s} ${BL('kursi','seats')}</strong> & ${deps.length} ${BL('divisi','divisions')}:<br>
+        • ${BL('Saran efisiensi: gabungkan fungsi HC + GA saat awal launch','Efficiency suggestion: merge HC + GA in early launch phase')}<br>
+        • ${BL('Saran efisiensi: tetapkan shift matrix untuk Operation','Efficiency suggestion: define shift matrix for Operations')}<br>
+        • ${BL('Payroll saat ini','Current payroll')}: <strong style="color:var(--pos)">Rp ${(totalPayroll/1000000).toFixed(1)}JT/${BL('bln','mo')}</strong>
       </div>
     </div>
+
+    <div class="section-title">📋 ${BL('GENERATED SOP & TASK LIST','GENERATED SOP & TASK LIST')}</div>
+    <div class="form-grid">
+      <div class="fg"><div class="fl">SOP</div><div class="fi" style="min-height:90px;white-space:pre-line">${sop}</div></div>
+      <div class="fg"><div class="fl">TASK LIST</div><div class="fi" style="min-height:90px;white-space:pre-line">${tasks}</div></div>
+    </div>
+
     <button class="btn-nav" onclick="nextStep()">${BL('LANJUT KE LAUNCH →','CONTINUE TO LAUNCH →')}</button>
   `;
 }

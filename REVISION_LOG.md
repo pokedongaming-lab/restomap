@@ -4,6 +4,18 @@ Format versi yang dipakai:
 - `REV-YYYYMMDD-XX`
 - Contoh: `REV-20260325-01`
 
+## REV-20260325-35
+- Commit: `(pending)`
+- Scope: Batch B.4 Operations & Team
+- Changes:
+  - Step 5 diubah ke mode struktur divisi kustom (editable)
+  - Tambah headcount + biaya per divisi dengan total payroll KPI
+  - Tambah AI efficiency recommendation berbasis kapasitas kursi & struktur divisi
+  - Tambah generated SOP + task list per department
+  - Simpan hasil ke `builderModel.operations`
+- Reason:
+  - Menjalankan Batch B.4 sesuai arahan user (custom divisions + AI efficiency + SOP/task list)
+
 ## REV-20260325-34
 - Commit: `b927f20`
 - Scope: Batch B.3 Space Design interaktif
