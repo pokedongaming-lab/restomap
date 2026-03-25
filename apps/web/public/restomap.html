@@ -1447,6 +1447,12 @@ function clearMapOverlays() {
   voronoiPolygons = [];
 }
 
+function getRegionalHeatColor(score) {
+  if (score >= 82) return { fill: '#16a34a', stroke: '#15803d', label: 'High' };
+  if (score >= 68) return { fill: '#f59e0b', stroke: '#d97706', label: 'Medium' };
+  return { fill: '#ef4444', stroke: '#dc2626', label: 'Low' };
+}
+
 function toggleHeatmap() {
   const layers = [];
   const popOn = document.getElementById('heatPop').checked;
@@ -1460,6 +1466,19 @@ function toggleHeatmap() {
   if (voronoiOn) layers.push('🧭 Voronoi');
 
   document.getElementById('activeLayers').textContent = layers.length > 0 ? layers.join(', ') : 'None';
+  const heatEl = document.getElementById('heatmapContent');
+  if (heatEl && (selectedLoc?.regionalHeatmap?.length || 0) > 0) {
+    heatEl.innerHTML = `
+      <div style="padding:10px;background:var(--bg3);border:1px solid var(--b);border-radius:6px;font-size:10px;color:var(--t3)">
+        <div style="color:var(--a);font-size:9px;letter-spacing:1px;margin-bottom:8px">REGIONAL HEATMAP LEGEND</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+          <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:#16a34a;display:inline-block"></span> High</span>
+          <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:#f59e0b;display:inline-block"></span> Medium</span>
+          <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:#ef4444;display:inline-block"></span> Low</span>
+        </div>
+        <div style="color:var(--t4)">${lang === 'id' ? 'Klik area di peta untuk melihat detail wilayah BPS-style.' : 'Click an area on the map to see BPS-style regional detail.'}</div>
+      </div>`;
+  }
 
   // Update values panel
   if (selectedLoc) {
@@ -1475,24 +1494,25 @@ function toggleHeatmap() {
   if (!center) return;
 
   const regionalCells = selectedLoc?.regionalHeatmap || [];
-  const drawRegional = (color, stroke, key) => {
+  const drawRegional = (_color, _stroke, key) => {
     if (!regionalCells.length) return false;
     regionalCells.forEach((cell, idx) => {
       const intensity = key === 'population' ? cell.factors.population : key === 'traffic' ? cell.factors.traffic : cell.factors.income;
-      const latR = Math.max(0.0022, (cell.radius / 111000) * 0.7);
-      const lngR = Math.max(0.0022, (cell.radius / 111000) * 0.9);
+      const latR = Math.max(0.0022, (cell.radius / 111000) * 0.7) * (1 + idx * 0.06);
+      const lngR = Math.max(0.0022, (cell.radius / 111000) * 0.9) * (1 + idx * 0.04);
       const path = [
         { lat: cell.center.lat - latR, lng: cell.center.lng - lngR },
         { lat: cell.center.lat - latR * 0.3, lng: cell.center.lng + lngR },
         { lat: cell.center.lat + latR, lng: cell.center.lng + lngR * 0.65 },
         { lat: cell.center.lat + latR * 0.45, lng: cell.center.lng - lngR },
       ];
+      const colorMeta = getRegionalHeatColor(cell.score);
       const poly = new google.maps.Polygon({
         map,
         paths: path,
-        fillColor: color,
+        fillColor: colorMeta.fill,
         fillOpacity: Math.max(0.10, Math.min(0.28, intensity / 450)),
-        strokeColor: stroke,
+        strokeColor: colorMeta.stroke,
         strokeOpacity: 0.72,
         strokeWeight: 1.5,
       });

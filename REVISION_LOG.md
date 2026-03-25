@@ -4,6 +4,16 @@ Format versi yang dipakai:
 - `REV-YYYYMMDD-XX`
 - Contoh: `REV-20260325-01`
 
+## REV-20260326-08
+- Commit: `(pending)`
+- Scope: Batch Map Infra B.3
+- Changes:
+  - Tambah color scaling yang lebih sinkron dengan skor regional
+  - Tambah legend / scale heatmap
+  - Tambah visual balancing agar region dengan skor mirip tidak saling tabrakan secara visual
+- Reason:
+  - Melanjutkan Batch Map Infra B.3 agar heatmap regional lebih terbaca dan informatif
+
 ## REV-20260326-07
 - Commit: `e445843`
 - Scope: Batch Map Infra B.2
