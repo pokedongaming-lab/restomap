@@ -4,6 +4,17 @@ Format versi yang dipakai:
 - `REV-YYYYMMDD-XX`
 - Contoh: `REV-20260325-01`
 
+## REV-20260325-20
+- Commit: `(pending)`
+- Scope: Heatmap + Voronoi visual overlays
+- Changes:
+  - Tambah layer visual heatmap langsung di map (Populasi, Traffic, Income)
+  - Tambah checkbox `Voronoi` untuk analisa geospasial overlay (proxy)
+  - Overlay mengikuti brand/kategori terpilih melalui data kompetitor terbaru
+  - Tambah clear/re-render logic agar layer sinkron saat analisis berubah
+- Reason:
+  - Permintaan user agar heatmap dan analisa Voronoi benar-benar muncul secara visual di map
+
 ## REV-20260325-19
 - Commit: `e1c496e`
 - Scope: Category expansion + Builder sync

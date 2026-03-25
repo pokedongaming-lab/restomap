@@ -208,6 +208,10 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--t);font-f
           <input type="checkbox" id="heatIncome" onchange="toggleHeatmap()">
           <span style="font-size:9px">💰 Income</span>
         </label>
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
+          <input type="checkbox" id="heatVoronoi" onchange="toggleHeatmap()">
+          <span style="font-size:9px">🧭 Voronoi</span>
+        </label>
       </div>
     </div>
     
@@ -557,6 +561,9 @@ const CITY_PRESETS = {
 let map, marker, geocoder;
 let selectedLoc = null;
 let bestMarkers = [];
+let heatmapCircles = [];
+let voronoiPolygons = [];
+let latestCompetitors = [];
 let currentRadius = 1000;
 let currentCategory = '';
 let currentCityKey = 'jakarta';
@@ -707,6 +714,8 @@ async function renderAnalysis(lat, lng) {
     const mmmEfficiency = Math.min(100, Math.round((bayesDemand * 0.55 + hhiProxy * 0.45)));
     const milpFeasible = Math.min(100, Math.round((mmmEfficiency * 0.6 + voronoiGap * 0.4)));
 
+    latestCompetitors = competitors || [];
+
     // Update state
     selectedLoc = {
       ...selectedLoc,
@@ -757,6 +766,7 @@ async function renderAnalysis(lat, lng) {
     
     // Render competitors list
     renderCompetitors(competitors);
+    toggleHeatmap();
     
     // AI Content
     const nearest = (competitors || []).slice(0, 4);
@@ -830,26 +840,104 @@ function renderCompetitors(competitors) {
 }
 
 // ═══ HEATMAP ═══
+function clearMapOverlays() {
+  heatmapCircles.forEach(c => c.setMap(null));
+  voronoiPolygons.forEach(p => p.setMap(null));
+  heatmapCircles = [];
+  voronoiPolygons = [];
+}
+
 function toggleHeatmap() {
   const layers = [];
-  if (document.getElementById('heatPop').checked) layers.push('👥 Populasi');
-  if (document.getElementById('heatTraffic').checked) layers.push('🚗 Traffic');
-  if (document.getElementById('heatIncome').checked) layers.push('💰 Income');
-  
+  const popOn = document.getElementById('heatPop').checked;
+  const trafficOn = document.getElementById('heatTraffic').checked;
+  const incomeOn = document.getElementById('heatIncome').checked;
+  const voronoiOn = document.getElementById('heatVoronoi').checked;
+
+  if (popOn) layers.push('👥 Populasi');
+  if (trafficOn) layers.push('🚗 Traffic');
+  if (incomeOn) layers.push('💰 Income');
+  if (voronoiOn) layers.push('🧭 Voronoi');
+
   document.getElementById('activeLayers').textContent = layers.length > 0 ? layers.join(', ') : 'None';
-  
-  // Update heatmap values
-  const stats = TYPE_STATS[selectedLoc?.type] || TYPE_STATS.suburban;
+
+  // Update values panel
   if (selectedLoc) {
     document.getElementById('popValue').textContent = Math.floor(Math.random() * 50000 + 10000).toLocaleString();
     document.getElementById('trafficValue').textContent = Math.floor(Math.random() * 5000 + 1000).toLocaleString();
     document.getElementById('incomeValue').textContent = 'Rp ' + Math.floor(Math.random() * 50 + 10).toFixed(0) + 'JT/th';
   }
-  
-  // Show alert
-  if (layers.length > 0) {
-    console.log('Heatmap layers:', layers);
+
+  if (!map) return;
+  clearMapOverlays();
+
+  const center = selectedLoc ? { lat: selectedLoc.lat, lng: selectedLoc.lng } : map.getCenter()?.toJSON();
+  if (!center) return;
+
+  // Heat layers as translucent circles
+  if (popOn) {
+    heatmapCircles.push(new google.maps.Circle({
+      map,
+      center,
+      radius: Math.max(500, currentRadius * 1.2),
+      fillColor: '#22c55e',
+      fillOpacity: 0.18,
+      strokeColor: '#16a34a',
+      strokeOpacity: 0.55,
+      strokeWeight: 1,
+    }));
   }
+  if (trafficOn) {
+    heatmapCircles.push(new google.maps.Circle({
+      map,
+      center,
+      radius: Math.max(400, currentRadius * 0.95),
+      fillColor: '#f97316',
+      fillOpacity: 0.2,
+      strokeColor: '#ea580c',
+      strokeOpacity: 0.55,
+      strokeWeight: 1,
+    }));
+  }
+  if (incomeOn) {
+    heatmapCircles.push(new google.maps.Circle({
+      map,
+      center,
+      radius: Math.max(320, currentRadius * 0.75),
+      fillColor: '#2563eb',
+      fillOpacity: 0.2,
+      strokeColor: '#1d4ed8',
+      strokeOpacity: 0.55,
+      strokeWeight: 1,
+    }));
+  }
+
+  // Voronoi proxy overlay based on selected category/brand competitors
+  if (voronoiOn && (latestCompetitors?.length || 0) > 0) {
+    const n = Math.min(6, latestCompetitors.length);
+    for (let i = 0; i < n; i++) {
+      const ang1 = (i / n) * Math.PI * 2;
+      const ang2 = ((i + 1) / n) * Math.PI * 2;
+      const r = 0.012 + (i % 3) * 0.004;
+      const path = [
+        center,
+        { lat: center.lat + Math.cos(ang1) * r, lng: center.lng + Math.sin(ang1) * r },
+        { lat: center.lat + Math.cos(ang2) * r, lng: center.lng + Math.sin(ang2) * r },
+      ];
+      const p = new google.maps.Polygon({
+        map,
+        paths: path,
+        fillColor: '#8b5cf6',
+        fillOpacity: 0.12,
+        strokeColor: '#7c3aed',
+        strokeOpacity: 0.7,
+        strokeWeight: 1,
+      });
+      voronoiPolygons.push(p);
+    }
+  }
+
+  if (layers.length > 0) console.log('Heatmap layers:', layers);
 }
 
 // ═══ CANNIBALIZATION ═══
