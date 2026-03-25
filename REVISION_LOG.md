@@ -5,7 +5,7 @@ Format versi yang dipakai:
 - Contoh: `REV-20260325-01`
 
 ## REV-20260325-16
-- Commit: `(pending)`
+- Commit: `ff372e4`
 - Scope: Top-N best-location selector (RestoMap)
 - Changes:
   - Tambah selector hasil `Top 1 / Top 3 / Top 5`
