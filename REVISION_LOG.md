@@ -5,7 +5,7 @@ Format versi yang dipakai:
 - Contoh: `REV-20260325-01`
 
 ## REV-20260325-45
-- Commit: `(pending)`
+- Commit: `4232114`
 - Scope: Tighten Manado water exclusion + snap to nearby valid POI/road
 - Changes:
   - Perketat `coastGuard` Manado dengan batas longitude/latitude yang lebih sempit untuk menolak marker di bibir air
