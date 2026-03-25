@@ -621,6 +621,27 @@ function normalizeCompetitorCategory(category = '') {
   return map[q] || [q];
 }
 
+function getCategoryIntent(category = '') {
+  const aliases = normalizeCompetitorCategory(category);
+  return {
+    query: String(category || '').trim().toLowerCase(),
+    aliases,
+    brandLike: !!category && !aliases.includes(String(category || '').trim().toLowerCase()),
+  };
+}
+
+function classifyCompetitorBucket(c, intent) {
+  const distanceNum = parseFloat(String(c.distance || '9999').replace(/[^0-9.]/g, '')) || 9999;
+  const categoryNorm = String(c.category || '').toLowerCase();
+  const nameNorm = String(c.name || '').toLowerCase();
+  const aliasHit = intent.aliases.some(a => categoryNorm.includes(a) || nameNorm.includes(a));
+
+  if (distanceNum <= 1200 && aliasHit) return 'direct';
+  if (distanceNum <= 2200 && (aliasHit || categoryNorm.includes('restaurant') || categoryNorm.includes('cafe'))) return 'indirect';
+  if (distanceNum <= 3500) return 'replacement';
+  return 'outside';
+}
+
 async function fetchCompetitors(lat, lng, radius, category) {
   try {
     const categories = normalizeCompetitorCategory(category);
@@ -1358,25 +1379,19 @@ function renderCompetitors(competitors) {
     return;
   }
 
+  const intent = getCategoryIntent(currentCategory);
   const norm = competitors.map(c => ({
     ...c,
     distanceNum: parseFloat(String(c.distance || '9999').replace(/[^0-9.]/g, '')) || 9999,
     ratingNum: parseFloat(c.rating) || 0,
     categoryNorm: String(c.category || '').toLowerCase(),
     nameNorm: String(c.name || '').toLowerCase(),
+    bucket: classifyCompetitorBucket(c, intent),
   }));
 
-  const isDirect = (c) => {
-    if (!currentCategory) return c.distanceNum <= 1200;
-    const q = currentCategory.toLowerCase();
-    return c.distanceNum <= 1500 && (c.categoryNorm.includes(q) || c.nameNorm.includes(q));
-  };
-  const isIndirect = (c) => !isDirect(c) && c.distanceNum <= 2500;
-  const isReplacement = (c) => !isDirect(c) && !isIndirect(c) && c.distanceNum <= 3500;
-
-  let direct = norm.filter(isDirect).slice(0, 8);
-  let indirect = norm.filter(isIndirect).slice(0, 6);
-  let replacement = norm.filter(isReplacement).slice(0, 6);
+  let direct = norm.filter(c => c.bucket === 'direct').slice(0, 8);
+  let indirect = norm.filter(c => c.bucket === 'indirect').slice(0, 6);
+  let replacement = norm.filter(c => c.bucket === 'replacement').slice(0, 6);
 
   // Safety net: if category matching is too strict, keep nearest competitors visible instead of empty sections.
   if (direct.length === 0 && norm.length > 0) {
@@ -1432,7 +1447,7 @@ function renderCompetitors(competitors) {
     <div style="padding:10px;background:var(--a3);border:1px solid var(--b2);border-radius:6px;margin-bottom:12px;font-size:9px;color:var(--t3)">
       <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
         <strong style="color:var(--a)">COMPETITOR SNAPSHOT</strong>
-        <span style="font-size:8px;color:var(--t4)">Category: ${currentCategory || 'all'}</span>
+        <span style="font-size:8px;color:var(--t4)">Category: ${currentCategory || 'all'} · Alias: ${(intent.aliases || []).join(', ') || '-'}</span>
       </div>
       <div style="margin-top:6px">Total: <strong>${norm.length}</strong> · Direct: <strong>${direct.length}</strong> · Indirect: <strong>${indirect.length}</strong> · Replacement: <strong>${replacement.length}</strong></div>
       <div>Avg Direct Rating: <strong>${avgDirectRating}</strong></div>

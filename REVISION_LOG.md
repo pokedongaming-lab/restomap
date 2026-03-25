@@ -4,6 +4,16 @@ Format versi yang dipakai:
 - `REV-YYYYMMDD-XX`
 - Contoh: `REV-20260325-01`
 
+## REV-20260326-16
+- Commit: `(pending)`
+- Scope: Product Refactor 1 — Competitor Intelligence Core (phase 1)
+- Changes:
+  - Bangun fondasi unified competitor classification (direct / indirect / replacement) berbasis category alias + distance + brand intent
+  - Siapkan recovery logic agar retrieval dan rendering memakai basis data yang sama
+  - Rapikan output snapshot competitor agar lebih decision-grade
+- Reason:
+  - Memulai Product Refactor 1 untuk mengatasi akar masalah competitor engine, bukan sekadar patch symptom UI
+
 ## REV-20260326-15
 - Commit: `bd44be4`
 - Scope: Batch Infra D — competitor classification safety net
