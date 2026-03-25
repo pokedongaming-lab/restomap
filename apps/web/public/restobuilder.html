@@ -924,23 +924,69 @@ function renderStep7(body) {
 
 // STEP 8: RESULTS & EXPORT
 function renderStep8(body) {
+  const fin = builderModel.financial?.scenarios?.find(x => x.key === 'Base');
+  const estProfitText = fin ? `Rp ${(fin.profit/1000000).toFixed(1)}JT/${BL('bulan','month')}` : `Rp 8.5JT/${BL('bulan','month')}`;
+
   body.innerHTML = `
     <div class="section-title">📋 ${BL('RINGKASAN BUSINESS PLAN','BUSINESS PLAN SUMMARY')}</div>
+
     <div class="result-card">
-      <div class="rc-title">📍 ${BL('LOKASI (DARI RESTOMAP)','LOCATION (FROM RESTOMAP)')}</div>
-      <div class="rc-row"><span>${BL('Kota','City')}</span><span class="rc-value">${locationData.city}</span></div>
-      <div class="rc-row"><span>${BL('Skor','Score')}</span><span class="rc-value" style="color:var(--a)">${locationData.score}/100</span></div>
+      <div class="rc-title">1) ${BL('RINGKASAN EKSEKUTIF','EXECUTIVE SUMMARY')}</div>
+      <div style="font-size:10px;color:var(--t3);line-height:1.7">
+        ${BL('Rencana restoran berbasis data geospasial dengan objective score','Data-driven restaurant plan with geospatial objective score')} <strong style="color:var(--a)">${locationData.score}/100</strong>,
+        ${BL('didukung analisa market, menu, operasional, launch, dan finansial komprehensif.','supported by market, menu, operations, launch, and comprehensive financial analysis.')}
+      </div>
     </div>
+
     <div class="result-card">
-      <div class="rc-title">🏪 ${BL('RESTAURANT','RESTAURANT')}</div>
+      <div class="rc-title">2) ${BL('DESKRIPSI PERUSAHAAN','COMPANY DESCRIPTION')}</div>
       <div class="rc-row"><span>${BL('Nama','Name')}</span><span class="rc-value">${restaurantData.name || 'TBD'}</span></div>
       <div class="rc-row"><span>${BL('Konsep','Concept')}</span><span class="rc-value">${restaurantData.concept}</span></div>
-      <div class="rc-row"><span>${BL('Kursi','Seating')}</span><span class="rc-value">${restaurantData.seating}</span></div>
+      <div class="rc-row"><span>${BL('Kota','City')}</span><span class="rc-value">${locationData.city}</span></div>
     </div>
+
     <div class="result-card">
-      <div class="rc-title">💰 ${BL('FINANCIAL','FINANCIAL')}</div>
+      <div class="rc-title">3) ${BL('PRODUK / LAYANAN','PRODUCTS / SERVICES')}</div>
+      <div class="rc-row"><span>${BL('Jenis Masakan','Cuisine')}</span><span class="rc-value">${restaurantData.cuisine}</span></div>
+      <div class="rc-row"><span>${BL('Minuman','Drinks')}</span><span class="rc-value">${(restaurantData.drinks||[]).slice(0,3).join(', ') || '-'}</span></div>
+      <div class="rc-row"><span>${BL('Produk Tambahan','Additional Products')}</span><span class="rc-value">${(restaurantData.products||[]).slice(0,3).join(', ') || '-'}</span></div>
+    </div>
+
+    <div class="result-card">
+      <div class="rc-title">4) ${BL('ANALISIS PASAR','MARKET ANALYSIS')}</div>
+      <div class="rc-row"><span>${BL('Objective Score','Objective Score')}</span><span class="rc-value">${builderModel.marketAnalysis?.objectiveScore ?? '-'}</span></div>
+      <div class="rc-row"><span>SWOT</span><span class="rc-value">${BL('Tersedia di tab Competitors','Available in Competitors tab')}</span></div>
+      <div class="rc-row"><span>${BL('Metode','Methods')}</span><span class="rc-value">Bayes · HHI · Voronoi · MMM · MILP</span></div>
+    </div>
+
+    <div class="result-card">
+      <div class="rc-title">5) ${BL('STRATEGI PEMASARAN & PENJUALAN','MARKETING & SALES STRATEGY')}</div>
+      <div class="rc-row"><span>${BL('Launch Objective','Launch Objective')}</span><span class="rc-value">${builderModel.launch?.framework?.objective || '-'}</span></div>
+      <div class="rc-row"><span>${BL('Channel Mix','Channel Mix')}</span><span class="rc-value">${(builderModel.launch?.framework?.channelMix || []).join(', ') || '-'}</span></div>
+      <div class="rc-row"><span>${BL('30-Day Plan','30-Day Plan')}</span><span class="rc-value">${BL('Tersedia di Step Launch','Available in Launch step')}</span></div>
+    </div>
+
+    <div class="result-card">
+      <div class="rc-title">6) ${BL('MANAJEMEN & OPERASIONAL','MANAGEMENT & OPERATIONS')}</div>
+      <div class="rc-row"><span>${BL('Jumlah Divisi','Divisions')}</span><span class="rc-value">${builderModel.operations?.departments?.length || 0}</span></div>
+      <div class="rc-row"><span>SOP</span><span class="rc-value">${BL('Generated per department','Generated per department')}</span></div>
+      <div class="rc-row"><span>Task List</span><span class="rc-value">${BL('Generated per department','Generated per department')}</span></div>
+    </div>
+
+    <div class="result-card">
+      <div class="rc-title">7) ${BL('PROYEKSI KEUANGAN','FINANCIAL PROJECTIONS')}</div>
       <div class="rc-row"><span>${BL('Avg Check','Avg Check')}</span><span class="rc-value">Rp ${(restaurantData.avgCheck/1000).toFixed(0)}K</span></div>
-      <div class="rc-row"><span>${BL('Estimasi Profit','Est. Profit')}</span><span class="rc-value pos">Rp 8.5JT/${BL('bulan','month')}</span></div>
+      <div class="rc-row"><span>${BL('Estimasi Profit (Base)','Est. Profit (Base)')}</span><span class="rc-value pos">${estProfitText}</span></div>
+      <div class="rc-row"><span>BEP</span><span class="rc-value">${fin?.bep ? fin.bep + ' ' + BL('bulan','months') : '>36 ' + BL('bulan','months')}</span></div>
+    </div>
+
+    <div class="result-card">
+      <div class="rc-title">8) ${BL('LAMPIRAN','APPENDIX')}</div>
+      <div style="font-size:9px;color:var(--t3);line-height:1.7">
+        • ${BL('Method Trace detail','Method Trace detail')}<br>
+        • ${BL('Data asumsi & skenario','Assumptions & scenario data')}<br>
+        • ${BL('Draft layout & partner options','Draft layout & partner options')}
+      </div>
     </div>
 
     <div class="result-card">
@@ -951,9 +997,6 @@ function renderStep8(body) {
       <div class="rc-row"><span>Cannibal Overlap</span><span class="rc-value">${methodMetrics.cannibal.toFixed(1)}%</span></div>
       <div class="rc-row"><span>MMM Efficiency</span><span class="rc-value">${methodMetrics.mmm.toFixed(1)}</span></div>
       <div class="rc-row"><span>MILP Feasibility</span><span class="rc-value">${methodMetrics.milp.toFixed(1)}</span></div>
-      <div style="margin-top:8px;font-size:9px;color:var(--t4);line-height:1.6">
-        ${BL('Trace ini menjelaskan asal-usul skor untuk sinkronisasi RestoMap → RestoBuilder.','This trace explains score lineage for RestoMap → RestoBuilder synchronization.')}
-      </div>
     </div>
 
     <button class="btn-export" onclick="exportBusinessPlan()">📄 ${BL('EXPORT BUSINESS PLAN PDF','EXPORT BUSINESS PLAN PDF')}</button>
@@ -986,6 +1029,7 @@ function buildBusinessPlanHtml(){
     table{width:100%;border-collapse:collapse;background:#fff;border:1px solid #e2e8f0}
     th,td{padding:8px 10px;border-bottom:1px solid #e2e8f0;text-align:left;font-size:13px}
     th{background:#f1f5f9;color:#334155}
+    p{background:#fff;border:1px solid #e2e8f0;padding:10px;border-radius:8px}
   </style></head><body>
     <div class="h">RestoSuite Business Plan</div>
     <div class="sub">${restaurantData.name || 'Unnamed Restaurant'} · ${locationData.city} · ${new Date().toLocaleDateString(lang === 'id' ? 'id-ID' : 'en-US')}</div>
@@ -996,10 +1040,20 @@ function buildBusinessPlanHtml(){
       <div class="card"><div class="k">Profit / Month</div><div class="v">Rp ${(profit/1000000).toFixed(1)} JT</div></div>
     </div>
 
-    <h2>Executive Summary</h2>
-    <p>Concept: <strong>${restaurantData.concept}</strong> | Cuisine: <strong>${restaurantData.cuisine}</strong> | Seats: <strong>${restaurantData.seating}</strong></p>
+    <h2>1. Executive Summary</h2>
+    <p>Business plan ini mengintegrasikan analisa geospasial, market intelligence, operational planning, launch strategy, dan financial projection dalam satu kerangka keputusan.</p>
 
-    <h2>Market & Method Trace</h2>
+    <h2>2. Company Description</h2>
+    <table><tr><th>Field</th><th>Value</th></tr>
+      <tr><td>Name</td><td>${restaurantData.name || 'TBD'}</td></tr>
+      <tr><td>Concept</td><td>${restaurantData.concept}</td></tr>
+      <tr><td>City</td><td>${locationData.city}</td></tr>
+    </table>
+
+    <h2>3. Products / Services</h2>
+    <p>Cuisine: <strong>${restaurantData.cuisine}</strong> · Drinks: ${(restaurantData.drinks||[]).join(', ') || '-'} · Add-ons: ${(restaurantData.products||[]).join(', ') || '-'}</p>
+
+    <h2>4. Market Analysis</h2>
     <table>
       <tr><th>Method</th><th>Value</th><th>Note</th></tr>
       <tr><td>Bayes Demand</td><td>${methodMetrics.bayes.toFixed(1)}</td><td>Demand intensity score</td></tr>
@@ -1010,7 +1064,13 @@ function buildBusinessPlanHtml(){
       <tr><td>MILP Feasibility</td><td>${methodMetrics.milp.toFixed(1)}</td><td>Budget allocation fit</td></tr>
     </table>
 
-    <h2>Financial Breakdown</h2>
+    <h2>5. Marketing & Sales Strategy</h2>
+    <p>Channel mix menggabungkan digital paid ads, intent capture, KOL activation, dan community conversion dengan milestone 30 hari.</p>
+
+    <h2>6. Management & Operations</h2>
+    <p>Operasional didukung struktur divisi lintas fungsi, SOP, dan task list per department untuk menjaga eksekusi harian dan kontrol kualitas.</p>
+
+    <h2>7. Financial Projections</h2>
     <table>
       <tr><th>Component</th><th>Value</th></tr>
       <tr><td>Revenue</td><td>Rp ${(rev/1000000).toFixed(1)} JT</td></tr>
@@ -1020,6 +1080,9 @@ function buildBusinessPlanHtml(){
       <tr><td>Marketing (MMM+MILP)</td><td>Rp ${(marketing/1000000).toFixed(1)} JT</td></tr>
       <tr><td><strong>Profit</strong></td><td><strong>Rp ${(profit/1000000).toFixed(1)} JT</strong></td></tr>
     </table>
+
+    <h2>8. Appendix</h2>
+    <p>Method trace, asumsi finansial, opsi partner, dan lampiran riset pendukung.</p>
   </body></html>`;
 }
 
