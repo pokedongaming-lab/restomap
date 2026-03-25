@@ -4,6 +4,17 @@ Format versi yang dipakai:
 - `REV-YYYYMMDD-XX`
 - Contoh: `REV-20260325-01`
 
+## REV-20260325-39
+- Commit: `(pending)`
+- Scope: Fix akurasi label lokasi rekomendasi
+- Changes:
+  - Tambah `reverseGeocodeLabel(lat,lng)` untuk resolve alamat asli dari koordinat titik
+  - `findBestLocation()` kini resolve alamat real untuk hasil Top-N sebelum render marker/list
+  - Klik marker Top-N kini kirim nama alamat asli ke panel detail
+  - `selectLocation()` kini refresh nama lokasi dengan reverse geocode agar header sesuai titik aktual
+- Reason:
+  - Menangani mismatch antara titik rekomendasi dan alamat yang ditampilkan
+
 ## REV-20260325-38
 - Commit: `0ea8a40`
 - Scope: Batch C Results & Documents professionalization

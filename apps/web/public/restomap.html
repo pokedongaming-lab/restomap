@@ -682,6 +682,20 @@ function initMap() {
   console.log('Google Maps loaded');
 }
 
+function reverseGeocodeLabel(lat, lng, fallback = '') {
+  return new Promise((resolve) => {
+    if (!geocoder || !window.google?.maps?.Geocoder) return resolve(fallback || `${lat.toFixed(5)}, ${lng.toFixed(5)}`);
+    geocoder.geocode({ location: { lat, lng } }, (results, status) => {
+      if (status === 'OK' && results && results[0]) {
+        const addr = results[0].formatted_address || fallback;
+        resolve(addr || `${lat.toFixed(5)}, ${lng.toFixed(5)}`);
+      } else {
+        resolve(fallback || `${lat.toFixed(5)}, ${lng.toFixed(5)}`);
+      }
+    });
+  });
+}
+
 function selectLocation(lat, lng, name) {
   // Remove old marker
   if (marker) marker.setMap(null);
@@ -704,6 +718,14 @@ function selectLocation(lat, lng, name) {
   
   // Render analysis (API call)
   scheduleRenderAnalysis(lat, lng);
+
+  // Refresh name with real reverse geocode address
+  reverseGeocodeLabel(lat, lng, name).then((realAddress) => {
+    if (!selectedLoc) return;
+    selectedLoc.name = realAddress;
+    const ph = document.getElementById('phLoc');
+    if (ph) ph.textContent = realAddress.toUpperCase();
+  });
 }
 
 // ═══ ANALYSIS ═══
@@ -1202,7 +1224,7 @@ function initBrandSearch() {
   });
 }
 
-function findBestLocation() {
+async function findBestLocation() {
   const traffic = parseInt(document.getElementById('critTraffic').value);
   const buying = parseInt(document.getElementById('critBuying').value);
   const pop = parseInt(document.getElementById('critPop').value);
@@ -1235,6 +1257,11 @@ function findBestLocation() {
   const topN = parseInt(document.getElementById('topNSelect')?.value || '5', 10);
   const bestList = cityCandidates.sort((a,b) => b.fitScore - a.fitScore).slice(0, topN);
 
+  // Resolve real-world address labels for better match with map points
+  await Promise.all(bestList.map(async (loc) => {
+    loc.displayName = await reverseGeocodeLabel(loc.lat, loc.lng, `${loc.name}`);
+  }));
+
   // Clear previous best markers
   bestMarkers.forEach(m => m.setMap(null));
   bestMarkers = [];
@@ -1245,7 +1272,7 @@ function findBestLocation() {
       position: { lat: loc.lat, lng: loc.lng },
       map,
       label: { text: String(idx + 1), color: '#fff', fontWeight: '700' },
-      title: `${idx+1}. ${loc.name} (${loc.fitScore})`,
+      title: `${idx+1}. ${loc.displayName || loc.name} (${loc.fitScore})`,
       icon: {
         path: google.maps.SymbolPath.CIRCLE,
         scale: 9,
@@ -1255,7 +1282,7 @@ function findBestLocation() {
         strokeWeight: 2,
       },
     });
-    m.addListener('click', () => selectLocation(loc.lat, loc.lng, loc.name));
+    m.addListener('click', () => selectLocation(loc.lat, loc.lng, loc.displayName || loc.name));
     bestMarkers.push(m);
   });
 
@@ -1285,7 +1312,7 @@ function findBestLocation() {
   if (listEl) {
     listEl.innerHTML = bestList.map((l, i) => `
       <div style="background:var(--bg3);border:1px solid var(--b);padding:10px;margin-bottom:8px;border-radius:4px">
-        <div style="font-size:11px;color:${i===0?'var(--a)':'var(--t)'};margin-bottom:4px">#${i+1} ${l.name}</div>
+        <div style="font-size:11px;color:${i===0?'var(--a)':'var(--t)'};margin-bottom:4px">#${i+1} ${l.displayName || l.name}</div>
         <div style="font-size:9px;color:var(--t3);display:flex;gap:12px">
           <span>📊 Score ${l.fitScore}</span>
           <span>📍 ${l.lat.toFixed(4)}, ${l.lng.toFixed(4)}</span>
@@ -1294,7 +1321,7 @@ function findBestLocation() {
     `).join('');
   }
 
-  alert('Top ' + topN + ' lokasi terbaik di ' + city.name + ' berhasil dibuat.\n#1: ' + (best?.name || '-') + ' (Score ' + (best?.fitScore || '-') + ')');
+  alert('Top ' + topN + ' lokasi terbaik di ' + city.name + ' berhasil dibuat.\n#1: ' + (best?.displayName || best?.name || '-') + ' (Score ' + (best?.fitScore || '-') + ')');
 }
 
 function editAssumsi() {
