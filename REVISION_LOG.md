@@ -4,6 +4,17 @@ Format versi yang dipakai:
 - `REV-YYYYMMDD-XX`
 - Contoh: `REV-20260325-01`
 
+## REV-20260325-18
+- Commit: `(pending)`
+- Scope: Top-N visualization behavior
+- Changes:
+  - Untuk Top 3/Top 5, nonaktifkan auto-select titik #1
+  - Pertahankan mode multi-point (semua titik hasil tetap jadi fokus)
+  - Header panel menampilkan konteks `TOP N LOKASI`
+  - Marker merah detail hanya muncul saat mode Top 1 atau saat user klik salah satu titik bernomor
+- Reason:
+  - User melihat hasil seperti hanya 1 titik karena auto-select marker #1
+
 ## REV-20260325-17
 - Commit: `3f8564e`
 - Scope: Map readability (RestoMap)

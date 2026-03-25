@@ -1004,9 +1004,19 @@ function findBestLocation() {
     map.fitBounds(bounds, 80);
   }
 
-  // Auto-select best #1
+  // Auto-select only for Top 1. For Top 3/5 keep multi-point view.
   const best = bestList[0];
-  if (best) selectLocation(best.lat, best.lng, best.name);
+  if (best && topN === 1) {
+    selectLocation(best.lat, best.lng, best.name);
+  } else {
+    if (marker) { marker.setMap(null); marker = null; }
+    document.getElementById('panel').classList.add('open');
+    document.getElementById('phLoc').textContent = `TOP ${topN} LOKASI · ${city.name}`;
+    document.getElementById('phSub').textContent = 'Klik titik bernomor untuk detail lokasi';
+    document.getElementById('mapCoords').textContent = `CITY: ${city.name.toUpperCase()} · TOP ${topN}`;
+    document.getElementById('scoreValue').textContent = best ? best.fitScore : '—';
+    document.getElementById('scoreRating').textContent = 'RANKED RESULTS';
+  }
 
   // Show summary in competitors tab
   const listEl = document.getElementById('competitorList');
