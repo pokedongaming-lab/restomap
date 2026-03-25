@@ -4,6 +4,16 @@ Format versi yang dipakai:
 - `REV-YYYYMMDD-XX`
 - Contoh: `REV-20260325-01`
 
+## REV-20260325-45
+- Commit: `(pending)`
+- Scope: Tighten Manado water exclusion + snap to nearby valid POI/road
+- Changes:
+  - Perketat `coastGuard` Manado dengan batas longitude/latitude yang lebih sempit untuk menolak marker di bibir air
+  - `validatePoiRoadCandidate()` kini men-snap titik ke geometri road/POI terdekat yang valid, bukan hanya menganggap area sekitar valid
+  - Setelah snap, titik tetap dilewatkan lagi ke `applyCoastGuard()` agar tidak memantul balik ke area air
+- Reason:
+  - Menangani bukti visual terbaru bahwa marker #3 dan #4 masih jatuh di air meski sudah ada coastal guard generik
+
 ## REV-20260325-44
 - Commit: `e7491ce`
 - Scope: City-specific coastal exclusion guard

@@ -584,7 +584,7 @@ const CITY_PRESETS = {
   pekanbaru:{name:'Pekanbaru',lat:0.5071,lng:101.4478,inlandLat:0.4942,inlandLng:101.4252,coastGuard:null,hotspots:['Sudirman','Arengka','Panam','Riau Ujung']},
   yogyakarta:{name:'Yogyakarta',lat:-7.7956,lng:110.3695,inlandLat:-7.7828,inlandLng:110.3671,coastGuard:null,hotspots:['Malioboro','Gejayan','Seturan','Sleman City']},
   malang:{name:'Malang',lat:-7.9666,lng:112.6326,inlandLat:-7.9797,inlandLng:112.6304,coastGuard:null,hotspots:['Ijen','Soekarno Hatta','Dinoyo','Lowokwaru']},
-  manado:{name:'Manado',lat:1.4748,lng:124.8421,inlandLat:1.4915,inlandLng:124.8455,coastGuard:{minLng:124.8355},hotspots:['Boulevard','Megamas','Tikala','Malalayang']}
+  manado:{name:'Manado',lat:1.4748,lng:124.8421,inlandLat:1.4915,inlandLng:124.8455,coastGuard:{minLng:124.8468,maxLat:1.4888,minLat:1.4580},hotspots:['Boulevard','Megamas','Tikala','Malalayang']}
 };
 
 // ═══ STATE ═══
@@ -773,7 +773,21 @@ async function validatePoiRoadCandidate(loc) {
 
     const roadHit = roads.length > 0;
     const poiHit = poi.length > 0;
+    const roadNear = roads.some(r => {
+      const p = r.geometry?.location;
+      return p && distanceKm(cur.lat, cur.lng, p.lat(), p.lng()) <= 0.12;
+    });
+    const poiNear = poi.some(r => {
+      const p = r.geometry?.location;
+      return p && distanceKm(cur.lat, cur.lng, p.lat(), p.lng()) <= 0.18;
+    });
     if (roadHit || poiHit) {
+      const bestRef = [...roads, ...poi].find(r => r.geometry?.location)?.geometry?.location;
+      if (bestRef && (!roadNear || !poiNear)) {
+        cur.lat = bestRef.lat();
+        cur.lng = bestRef.lng();
+      }
+      cur = { ...cur, ...applyCoastGuard(cur.lat, cur.lng) };
       cur.poiValidated = true;
       cur.poiCount = poi.length;
       cur.roadCount = roads.length;
