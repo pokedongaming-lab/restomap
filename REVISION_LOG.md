@@ -5,7 +5,7 @@ Format versi yang dipakai:
 - Contoh: `REV-20260325-01`
 
 ## REV-20260326-08
-- Commit: `(pending)`
+- Commit: `83a71ff`
 - Scope: Batch Map Infra B.3
 - Changes:
   - Tambah color scaling yang lebih sinkron dengan skor regional
