@@ -4,6 +4,16 @@ Format versi yang dipakai:
 - `REV-YYYYMMDD-XX`
 - Contoh: `REV-20260325-01`
 
+## REV-20260326-10
+- Commit: `(pending)`
+- Scope: Batch Map Infra C — unify criteria and heatmap controls
+- Changes:
+  - Gabungkan konsep heatmap driver ke blok kriteria (hapus dependensi checkbox layer terpisah)
+  - `toggleHeatmap()` kini membaca langsung slider kriteria sebagai single source of truth
+  - Tambah listener slider agar heatmap update real-time saat kriteria berubah
+- Reason:
+  - Menghilangkan double info di sidebar kiri dan membuat kriteria langsung mengendalikan heatmap/Voronoi
+
 ## REV-20260326-09
 - Commit: `acceab4`
 - Scope: Batch Map Infra B.4

@@ -211,29 +211,8 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--t);font-f
     </div>
     
     <div class="sb-section">
-      <div class="sb-label" data-i18="lblHeatmap">🔥 HEATMAP</div>
-      <div class="sb-chips" style="margin-bottom:8px">
-        <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
-          <input type="checkbox" id="heatPop" onchange="toggleHeatmap()">
-          <span style="font-size:9px">👥 Populasi</span>
-        </label>
-        <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
-          <input type="checkbox" id="heatTraffic" onchange="toggleHeatmap()">
-          <span style="font-size:9px">🚗 Traffic</span>
-        </label>
-        <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
-          <input type="checkbox" id="heatIncome" onchange="toggleHeatmap()">
-          <span style="font-size:9px">💰 Income</span>
-        </label>
-        <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
-          <input type="checkbox" id="heatVoronoi" onchange="toggleHeatmap()">
-          <span style="font-size:9px">🧭 Voronoi</span>
-        </label>
-      </div>
-    </div>
-    
-    <div class="sb-section">
-      <div class="sb-label" data-i18="lblCriteria">🎯 KRITERIA LOKASI</div>
+      <div class="sb-label" data-i18="lblCriteria">🎯 KRITERIA LOKASI + HEATMAP</div>
+      <div style="font-size:9px;color:var(--t4);margin-bottom:8px">${'Slider aktif otomatis menjadi driver layer heatmap dan Voronoi, jadi tidak ada toggle terpisah.'}</div>
       <div style="margin-bottom:8px">
         <div id="lblCritTraffic" style="font-size:8px;color:var(--t4)">Traffic</div>
         <input type="range" class="sb-slider" id="critTraffic" min="0" max="100" value="70">
@@ -682,6 +661,7 @@ function initMap() {
   });
   
   geocoder = new google.maps.Geocoder();
+  initCriteriaHeatmapControls();
   
   // Click listener
   map.addListener('click', (e) => {
@@ -1455,10 +1435,10 @@ function getRegionalHeatColor(score) {
 
 function toggleHeatmap() {
   const layers = [];
-  const popOn = document.getElementById('heatPop').checked;
-  const trafficOn = document.getElementById('heatTraffic').checked;
-  const incomeOn = document.getElementById('heatIncome').checked;
-  const voronoiOn = document.getElementById('heatVoronoi').checked;
+  const popOn = parseInt(document.getElementById('critPop')?.value || '0', 10) > 0;
+  const trafficOn = parseInt(document.getElementById('critTraffic')?.value || '0', 10) > 0;
+  const incomeOn = parseInt(document.getElementById('critBuying')?.value || '0', 10) > 0;
+  const voronoiOn = parseInt(document.getElementById('critMainRoad')?.value || '0', 10) > 0 || parseInt(document.getElementById('critAltRoad')?.value || '0', 10) > 0;
 
   if (popOn) layers.push('👥 Populasi');
   if (trafficOn) layers.push('🚗 Traffic');
@@ -1685,6 +1665,17 @@ function initBrandSearch() {
     if (!q) return;
     currentCategory = q;
     if (selectedLoc) scheduleRenderAnalysis(selectedLoc.lat, selectedLoc.lng);
+  });
+}
+
+function initCriteriaHeatmapControls() {
+  ['critTraffic','critBuying','critPop','critMainRoad','critAltRoad'].forEach((id) => {
+    const el = document.getElementById(id);
+    if (!el || el.dataset.bound === '1') return;
+    el.dataset.bound = '1';
+    el.addEventListener('input', () => {
+      toggleHeatmap();
+    });
   });
 }
 
