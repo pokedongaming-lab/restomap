@@ -4,6 +4,18 @@ Format versi yang dipakai:
 - `REV-YYYYMMDD-XX`
 - Contoh: `REV-20260325-01`
 
+## REV-20260325-33
+- Commit: `(pending)`
+- Scope: Batch B.2 Menu Design AI generator
+- Changes:
+  - Tambah blueprint generator menu berdasarkan concept + avg check
+  - Auto-generate jumlah item per kategori dengan rentang harga realistis
+  - Tabel menu sekarang editable (nama, kategori, harga, COGS)
+  - Tambah KPI menu (category count, total items, price range)
+  - Simpan hasil ke `builderModel.menuDesign`
+- Reason:
+  - Menjalankan Batch B.2 sesuai arahan user (AI recommendation + generated menu structure/pricing)
+
 ## REV-20260325-32
 - Commit: `c8ea50e`
 - Scope: Batch B.1 Market Analysis infografis interaktif

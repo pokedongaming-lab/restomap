@@ -535,26 +535,101 @@ function renderStep2(body) {
   `;
 }
 
-// STEP 3: MENU DESIGN (AI)
+function getMenuBlueprint(concept, avgCheck){
+  if (concept === 'fastfood') return [
+    {cat:'Main', count:6, ratio:1.00, cogs:34},
+    {cat:'Side', count:5, ratio:0.55, cogs:32},
+    {cat:'Drink', count:6, ratio:0.40, cogs:24}
+  ];
+  if (concept === 'fine') return [
+    {cat:'Starter', count:5, ratio:0.70, cogs:36},
+    {cat:'Main', count:8, ratio:1.25, cogs:38},
+    {cat:'Dessert', count:5, ratio:0.80, cogs:33},
+    {cat:'Beverage', count:6, ratio:0.55, cogs:26}
+  ];
+  if (concept === 'coffee') return [
+    {cat:'Coffee', count:10, ratio:0.85, cogs:26},
+    {cat:'Non-Coffee', count:8, ratio:0.80, cogs:27},
+    {cat:'Food', count:8, ratio:0.95, cogs:34}
+  ];
+  return [
+    {cat:'Main', count:10, ratio:1.00, cogs:35},
+    {cat:'Drink', count:8, ratio:0.45, cogs:24},
+    {cat:'Snack', count:7, ratio:0.65, cogs:31}
+  ];
+}
+
+function generateMenuItems(){
+  const avg = restaurantData.avgCheck || 35000;
+  const bp = getMenuBlueprint(restaurantData.concept, avg);
+  const items = [];
+  bp.forEach((b) => {
+    for (let i=1;i<=b.count;i++) {
+      const price = Math.round((avg * b.ratio) / 1000) * 1000 + (i%3)*1000;
+      items.push({
+        name: `${b.cat} ${i}`,
+        cat: b.cat,
+        price,
+        cogs: b.cogs
+      });
+    }
+  });
+  restaurantData.menuItems = items;
+}
+
 function renderStep3(body) {
+  if (!restaurantData.menuItems || restaurantData.menuItems.length === 0) generateMenuItems();
+
+  const byCat = restaurantData.menuItems.reduce((acc, x) => {
+    acc[x.cat] = (acc[x.cat] || 0) + 1;
+    return acc;
+  }, {});
+  const priceMin = Math.min(...restaurantData.menuItems.map(x => x.price));
+  const priceMax = Math.max(...restaurantData.menuItems.map(x => x.price));
+
+  builderModel.menuDesign = {
+    concept: restaurantData.concept,
+    avgCheck: restaurantData.avgCheck,
+    categoryCount: Object.keys(byCat).length,
+    itemCount: restaurantData.menuItems.length,
+    priceMin,
+    priceMax,
+    byCategory: byCat,
+    items: restaurantData.menuItems
+  };
+
+  const rows = restaurantData.menuItems.map((it, idx) => `
+    <tr>
+      <td><input value="${it.name}" onchange="restaurantData.menuItems[${idx}].name=this.value"></td>
+      <td><input value="${it.cat}" onchange="restaurantData.menuItems[${idx}].cat=this.value"></td>
+      <td><input type="number" value="${it.price}" onchange="restaurantData.menuItems[${idx}].price=parseInt(this.value)||0"></td>
+      <td><input type="number" value="${it.cogs}" onchange="restaurantData.menuItems[${idx}].cogs=parseInt(this.value)||0"></td>
+    </tr>
+  `).join('');
+
   body.innerHTML = `
-    <div class="section-title">☕ MENU (AI GENERATED)</div>
+    <div class="metrics-grid">
+      <div class="metric-box"><div class="mb-label">${BL('MENU CATEGORIES','MENU CATEGORIES')}</div><div class="mb-val">${Object.keys(byCat).length}</div></div>
+      <div class="metric-box"><div class="mb-label">${BL('TOTAL ITEMS','TOTAL ITEMS')}</div><div class="mb-val">${restaurantData.menuItems.length}</div></div>
+      <div class="metric-box"><div class="mb-label">${BL('PRICE RANGE','PRICE RANGE')}</div><div class="mb-val">Rp ${(priceMin/1000).toFixed(0)}K - ${(priceMax/1000).toFixed(0)}K</div></div>
+    </div>
+
+    <div class="section-title">☕ ${BL('MENU (AI GENERATED)','MENU (AI GENERATED)')}</div>
     <table class="menu-table">
       <tr><th>${BL('Nama','Name')}</th><th>${BL('Kat','Cat')}</th><th>${BL('Harga','Price')}</th><th>COGS%</th></tr>
-      <tr><td><input placeholder="Espresso"></td><td><select><option>Coffee</option></select></td><td><input type="number" value="25000"></td><td><input type="number" value="30"></td></tr>
-      <tr><td><input placeholder="Latte"></td><td><select><option>Coffee</option></select></td><td><input type="number" value="35000"></td><td><input type="number" value="25"></td></tr>
-      <tr><td><input placeholder="Croissant"></td><td><select><option>Food</option></select></td><td><input type="number" value="28000"></td><td><input type="number" value="35"></td></tr>
+      ${rows}
     </table>
-    <button class="btn-add">+ ${BL('TAMBAH ITEM','ADD ITEM')}</button>
+    <button class="btn-add" onclick="restaurantData.menuItems.push({name:'New Item',cat:'Main',price:30000,cogs:35}); renderStep()">+ ${BL('TAMBAH ITEM','ADD ITEM')}</button>
+
     <div class="ai-box">
       <div class="ai-title">🤖 ${BL('AI MENU RECOMMENDATION','AI MENU RECOMMENDATION')}</div>
       <div class="ai-content">
-        Based on avg check <strong>Rp ${(restaurantData.avgCheck/1000).toFixed(0)}K</strong>:<br>
-        • Best sellers: Espresso, Latte, Cold Brew<br>
-        • Price range: Rp 25K - 45K<br>
-        • Food: 30% of offering
+        ${BL('Konsep','Concept')}: <strong>${restaurantData.concept}</strong><br>
+        Avg Check: <strong>Rp ${(restaurantData.avgCheck/1000).toFixed(0)}K</strong><br>
+        ${BL('Komposisi kategori','Category mix')}: <strong>${Object.entries(byCat).map(([k,v]) => `${k}(${v})`).join(', ')}</strong><br>
+        ${BL('Range harga ideal','Ideal price range')}: <strong>Rp ${(priceMin/1000).toFixed(0)}K - ${(priceMax/1000).toFixed(0)}K</strong>
       </div>
-      <button class="ai-btn">🎲 GENERATE AI MENU</button>
+      <button class="ai-btn" onclick="generateMenuItems(); renderStep()">🎲 ${BL('GENERATE ULANG MENU AI','REGENERATE AI MENU')}</button>
     </div>
     <button class="btn-nav" onclick="nextStep()">${BL('LANJUT KE SPACE →','CONTINUE TO SPACE →')}</button>
   `;
