@@ -4,6 +4,18 @@ Format versi yang dipakai:
 - `REV-YYYYMMDD-XX`
 - Contoh: `REV-20260325-01`
 
+## REV-20260325-22
+- Commit: `(pending)`
+- Scope: Realistic financial formulas (RestoMap)
+- Changes:
+  - Formula revenue/breakeven/margin diganti ke model operasional realistis
+  - Hitung revenue dari seats × turnover × occupancy × avg check (per kategori)
+  - Opex berbasis COGS + labor + rent + marketing (dengan city rent factor)
+  - Break-even dihitung dari CAPEX / monthly profit (fallback `>36 bln` saat profit negatif/rendah)
+  - Score akhir mempertimbangkan demand index vs competition pressure
+- Reason:
+  - Permintaan user agar metrik finansial lebih realistis sesuai riset & konsep restoran
+
 ## REV-20260325-21
 - Commit: `6442a27`
 - Scope: Competitor intelligence report

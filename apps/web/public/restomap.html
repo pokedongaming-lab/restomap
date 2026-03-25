@@ -734,18 +734,56 @@ async function renderAnalysis(lat, lng) {
       }
     };
     
-    // Calculate score from factors
-    const score = factors ? Math.round((factors.population * 0.25 + factors.income * 0.25 + factors.traffic * 0.3 + (100 - factors.competition) * 0.2)) : 75;
-    
-    // Revenue estimate based on score
-    const revM = Math.round(score * 6.5 * 1000000); // rupiah per month
-    
+    // Realistic business model inputs (by concept/category)
+    const categoryCfg = {
+      coffee_shop:{seats:38,turnover:2.6,avgCheck:42000,cogs:0.34},
+      cafe:{seats:40,turnover:2.3,avgCheck:45000,cogs:0.34},
+      fast_food_restaurant:{seats:56,turnover:3.4,avgCheck:38000,cogs:0.36},
+      japanese_restaurant:{seats:48,turnover:2.1,avgCheck:78000,cogs:0.37},
+      korean_restaurant:{seats:46,turnover:2.0,avgCheck:73000,cogs:0.37},
+      chinese_restaurant:{seats:52,turnover:2.2,avgCheck:68000,cogs:0.38},
+      steak_house:{seats:44,turnover:1.8,avgCheck:125000,cogs:0.39},
+      seafood_restaurant:{seats:50,turnover:2.0,avgCheck:98000,cogs:0.40},
+      vegetarian_restaurant:{seats:36,turnover:2.0,avgCheck:62000,cogs:0.33},
+      bakery:{seats:28,turnover:2.8,avgCheck:36000,cogs:0.31},
+      dessert_shop:{seats:30,turnover:2.5,avgCheck:34000,cogs:0.32},
+      noodle_shop:{seats:44,turnover:2.9,avgCheck:39000,cogs:0.35},
+      restaurant:{seats:48,turnover:2.2,avgCheck:65000,cogs:0.37},
+      default:{seats:42,turnover:2.2,avgCheck:55000,cogs:0.36}
+    };
+    const cfg = categoryCfg[currentCategory] || categoryCfg.default;
+
+    const demandIdx = factors ? Math.round(factors.population * 0.28 + factors.income * 0.30 + factors.traffic * 0.22 + bayesDemand * 0.20) : bayesDemand;
+    const competitionPenalty = ((competitors?.length || 0) * 1.1) + (factors ? factors.competition * 0.25 : 12) + (cannibalPct * 0.8);
+    const occupancy = Math.max(0.35, Math.min(0.92, (demandIdx / 120) - (competitionPenalty / 220) + 0.22));
+
+    const monthlyCovers = Math.round(cfg.seats * cfg.turnover * 30 * occupancy);
+    const revM = Math.round(monthlyCovers * cfg.avgCheck);
+
+    const cityRentFactor = {
+      jakarta:1.25,surabaya:1.0,bandung:0.95,medan:0.9,semarang:0.88,makassar:0.92,palembang:0.85,
+      batam:0.93,denpasar:1.05,balikpapan:1.0,samarinda:0.9,pontianak:0.85,banjarmasin:0.84,
+      pekanbaru:0.88,yogyakarta:0.9,malang:0.86,manado:0.87
+    };
+    const rent = Math.round((22000000 + cfg.seats * 180000) * (cityRentFactor[currentCityKey] || 0.9));
+    const labor = Math.round(revM * 0.18 + 9000000);
+    const cogs = Math.round(revM * cfg.cogs);
+    const marketing = Math.round(revM * 0.06);
+    const opex = cogs + labor + rent + marketing;
+    const profit = revM - opex;
+    const marginPct = revM > 0 ? (profit / revM) * 100 : 0;
+
+    const setupCapex = Math.round(320000000 + cfg.seats * 4500000);
+    const breakEvenMonths = profit > 0 ? Math.ceil(setupCapex / profit) : null;
+
+    const score = Math.max(1, Math.min(100, Math.round(demandIdx * 0.62 + (100 - Math.min(100, competitionPenalty)) * 0.38)));
+
     // Update overview
     document.getElementById('scoreValue').textContent = score;
     document.getElementById('scoreRating').textContent = score >= 80 ? 'EXCELLENT' : score >= 65 ? 'GOOD' : 'MODERATE';
     document.getElementById('revMonth').textContent = 'Rp ' + (revM / 1000000).toFixed(1) + 'JT';
-    document.getElementById('breakEven').textContent = Math.round(18 - (score / 10)) + ' bln';
-    document.getElementById('marginVal').textContent = (15 + (score / 20)).toFixed(1) + '%';
+    document.getElementById('breakEven').textContent = breakEvenMonths ? `${breakEvenMonths} bln` : '>36 bln';
+    document.getElementById('marginVal').textContent = marginPct.toFixed(1) + '%';
     document.getElementById('competitorCount').textContent = (competitors?.length || 0) + ' ' + tt('competitorsUnit');
     
     // Update panel header
@@ -778,8 +816,8 @@ async function renderAnalysis(lat, lng) {
       <div style="font-size:9px;color:var(--t3);line-height:1.8;">
         <div>📊 Skor: <strong style="color:var(--a)">${score}/100</strong></div>
         <div>💰 Revenue: <strong>Rp ${revM.toLocaleString()}/bln</strong></div>
-        <div>⏱️ Break-even: <strong>${Math.round(18 - (score / 10))} bulan</strong></div>
-        <div>📈 Margin: <strong style="color:var(--pos)">${(15 + (score / 20)).toFixed(1)}%</strong></div>
+        <div>⏱️ Break-even: <strong>${breakEvenMonths ? breakEvenMonths : '>36'} bulan</strong></div>
+        <div>📈 Margin: <strong style="color:${marginPct >= 0 ? 'var(--pos)' : 'var(--neg)'}">${marginPct.toFixed(1)}%</strong></div>
         <div>👥 Kompetitor: <strong>${competitors?.length || 0}</strong></div>
         ${factors ? `<div>🚗 Traffic: <strong>${factors.traffic}/100</strong></div>` : ''}
         ${factors ? `<div>💰 Income: <strong>${factors.income}/100</strong></div>` : ''}
