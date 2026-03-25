@@ -4,6 +4,17 @@ Format versi yang dipakai:
 - `REV-YYYYMMDD-XX`
 - Contoh: `REV-20260325-01`
 
+## REV-20260325-46
+- Commit: `(pending)`
+- Scope: De-overlap marker + road-aligned snapping
+- Changes:
+  - `validatePoiRoadCandidate()` kini memilih referensi jalan/POI berdasarkan geometri terdekat, bukan sekadar presence di sekitar
+  - Tambah `deconflictBestList()` untuk memisahkan marker Top-N yang terlalu berdekatan / saling numpuk
+  - Setelah deconflict, alamat marker di-resolve ulang agar label tetap sinkron dengan titik baru
+  - Sidebar kini menandai marker hasil pemisahan dengan status `Deconflicted`
+- Reason:
+  - Menangani kasus dua titik bertumpuk dan memastikan marker benar-benar menunjuk ke jalan/POI darat yang berbeda
+
 ## REV-20260325-45
 - Commit: `4232114`
 - Scope: Tighten Manado water exclusion + snap to nearby valid POI/road
