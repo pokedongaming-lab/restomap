@@ -165,7 +165,7 @@ const locationData = {
   lat: parseFloat(params.get('lat')) || -6.2088,
   lng: parseFloat(params.get('lng')) || 106.8234,
   radius: parseInt(params.get('radius')) || 1000,
-  category: params.get('category') || 'coffee',
+  category: params.get('category') || 'restaurant',
   score: parseInt(params.get('score')) || 75,
   revenue: parseInt(params.get('revenue')) || 487000000,
 };
@@ -190,6 +190,17 @@ const methodMetrics = {
   cannibal: parseFloat(params.get('cannibal')) || STANDARD_PARAMS.cannibal,
   mmm: parseFloat(params.get('mmm')) || STANDARD_PARAMS.mmm,
   milp: parseFloat(params.get('milp')) || STANDARD_PARAMS.milp,
+};
+
+const incomingAssumptions = {
+  seats: parseFloat(params.get('asSeats')) || null,
+  turnover: parseFloat(params.get('asTurnover')) || null,
+  avgCheck: parseFloat(params.get('asAvgCheck')) || null,
+  cogs: parseFloat(params.get('asCogs')) || null,
+  laborPct: parseFloat(params.get('asLaborPct')) || null,
+  marketingPct: parseFloat(params.get('asMarketingPct')) || null,
+  rentFactor: parseFloat(params.get('asRentFactor')) || null,
+  capex: parseFloat(params.get('asCapex')) || null,
 };
 
 document.getElementById('locationInfo').textContent = '📍 LOKASI: ' + locationData.city.toUpperCase() + ' (' + locationData.lat.toFixed(2) + ', ' + locationData.lng.toFixed(2) + ')';
@@ -263,14 +274,66 @@ const CATEGORY_TO_CUISINE = {
   vegetarian_restaurant: 'western'
 };
 
+const CUISINE_BY_CATEGORY = {
+  coffee_shop:['indonesian','western'],
+  cafe:['indonesian','western'],
+  fast_food_restaurant:['western','indonesian'],
+  indonesian_restaurant:['indonesian'],
+  japanese_restaurant:['japanese'],
+  korean_restaurant:['korean'],
+  chinese_restaurant:['chinese'],
+  seafood_restaurant:['western','indonesian'],
+  steak_house:['western'],
+  pizza_restaurant:['western'],
+  bakery:['western'],
+  dessert_shop:['western'],
+  noodle_shop:['indonesian','chinese'],
+  vegetarian_restaurant:['western','indonesian'],
+  restaurant:['indonesian','western','japanese','korean','chinese']
+};
+
+const DRINK_PRODUCT_DEFAULTS = {
+  coffee:['Espresso','Latte','Americano','Manual Brew'],
+  fastfood:['Soft Drink','Iced Tea','Mineral Water'],
+  casual:['Tea','Juice','Mineral Water'],
+  fine:['Mocktail','Tea Selection','Sparkling Water']
+};
+
+const conceptDefault = CATEGORY_TO_CONCEPT[locationData.category] || 'coffee';
 let restaurantData = {
-  concept: CATEGORY_TO_CONCEPT[locationData.category] || 'coffee',
+  concept: conceptDefault,
   cuisine: CATEGORY_TO_CUISINE[locationData.category] || 'indonesian',
-  name: '', seating: 30, avgCheck: 35000,
+  name: '', seating: incomingAssumptions.seats || 30, avgCheck: incomingAssumptions.avgCheck || 35000,
+  turnover: incomingAssumptions.turnover || 2.2,
+  assumptions: {
+    cogs: incomingAssumptions.cogs || 0.36,
+    laborPct: incomingAssumptions.laborPct || 0.18,
+    marketingPct: incomingAssumptions.marketingPct || 0.06,
+    rentFactor: incomingAssumptions.rentFactor || 1.0,
+    capex: incomingAssumptions.capex || 450000000
+  },
+  drinks: DRINK_PRODUCT_DEFAULTS[conceptDefault] || DRINK_PRODUCT_DEFAULTS.casual,
+  products: ['Dessert','Merchandise','Bundling Package'],
   menuItems: [], spaceArea: 80, kitchenArea: 25,
   staff: { gm: 1, chef: 2, server: 3 },
   salaries: { gm: 15000000, chef: 8000000, server: 4500000 },
   marketingBudget: 5000000, influencers: [],
+};
+
+let builderModel = {
+  source: {
+    location: locationData,
+    methods: methodMetrics,
+    assumptions: incomingAssumptions
+  },
+  conceptBasic: restaurantData,
+  marketAnalysis: {},
+  menuDesign: {},
+  spaceDesign: {},
+  operations: {},
+  launch: {},
+  financial: {},
+  output: {}
 };
 
 function renderSidebar() {
@@ -332,43 +395,60 @@ function goToStep(n) { currentStep = n; renderStep(); }
 
 // STEP 1: CONCEPT & BASIC
 function renderStep1(body) {
+  const cuisineOptions = CUISINE_BY_CATEGORY[locationData.category] || ['indonesian','western'];
+  const cuisineLabel = {indonesian:'Indonesian',western:'Western',japanese:'Japanese',korean:'Korean',chinese:'Chinese'};
+
   body.innerHTML = `
-    <div class="form-grid">
-      <div class="fg"><div class="fl">${BL('NAMA RESTORAN','RESTAURANT NAME')}</div><input class="fi" id="restoName" placeholder="${BL('Kedai Kopi Nusantara','Nusantara Coffee House')}" value="${restaurantData.name}" onchange="restaurantData.name=this.value"></div>
+    <div class="form-grid cols3">
       <div class="fg">
-        <div class="fl">${BL('KONSEP','CONCEPT')}</div>
+        <div class="fl">${BL('KATEGORI DARI RESTOMAP','CATEGORY FROM RESTOMAP')}</div>
+        <input class="fi" value="${locationData.category || 'restaurant'}" disabled>
+      </div>
+      <div class="fg"><div class="fl">${BL('NAMA RESTORAN','RESTAURANT NAME')}</div><input class="fi" id="restoName" placeholder="${BL('Kedai Kopi Nusantara','Nusantara Coffee House')}" value="${restaurantData.name}" onchange="restaurantData.name=this.value"></div>
+      <div class="fg"><div class="fl">${BL('KONSEP','CONCEPT')}</div>
         <select class="fi" onchange="restaurantData.concept=this.value">
           <option value="coffee" ${restaurantData.concept==='coffee'?'selected':''}>☕ Coffee & Cafe</option>
-          <option value="fastfood">🍔 Fast Food</option>
-          <option value="casual">🍽️ Casual Dining</option>
-          <option value="fine">🍷 Fine Dining</option>
+          <option value="fastfood" ${restaurantData.concept==='fastfood'?'selected':''}>🍔 Fast Food</option>
+          <option value="casual" ${restaurantData.concept==='casual'?'selected':''}>🍽️ Casual Dining</option>
+          <option value="fine" ${restaurantData.concept==='fine'?'selected':''}>🍷 Fine Dining</option>
+          <option value="cloud_kitchen" ${restaurantData.concept==='cloud_kitchen'?'selected':''}>🥡 Cloud Kitchen</option>
+          <option value="bakery" ${restaurantData.concept==='bakery'?'selected':''}>🥐 Bakery</option>
         </select>
       </div>
       <div class="fg">
         <div class="fl">${BL('JENIS MASAKAN','CUISINE TYPE')}</div>
         <select class="fi" onchange="restaurantData.cuisine=this.value">
-          <option value="indonesian" ${restaurantData.cuisine==='indonesian'?'selected':''}>Indonesian</option>
-          <option value="western" ${restaurantData.cuisine==='western'?'selected':''}>Western</option>
-          <option value="japanese" ${restaurantData.cuisine==='japanese'?'selected':''}>Japanese</option>
-          <option value="korean" ${restaurantData.cuisine==='korean'?'selected':''}>Korean</option>
-          <option value="chinese" ${restaurantData.cuisine==='chinese'?'selected':''}>Chinese</option>
+          ${cuisineOptions.map(c => `<option value="${c}" ${restaurantData.cuisine===c?'selected':''}>${cuisineLabel[c] || c}</option>`).join('')}
         </select>
       </div>
       <div class="fg"><div class="fl">${BL('KURSI','SEATS')}</div><input type="number" class="fi" value="${restaurantData.seating}" onchange="restaurantData.seating=parseInt(this.value)"></div>
-    </div>
-    <div class="section-title">💰 ${BL('AVG CHECK (DARI RESTOMAP)','AVG CHECK (FROM RESTOMAP)')}</div>
-    <div class="form-grid">
       <div class="fg"><div class="fl">AVG CHECK (RP)</div><input type="number" class="fi" value="${restaurantData.avgCheck}" onchange="restaurantData.avgCheck=parseInt(this.value)"></div>
     </div>
+
+    <div class="section-title">🥤 ${BL('MINUMAN & PRODUK TAMBAHAN','DRINKS & ADDITIONAL PRODUCTS')}</div>
+    <div class="form-grid">
+      <div class="fg"><div class="fl">${BL('Jenis Minuman (pisahkan koma)','Drink Types (comma separated)')}</div><input class="fi" value="${restaurantData.drinks.join(', ')}" onchange="restaurantData.drinks=this.value.split(',').map(x=>x.trim()).filter(Boolean)"></div>
+      <div class="fg"><div class="fl">${BL('Produk Lain (pisahkan koma)','Other Products (comma separated)')}</div><input class="fi" value="${restaurantData.products.join(', ')}" onchange="restaurantData.products=this.value.split(',').map(x=>x.trim()).filter(Boolean)"></div>
+    </div>
+
+    <div class="section-title">💰 ${BL('ASUMSI DARI RESTOMAP','ASSUMPTIONS FROM RESTOMAP')}</div>
+    <div class="form-grid cols3">
+      <div class="fg"><div class="fl">Turnover/day</div><input class="fi" value="${restaurantData.turnover}" onchange="restaurantData.turnover=parseFloat(this.value)||restaurantData.turnover"></div>
+      <div class="fg"><div class="fl">COGS %</div><input class="fi" value="${(restaurantData.assumptions.cogs*100).toFixed(1)}" onchange="restaurantData.assumptions.cogs=(parseFloat(this.value)||36)/100"></div>
+      <div class="fg"><div class="fl">Labor %</div><input class="fi" value="${(restaurantData.assumptions.laborPct*100).toFixed(1)}" onchange="restaurantData.assumptions.laborPct=(parseFloat(this.value)||18)/100"></div>
+    </div>
+
     <div class="ai-box">
-      <div class="ai-title">🤖 ${BL('AI - DARI DATA RESTOMAP','AI - FROM RESTOMAP DATA')}</div>
+      <div class="ai-title">🤖 ${BL('AI CONTEXT DARI RESTOMAP','AI CONTEXT FROM RESTOMAP')}</div>
       <div class="ai-content">
         📍 ${BL('Lokasi','Location')}: <strong>${locationData.city}</strong><br>
+        🧩 ${BL('Kategori','Category')}: <strong>${locationData.category || 'restaurant'}</strong><br>
         📊 Score: <strong style="color:var(--a)">${locationData.score}/100</strong><br>
-        💰 ${BL('Revenue potensial','Potential revenue')}: <strong>Rp ${(locationData.revenue/1000000).toFixed(0)}JT/${BL('bulan','month')}</strong>
+        💰 ${BL('Revenue potensial','Potential revenue')}: <strong>Rp ${(locationData.revenue/1000000).toFixed(0)}JT/${BL('bulan','month')}</strong><br>
+        🧠 Bayes: <strong>${methodMetrics.bayes.toFixed(1)}</strong> · HHI: <strong>${methodMetrics.hhi.toFixed(1)}</strong> · Voronoi: <strong>${methodMetrics.voronoi.toFixed(1)}</strong>
       </div>
     </div>
-    <button class="btn-nav" onclick="nextStep()">${BL('LANJUT →','NEXT →')}</button>
+    <button class="btn-nav" onclick="builderModel.conceptBasic={...restaurantData}; nextStep();">${BL('LANJUT →','NEXT →')}</button>
   `;
 }
 

@@ -4,6 +4,18 @@ Format versi yang dipakai:
 - `REV-YYYYMMDD-XX`
 - Contoh: `REV-20260325-01`
 
+## REV-20260325-31
+- Commit: `(pending)`
+- Scope: Batch A foundation sync
+- Changes:
+  - Sinkronisasi asumsi RestoMap -> RestoBuilder via query params (asSeats, asAvgCheck, turnover, COGS, labor, marketing, rent factor, CAPEX)
+  - Step 1 Concept & Basic diperkaya: kategori dari RestoMap, konsep lebih lengkap, cuisine adaptif by category
+  - Tambah input minuman & produk tambahan (upsell/cross-sell)
+  - Tambah AI context block yang menampilkan ringkasan metrik dari RestoMap (score, revenue, Bayes/HHI/Voronoi)
+  - Tambah unified `builderModel` sebagai fondasi data lintas step
+- Reason:
+  - Menjalankan Batch A (A1 + A2) agar data flow dan fondasi Builder lebih solid
+
 ## REV-20260325-30
 - Commit: `ad31012`
 - Scope: Step 4 refactor cleanup

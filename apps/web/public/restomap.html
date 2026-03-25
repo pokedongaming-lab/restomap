@@ -1400,7 +1400,15 @@ function goToBuilder() {
     voronoi: String(ms.voronoiGap ?? ''),
     cannibal: String(ms.cannibalPct ?? ''),
     mmm: String(ms.mmmEfficiency ?? ''),
-    milp: String(ms.milpFeasible ?? '')
+    milp: String(ms.milpFeasible ?? ''),
+    asSeats: String(assumptionOverrides?.seats ?? ''),
+    asTurnover: String(assumptionOverrides?.turnover ?? ''),
+    asAvgCheck: String(assumptionOverrides?.avgCheck ?? ''),
+    asCogs: String(assumptionOverrides?.cogs ?? ''),
+    asLaborPct: String(assumptionOverrides?.laborPct ?? ''),
+    asMarketingPct: String(assumptionOverrides?.marketingPct ?? ''),
+    asRentFactor: String(assumptionOverrides?.rentFactor ?? ''),
+    asCapex: String(assumptionOverrides?.capex ?? '')
   });
 
   window.location.href = 'restobuilder.html?' + q.toString();
