@@ -4,6 +4,17 @@ Format versi yang dipakai:
 - `REV-YYYYMMDD-XX`
 - Contoh: `REV-20260325-01`
 
+## REV-20260325-42
+- Commit: `(pending)`
+- Scope: Anti-pelabuhan / anti-pesisir untuk best-location
+- Changes:
+  - Tambah inland anchor per kota (`inlandLat`, `inlandLng`) agar kandidat Top-N dibangkitkan dari area darat inti, bukan pusat geometri yang bisa dekat pesisir
+  - Perluas deteksi area pesisir/pelabuhan (`port`, `dermaga`, `marina`, `waterfront`, dll)
+  - `adjustInlandIfNeeded()` diubah agar mengunci titik ke inland anchor + batas maksimum jarak dari anchor
+  - Hard fallback kini diarahkan ke inland anchor, bukan sekadar offset generik
+- Reason:
+  - Memastikan titik rekomendasi best location tidak lagi jatuh ke area pelabuhan/pesisir
+
 ## REV-20260325-41
 - Commit: `f32b54b`
 - Scope: Hard inland lock untuk titik rekomendasi

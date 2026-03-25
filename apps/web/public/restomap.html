@@ -568,23 +568,23 @@ const TYPE_STATS = {
 };
 
 const CITY_PRESETS = {
-  jakarta:{name:'Jakarta',lat:-6.2088,lng:106.8456,hotspots:['Sudirman','Thamrin','SCBD','Kuningan']},
-  surabaya:{name:'Surabaya',lat:-7.2575,lng:112.7521,hotspots:['Tunjungan','Rungkut','Darmo','Pakuwon']},
-  bandung:{name:'Bandung',lat:-6.9175,lng:107.6191,hotspots:['Dago','Cihampelas','Braga','Setiabudi']},
-  medan:{name:'Medan',lat:3.5952,lng:98.6722,hotspots:['Kesawan','Setiabudi','Sunggal','Ringroad']},
-  semarang:{name:'Semarang',lat:-6.9667,lng:110.4167,hotspots:['Simpang Lima','Pandanaran','Tembalang','Banyumanik']},
-  makassar:{name:'Makassar',lat:-5.1477,lng:119.4327,hotspots:['Panakkukang','Losari','Alauddin','BTP']},
-  palembang:{name:'Palembang',lat:-2.9761,lng:104.7754,hotspots:['Ilir Barat','Sudirman','Plaju','Jakabaring']},
-  batam:{name:'Batam',lat:1.0456,lng:104.0305,hotspots:['Nagoya','Batam Center','Batu Aji','Sekupang']},
-  denpasar:{name:'Denpasar',lat:-8.6500,lng:115.2167,hotspots:['Renon','Teuku Umar','Sanur','Gatsu']},
-  balikpapan:{name:'Balikpapan',lat:-1.2379,lng:116.8529,hotspots:['Balikpapan Baru','Sepinggan','Klandasan','MT Haryono']},
-  samarinda:{name:'Samarinda',lat:-0.5022,lng:117.1536,hotspots:['Sungai Kunjang','Samarinda Ulu','Temindung','Loa Janan']},
-  pontianak:{name:'Pontianak',lat:-0.0263,lng:109.3425,hotspots:['Gajah Mada','Sutoyo','Ayani','Siantan']},
-  banjarmasin:{name:'Banjarmasin',lat:-3.3167,lng:114.5908,hotspots:['A Yani','Kayu Tangi','Gatot Subroto','Banjar Indah']},
-  pekanbaru:{name:'Pekanbaru',lat:0.5071,lng:101.4478,hotspots:['Sudirman','Arengka','Panam','Riau Ujung']},
-  yogyakarta:{name:'Yogyakarta',lat:-7.7956,lng:110.3695,hotspots:['Malioboro','Gejayan','Seturan','Sleman City']},
-  malang:{name:'Malang',lat:-7.9666,lng:112.6326,hotspots:['Ijen','Soekarno Hatta','Dinoyo','Lowokwaru']},
-  manado:{name:'Manado',lat:1.4748,lng:124.8421,hotspots:['Boulevard','Megamas','Tikala','Malalayang']}
+  jakarta:{name:'Jakarta',lat:-6.2088,lng:106.8456,inlandLat:-6.2146,inlandLng:106.8326,hotspots:['Sudirman','Thamrin','SCBD','Kuningan']},
+  surabaya:{name:'Surabaya',lat:-7.2575,lng:112.7521,inlandLat:-7.2810,inlandLng:112.7398,hotspots:['Tunjungan','Rungkut','Darmo','Pakuwon']},
+  bandung:{name:'Bandung',lat:-6.9175,lng:107.6191,inlandLat:-6.9034,inlandLng:107.6187,hotspots:['Dago','Cihampelas','Braga','Setiabudi']},
+  medan:{name:'Medan',lat:3.5952,lng:98.6722,inlandLat:3.5845,inlandLng:98.6758,hotspots:['Kesawan','Setiabudi','Sunggal','Ringroad']},
+  semarang:{name:'Semarang',lat:-6.9667,lng:110.4167,inlandLat:-6.9893,inlandLng:110.4227,hotspots:['Simpang Lima','Pandanaran','Tembalang','Banyumanik']},
+  makassar:{name:'Makassar',lat:-5.1477,lng:119.4327,inlandLat:-5.1595,inlandLng:119.4487,hotspots:['Panakkukang','Losari','Alauddin','BTP']},
+  palembang:{name:'Palembang',lat:-2.9761,lng:104.7754,inlandLat:-2.9909,inlandLng:104.7481,hotspots:['Ilir Barat','Sudirman','Plaju','Jakabaring']},
+  batam:{name:'Batam',lat:1.0456,lng:104.0305,inlandLat:1.1113,inlandLng:104.0482,hotspots:['Nagoya','Batam Center','Batu Aji','Sekupang']},
+  denpasar:{name:'Denpasar',lat:-8.6500,lng:115.2167,inlandLat:-8.6705,inlandLng:115.2239,hotspots:['Renon','Teuku Umar','Sanur','Gatsu']},
+  balikpapan:{name:'Balikpapan',lat:-1.2379,lng:116.8529,inlandLat:-1.2572,inlandLng:116.8729,hotspots:['Balikpapan Baru','Sepinggan','Klandasan','MT Haryono']},
+  samarinda:{name:'Samarinda',lat:-0.5022,lng:117.1536,inlandLat:-0.4948,inlandLng:117.1457,hotspots:['Sungai Kunjang','Samarinda Ulu','Temindung','Loa Janan']},
+  pontianak:{name:'Pontianak',lat:-0.0263,lng:109.3425,inlandLat:-0.0411,inlandLng:109.3415,hotspots:['Gajah Mada','Sutoyo','Ayani','Siantan']},
+  banjarmasin:{name:'Banjarmasin',lat:-3.3167,lng:114.5908,inlandLat:-3.3278,inlandLng:114.6052,hotspots:['A Yani','Kayu Tangi','Gatot Subroto','Banjar Indah']},
+  pekanbaru:{name:'Pekanbaru',lat:0.5071,lng:101.4478,inlandLat:0.4942,inlandLng:101.4252,hotspots:['Sudirman','Arengka','Panam','Riau Ujung']},
+  yogyakarta:{name:'Yogyakarta',lat:-7.7956,lng:110.3695,inlandLat:-7.7828,inlandLng:110.3671,hotspots:['Malioboro','Gejayan','Seturan','Sleman City']},
+  malang:{name:'Malang',lat:-7.9666,lng:112.6326,inlandLat:-7.9797,inlandLng:112.6304,hotspots:['Ijen','Soekarno Hatta','Dinoyo','Lowokwaru']},
+  manado:{name:'Manado',lat:1.4748,lng:124.8421,inlandLat:1.4915,inlandLng:124.8455,hotspots:['Boulevard','Megamas','Tikala','Malalayang']}
 };
 
 // ═══ STATE ═══
@@ -700,31 +700,52 @@ function reverseGeocodeLabel(lat, lng, fallback = '') {
 
 function isSeaLikeAddress(addr = '') {
   const s = String(addr || '').toLowerCase();
-  return ['laut','sea','teluk','bay','pelabuhan','harbor','pantai'].some(k => s.includes(k));
+  return ['laut','sea','teluk','bay','pelabuhan','harbor','pantai','port','dermaga','coastal','waterfront','marina'].some(k => s.includes(k));
+}
+
+function getCityInlandAnchor() {
+  const city = CITY_PRESETS[currentCityKey] || CITY_PRESETS.jakarta;
+  return {
+    lat: city.inlandLat || city.lat,
+    lng: city.inlandLng || city.lng,
+  };
+}
+
+function distanceKm(aLat, aLng, bLat, bLng) {
+  const toRad = (d) => d * Math.PI / 180;
+  const R = 6371;
+  const dLat = toRad(bLat - aLat);
+  const dLng = toRad(bLng - aLng);
+  const x = Math.sin(dLat/2) ** 2 + Math.cos(toRad(aLat)) * Math.cos(toRad(bLat)) * Math.sin(dLng/2) ** 2;
+  return 2 * R * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
 }
 
 async function adjustInlandIfNeeded(loc) {
   const city = CITY_PRESETS[currentCityKey] || CITY_PRESETS.jakarta;
+  const anchor = getCityInlandAnchor();
 
   let curLat = loc.lat;
   let curLng = loc.lng;
   let addr = await reverseGeocodeLabel(curLat, curLng, loc.name);
-  if (!isSeaLikeAddress(addr)) {
+  const tooCloseToCoastProxy = distanceKm(curLat, curLng, anchor.lat, anchor.lng) > 3.8;
+
+  if (!isSeaLikeAddress(addr) && !tooCloseToCoastProxy) {
     loc.displayName = addr;
     return loc;
   }
 
-  // Iterative inland snap: move step-by-step toward city center until address is no longer sea-like
-  for (let i = 0; i < 10; i++) {
-    const towardCenterLat = (city.lat - curLat) * 0.28;
-    const towardCenterLng = (city.lng - curLng) * 0.28;
-    const lateral = (i % 2 === 0 ? 1 : -1) * 0.00035 * (1 + i * 0.05);
+  // Force move toward inland anchor, not generic city center.
+  for (let i = 0; i < 14; i++) {
+    const towardAnchorLat = (anchor.lat - curLat) * 0.34;
+    const towardAnchorLng = (anchor.lng - curLng) * 0.34;
+    const lateral = (i % 2 === 0 ? 1 : -1) * 0.00022 * (1 + i * 0.06);
 
-    curLat = curLat + towardCenterLat + lateral;
-    curLng = curLng + towardCenterLng + (lateral * 0.4);
+    curLat = curLat + towardAnchorLat + lateral;
+    curLng = curLng + towardAnchorLng + (lateral * 0.35);
 
     addr = await reverseGeocodeLabel(curLat, curLng, loc.name);
-    if (!isSeaLikeAddress(addr)) {
+    const farFromAnchor = distanceKm(curLat, curLng, anchor.lat, anchor.lng) > 3.8;
+    if (!isSeaLikeAddress(addr) && !farFromAnchor) {
       loc.lat = curLat;
       loc.lng = curLng;
       loc.displayName = addr;
@@ -732,9 +753,9 @@ async function adjustInlandIfNeeded(loc) {
     }
   }
 
-  // Hard fallback to guaranteed inland near city core (to avoid any marker in sea)
-  const fallbackLat = city.lat + 0.0025;
-  const fallbackLng = city.lng + 0.0035;
+  // Hard fallback to guaranteed inland anchor area.
+  const fallbackLat = anchor.lat;
+  const fallbackLng = anchor.lng;
   const fallbackAddr = await reverseGeocodeLabel(fallbackLat, fallbackLng, `${city.name}`);
   loc.lat = fallbackLat;
   loc.lng = fallbackLng;
@@ -1308,11 +1329,12 @@ async function findBestLocation() {
   const altRoad = parseInt(document.getElementById('critAltRoad').value);
 
   const city = CITY_PRESETS[currentCityKey] || CITY_PRESETS.jakarta;
+  const anchor = getCityInlandAnchor();
   const types = ['cbd','premium','commercial','trendy','suburban'];
 
-  // Generate 12 city-local candidates
+  // Generate 12 city-local candidates around inland anchor to avoid coast/harbor bias
   const cityCandidates = Array.from({ length: 12 }).map((_, idx) => {
-    const ring = 0.008 + (idx % 4) * 0.006;
+    const ring = 0.005 + (idx % 4) * 0.0045;
     const ang = (idx / 12) * Math.PI * 2;
     const latJitter = Math.cos(ang) * ring;
     const lngJitter = Math.sin(ang) * ring;
@@ -1323,8 +1345,8 @@ async function findBestLocation() {
     return {
       id: `${currentCityKey}_${idx}`,
       name: `${city.hotspots[idx % city.hotspots.length]}, ${city.name}`,
-      lat: city.lat + latJitter,
-      lng: city.lng + lngJitter,
+      lat: anchor.lat + latJitter,
+      lng: anchor.lng + lngJitter,
       type,
       fitScore,
     };
