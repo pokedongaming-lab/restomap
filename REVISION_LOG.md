@@ -5,7 +5,7 @@ Format versi yang dipakai:
 - Contoh: `REV-20260325-01`
 
 ## REV-20260326-17
-- Commit: `(pending)`
+- Commit: `4f8d864`
 - Scope: Product Refactor 1 — phase 2
 - Changes:
   - Perkuat competitor retrieval dan klasifikasi direct/indirect agar lebih realistis
