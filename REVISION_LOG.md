@@ -4,6 +4,16 @@ Format versi yang dipakai:
 - `REV-YYYYMMDD-XX`
 - Contoh: `REV-20260325-01`
 
+## REV-20260326-09
+- Commit: `(pending)`
+- Scope: Batch Map Infra B.4
+- Changes:
+  - Sinkronkan regional heatmap dengan best-location scoring
+  - Tambah ranking wilayah pendukung rekomendasi (strongest/secondary/caution)
+  - Tampilkan hubungan antara region score dan titik rekomendasi
+- Reason:
+  - Melanjutkan Batch Map Infra B.4 agar heatmap bukan hanya visual, tapi ikut menjelaskan kenapa best-location dipilih
+
 ## REV-20260326-08
 - Commit: `83a71ff`
 - Scope: Batch Map Infra B.3

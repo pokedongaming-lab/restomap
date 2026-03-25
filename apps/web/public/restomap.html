@@ -1468,6 +1468,10 @@ function toggleHeatmap() {
   document.getElementById('activeLayers').textContent = layers.length > 0 ? layers.join(', ') : 'None';
   const heatEl = document.getElementById('heatmapContent');
   if (heatEl && (selectedLoc?.regionalHeatmap?.length || 0) > 0) {
+    const ranked = [...selectedLoc.regionalHeatmap].sort((a,b) => b.score - a.score);
+    const strongest = ranked[0];
+    const secondary = ranked[1];
+    const caution = ranked[ranked.length - 1];
     heatEl.innerHTML = `
       <div style="padding:10px;background:var(--bg3);border:1px solid var(--b);border-radius:6px;font-size:10px;color:var(--t3)">
         <div style="color:var(--a);font-size:9px;letter-spacing:1px;margin-bottom:8px">REGIONAL HEATMAP LEGEND</div>
@@ -1476,7 +1480,13 @@ function toggleHeatmap() {
           <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:#f59e0b;display:inline-block"></span> Medium</span>
           <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:#ef4444;display:inline-block"></span> Low</span>
         </div>
-        <div style="color:var(--t4)">${lang === 'id' ? 'Klik area di peta untuk melihat detail wilayah BPS-style.' : 'Click an area on the map to see BPS-style regional detail.'}</div>
+        <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--b)">
+          <div style="color:var(--a);font-size:9px;letter-spacing:1px;margin-bottom:6px">REGIONAL RANKING</div>
+          <div>🥇 Strongest: <strong>${strongest?.label || '-'}</strong> (${strongest?.score || '-'})</div>
+          <div>🥈 Secondary: <strong>${secondary?.label || '-'}</strong> (${secondary?.score || '-'})</div>
+          <div>⚠️ Caution: <strong>${caution?.label || '-'}</strong> (${caution?.score || '-'})</div>
+          <div style="margin-top:6px;color:var(--t4)">${lang === 'id' ? 'Region score ini dipakai sebagai konteks pendukung rekomendasi titik terbaik.' : 'These region scores are used as supporting context for best-location recommendations.'}</div>
+        </div>
       </div>`;
   }
 
@@ -1758,7 +1768,11 @@ async function findBestLocation() {
   finalDistanceLock(bestList);
   for (const loc of bestList) {
     loc.displayName = await reverseGeocodeLabel(loc.lat, loc.lng, loc.displayName || loc.name);
+    const strongestRegion = selectedLoc?.regionalHeatmap?.length ? [...selectedLoc.regionalHeatmap].sort((a,b) => b.score - a.score)[0] : null;
     loc.selectionReason = loc.selectionReason || `dekat frontage komersial, akses jalan lebih kuat, dan POI sekitar lebih aktif`;
+    if (strongestRegion) {
+      loc.selectionReason += `; didukung region ${strongestRegion.label} (score ${strongestRegion.score})`;
+    }
     loc.rankReason = `${lang === 'id' ? 'Dipilih karena' : 'Chosen because'} ${loc.selectionReason}`;
   }
   bestList.sort((a,b) => (b.candidateScore || b.streetPriority || b.fitScore) - (a.candidateScore || a.streetPriority || a.fitScore));
