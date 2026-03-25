@@ -851,12 +851,14 @@ function assignZoneBucket(loc) {
 
 function enforceZoneSpread(bestList) {
   const anchor = getCityInlandAnchor();
+  const radiusMeters = parseInt(document.getElementById('radiusSlider')?.value || String(currentRadius || 1000), 10);
+  const radiusScale = Math.max(1, Math.min(8, radiusMeters / 1000));
   const zoneTargets = {
-    N: { lat: anchor.lat + 0.0046, lng: anchor.lng + 0.0008 },
-    E: { lat: anchor.lat + 0.0012, lng: anchor.lng + 0.0048 },
-    S: { lat: anchor.lat - 0.0048, lng: anchor.lng + 0.0010 },
-    W: { lat: anchor.lat + 0.0008, lng: anchor.lng - 0.0046 },
-    C: { lat: anchor.lat, lng: anchor.lng + 0.0022 },
+    N: { lat: anchor.lat + 0.0046 * radiusScale, lng: anchor.lng + 0.0008 * radiusScale },
+    E: { lat: anchor.lat + 0.0012 * radiusScale, lng: anchor.lng + 0.0048 * radiusScale },
+    S: { lat: anchor.lat - 0.0048 * radiusScale, lng: anchor.lng + 0.0010 * radiusScale },
+    W: { lat: anchor.lat + 0.0008 * radiusScale, lng: anchor.lng - 0.0046 * radiusScale },
+    C: { lat: anchor.lat, lng: anchor.lng + 0.0022 * radiusScale },
   };
 
   const order = ['C','N','E','S','W'];
@@ -868,6 +870,35 @@ function enforceZoneSpread(bestList) {
     loc.zoneBucket = bucket;
     loc.zoneAdjusted = true;
   });
+  return bestList;
+}
+
+function finalDistanceLock(bestList) {
+  const radiusMeters = parseInt(document.getElementById('radiusSlider')?.value || String(currentRadius || 1000), 10);
+  const minKm = Math.max(0.35, Math.min(1.2, radiusMeters / 2200));
+  const anchor = getCityInlandAnchor();
+
+  for (let i = 0; i < bestList.length; i++) {
+    for (let j = i + 1; j < bestList.length; j++) {
+      const a = bestList[i];
+      const b = bestList[j];
+      const dist = distanceKm(a.lat, a.lng, b.lat, b.lng);
+      if (dist < minKm) {
+        const zoneTargets = {
+          C: { lat: anchor.lat, lng: anchor.lng + 0.0022 * (radiusMeters/1000) },
+          N: { lat: anchor.lat + 0.0054 * (radiusMeters/1000), lng: anchor.lng + 0.0009 * (radiusMeters/1000) },
+          E: { lat: anchor.lat + 0.0015 * (radiusMeters/1000), lng: anchor.lng + 0.0056 * (radiusMeters/1000) },
+          S: { lat: anchor.lat - 0.0056 * (radiusMeters/1000), lng: anchor.lng + 0.0012 * (radiusMeters/1000) },
+          W: { lat: anchor.lat + 0.0010 * (radiusMeters/1000), lng: anchor.lng - 0.0054 * (radiusMeters/1000) },
+        };
+        const zone = b.zoneBucket || ['C','N','E','S','W'][j % 5];
+        const moved = applyCoastGuard(zoneTargets[zone].lat, zoneTargets[zone].lng);
+        b.lat = moved.lat;
+        b.lng = moved.lng;
+        b.finalLocked = true;
+      }
+    }
+  }
   return bestList;
 }
 
@@ -1573,6 +1604,7 @@ async function findBestLocation() {
 
   deconflictBestList(bestList);
   enforceZoneSpread(bestList);
+  finalDistanceLock(bestList);
   for (const loc of bestList) {
     const validated = await validatePoiRoadCandidate(loc, usedRoadKeys);
     Object.assign(loc, validated);
@@ -1645,6 +1677,7 @@ async function findBestLocation() {
           <span>${l.poiFallback ? '🛟 Inland fallback' : (l.poiValidated ? '🛣️ POI/Road OK' : '🔎 Validating')}</span>
           <span>${l.deconflicted ? '↔️ Deconflicted' : ''}</span>
           <span>${l.zoneAdjusted ? '🧭 Zone spread ' + (l.zoneBucket || '') : ''}</span>
+          <span>${l.finalLocked ? '📏 Final distance lock' : ''}</span>
         </div>
         <div style="font-size:9px;color:var(--t4);margin-top:4px;line-height:1.6">${l.rankReason || ''}</div>
       </div>

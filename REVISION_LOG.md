@@ -4,6 +4,16 @@ Format versi yang dipakai:
 - `REV-YYYYMMDD-XX`
 - Contoh: `REV-20260325-01`
 
+## REV-20260325-56
+- Commit: `(pending)`
+- Scope: Final minimum-distance lock after all snapping
+- Changes:
+  - Tambah `finalDistanceLock()` yang menghitung minimum jarak akhir berdasarkan radius aktif
+  - Setelah zone spread, marker yang masih terlalu dekat dipaksa pindah lagi ke target zona masing-masing
+  - Status UI baru: `Final distance lock`
+- Reason:
+  - Screenshot terbaru menunjukkan titik akhir masih berdekatan setelah semua proses, jadi perlu hard lock di koordinat final, bukan hanya di source generation atau road uniqueness
+
 ## REV-20260325-55
 - Commit: `55120a7`
 - Scope: Make Top-N spread respond to radius
