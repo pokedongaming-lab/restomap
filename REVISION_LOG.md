@@ -5,7 +5,7 @@ Format versi yang dipakai:
 - Contoh: `REV-20260325-01`
 
 ## REV-20260325-57
-- Commit: `(pending)`
+- Commit: `48205f1`
 - Scope: Pin 1 hasil per zone tanpa resnap ke cluster yang sama
 - Changes:
   - Tambah `getPinnedZoneTargets()` dengan target zona final yang lebih jauh terpisah
