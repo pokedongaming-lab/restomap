@@ -5,7 +5,7 @@ Format versi yang dipakai:
 - Contoh: `REV-20260325-01`
 
 ## REV-20260325-56
-- Commit: `(pending)`
+- Commit: `2bdc28f`
 - Scope: Final minimum-distance lock after all snapping
 - Changes:
   - Tambah `finalDistanceLock()` yang menghitung minimum jarak akhir berdasarkan radius aktif
