@@ -5,7 +5,7 @@ Format versi yang dipakai:
 - Contoh: `REV-20260325-01`
 
 ## REV-20260325-42
-- Commit: `(pending)`
+- Commit: `ff6f69f`
 - Scope: Anti-pelabuhan / anti-pesisir untuk best-location
 - Changes:
   - Tambah inland anchor per kota (`inlandLat`, `inlandLng`) agar kandidat Top-N dibangkitkan dari area darat inti, bukan pusat geometri yang bisa dekat pesisir
