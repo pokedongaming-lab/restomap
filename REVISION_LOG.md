@@ -5,7 +5,7 @@ Format versi yang dipakai:
 - Contoh: `REV-20260325-01`
 
 ## REV-20260325-24
-- Commit: `(pending)`
+- Commit: `91a755e`
 - Scope: Editable financial assumptions
 - Changes:
   - Tambah tombol `✏️ Edit Asumsi` pada panel Asumsi Finansial
