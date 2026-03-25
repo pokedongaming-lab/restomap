@@ -591,6 +591,8 @@ const CITY_PRESETS = {
 let map, marker, geocoder;
 let selectedLoc = null;
 let bestMarkers = [];
+let bestMarkerPulseTimer = null;
+let bestMarkerSpotlightTimer = null;
 let heatmapCircles = [];
 let voronoiPolygons = [];
 let latestCompetitors = [];
@@ -694,6 +696,72 @@ function reverseGeocodeLabel(lat, lng, fallback = '') {
       }
     });
   });
+}
+
+function isSeaLikeAddress(addr = '') {
+  const s = String(addr || '').toLowerCase();
+  return ['laut','sea','teluk','bay','pelabuhan','harbor','pantai'].some(k => s.includes(k));
+}
+
+async function adjustInlandIfNeeded(loc) {
+  const firstAddr = await reverseGeocodeLabel(loc.lat, loc.lng, loc.name);
+  if (!isSeaLikeAddress(firstAddr)) {
+    loc.displayName = firstAddr;
+    return loc;
+  }
+
+  const nudges = [
+    { lat: 0.0012, lng: 0.0030 },
+    { lat: -0.0010, lng: 0.0035 },
+    { lat: 0.0020, lng: 0.0020 },
+    { lat: -0.0020, lng: 0.0025 },
+    { lat: 0.0005, lng: 0.0045 },
+  ];
+
+  for (const n of nudges) {
+    const nLat = loc.lat + n.lat;
+    const nLng = loc.lng + n.lng;
+    const a = await reverseGeocodeLabel(nLat, nLng, loc.name);
+    if (!isSeaLikeAddress(a)) {
+      loc.lat = nLat;
+      loc.lng = nLng;
+      loc.displayName = a;
+      return loc;
+    }
+  }
+
+  loc.displayName = firstAddr;
+  return loc;
+}
+
+function startBestMarkerAnimation() {
+  if (bestMarkerPulseTimer) clearInterval(bestMarkerPulseTimer);
+  if (bestMarkerSpotlightTimer) clearInterval(bestMarkerSpotlightTimer);
+  if (!bestMarkers.length) return;
+
+  let tick = 0;
+  bestMarkerPulseTimer = setInterval(() => {
+    tick++;
+    bestMarkers.forEach((m, idx) => {
+      const base = idx === 0 ? 10 : 8;
+      const wave = 1.6 * (1 + Math.sin((tick + idx * 2) / 2.2)) / 2;
+      const icon = m.getIcon();
+      if (icon && typeof icon === 'object') {
+        m.setIcon({ ...icon, scale: base + wave });
+      }
+    });
+  }, 320);
+
+  let i = 0;
+  bestMarkerSpotlightTimer = setInterval(() => {
+    bestMarkers.forEach(m => m.setAnimation(null));
+    const cur = bestMarkers[i % bestMarkers.length];
+    if (cur) {
+      cur.setAnimation(google.maps.Animation.BOUNCE);
+      setTimeout(() => cur.setAnimation(null), 700);
+    }
+    i++;
+  }, 900);
 }
 
 function selectLocation(lat, lng, name) {
@@ -1257,14 +1325,16 @@ async function findBestLocation() {
   const topN = parseInt(document.getElementById('topNSelect')?.value || '5', 10);
   const bestList = cityCandidates.sort((a,b) => b.fitScore - a.fitScore).slice(0, topN);
 
-  // Resolve real-world address labels for better match with map points
+  // Resolve real-world address labels and nudge inland if point is sea-like
   await Promise.all(bestList.map(async (loc) => {
-    loc.displayName = await reverseGeocodeLabel(loc.lat, loc.lng, `${loc.name}`);
+    await adjustInlandIfNeeded(loc);
   }));
 
   // Clear previous best markers
   bestMarkers.forEach(m => m.setMap(null));
   bestMarkers = [];
+  if (bestMarkerPulseTimer) { clearInterval(bestMarkerPulseTimer); bestMarkerPulseTimer = null; }
+  if (bestMarkerSpotlightTimer) { clearInterval(bestMarkerSpotlightTimer); bestMarkerSpotlightTimer = null; }
 
   // Draw top-N markers
   bestList.forEach((loc, idx) => {
@@ -1285,6 +1355,9 @@ async function findBestLocation() {
     m.addListener('click', () => selectLocation(loc.lat, loc.lng, loc.displayName || loc.name));
     bestMarkers.push(m);
   });
+
+  // Start marker animation for easier spotting labels
+  startBestMarkerAnimation();
 
   // Fit map to top-5 area
   if (bestList.length && map) {

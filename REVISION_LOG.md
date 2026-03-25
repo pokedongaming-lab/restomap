@@ -4,6 +4,17 @@ Format versi yang dipakai:
 - `REV-YYYYMMDD-XX`
 - Contoh: `REV-20260325-01`
 
+## REV-20260325-40
+- Commit: `(pending)`
+- Scope: Fix titik laut + animasi marker Top-N
+- Changes:
+  - Tambah deteksi alamat laut (`isSeaLikeAddress`) dari hasil reverse geocode
+  - Tambah penyesuaian koordinat ke daratan (`adjustInlandIfNeeded`) saat kandidat jatuh di area laut/pelabuhan
+  - Tambah animasi marker Top-N (`startBestMarkerAnimation`) dengan pulse + spotlight bounce supaya nomor mudah ditemukan
+  - Tambah cleanup timer animasi saat generate ulang titik rekomendasi
+- Reason:
+  - Menangani kasus titik rekomendasi jatuh di laut dan meningkatkan visibilitas nomor marker
+
 ## REV-20260325-39
 - Commit: `46ba321`
 - Scope: Fix akurasi label lokasi rekomendasi
