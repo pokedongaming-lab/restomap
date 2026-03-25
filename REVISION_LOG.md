@@ -4,6 +4,16 @@ Format versi yang dipakai:
 - `REV-YYYYMMDD-XX`
 - Contoh: `REV-20260325-01`
 
+## REV-20260325-27
+- Commit: `(pending)`
+- Scope: Ops quickstart documentation
+- Changes:
+  - Tambah `RUNBOOK_60S.md` untuk verifikasi operasional super cepat
+  - Checklist ringkas: web, builder, API, Top-N, heatmap
+  - Fast action jika fail (restart web/api)
+- Reason:
+  - Permintaan user untuk workflow bertahap, dimulai dari checklist 60 detik
+
 ## REV-20260325-26
 - Commit: `9381feb`
 - Scope: Finishing pass UX polish
