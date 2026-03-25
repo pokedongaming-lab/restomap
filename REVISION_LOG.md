@@ -5,7 +5,7 @@ Format versi yang dipakai:
 - Contoh: `REV-20260325-01`
 
 ## REV-20260325-41
-- Commit: `(pending)`
+- Commit: `f32b54b`
 - Scope: Hard inland lock untuk titik rekomendasi
 - Changes:
   - `adjustInlandIfNeeded` diubah menjadi iterative inland snap menuju city center (hingga 10 iterasi)
