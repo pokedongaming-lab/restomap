@@ -4,6 +4,17 @@ Format versi yang dipakai:
 - `REV-YYYYMMDD-XX`
 - Contoh: `REV-20260325-01`
 
+## REV-20260325-28
+- Commit: `(pending)`
+- Scope: Monitoring ringan
+- Changes:
+  - Tambah script `scripts/healthcheck-light.ps1`
+  - Cek 3 endpoint inti: restomap web, restobuilder web, API root
+  - Exit code standar (0 sehat, 2 gagal)
+  - Tambah panduan penggunaan di `MONITORING_LIGHT.md`
+- Reason:
+  - Menjalankan Step 2 workflow bertahap (monitoring ringan)
+
 ## REV-20260325-27
 - Commit: `10b6338`
 - Scope: Ops quickstart documentation
