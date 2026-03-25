@@ -5,7 +5,7 @@ Format versi yang dipakai:
 - Contoh: `REV-20260325-01`
 
 ## REV-20260325-30
-- Commit: `(pending)`
+- Commit: `ad31012`
 - Scope: Step 4 refactor cleanup
 - Changes:
   - Hapus data hotspot `LOCS` yang sudah tidak digunakan lagi
