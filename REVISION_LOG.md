@@ -5,7 +5,7 @@ Format versi yang dipakai:
 - Contoh: `REV-20260325-01`
 
 ## REV-20260325-48
-- Commit: `(pending)`
+- Commit: `56a2a9f`
 - Scope: Stabilize best-location button runtime
 - Changes:
   - Bungkus `findBestLocation()` dengan `try/catch` penuh
