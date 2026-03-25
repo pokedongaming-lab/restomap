@@ -926,6 +926,14 @@ async function validatePoiRoadCandidate(loc, usedRoadKeys = new Set()) {
       const altRoadWeight = cur.altRoadWeight || 50;
       const weightedCorridorBias = corridorBias + (isMainCorridor ? Math.round(mainRoadWeight * 0.12) : Math.round(altRoadWeight * 0.08));
       cur.candidateScore = scoreCommercialCandidate(cur.fitScore || 0, roads.length, poi.length, distFromAnchorKm, cur.bucket || cur.zoneBucket || 'C', weightedCorridorBias, overlapPenalty, mainRoadWeight, altRoadWeight);
+      cur.intelligenceBreakdown = {
+        baseFit: cur.fitScore || 0,
+        roadAccess: roads.length,
+        commercialActivity: poi.length,
+        corridorBias: weightedCorridorBias,
+        overlapPenalty,
+        zone: cur.bucket || cur.zoneBucket || 'C',
+      };
       const roadReason = mainRoadWeight >= altRoadWeight ? 'dekat koridor jalan utama' : 'dekat konektor jalan alternatif';
       cur.selectionReason = `${roadReason}, kelas jalan ${cur.roadClass || cur.preferredRoadClass || 'secondary'}, frontage ${roads.length > 0 ? 'kuat' : 'cukup'}, aktivitas komersial ${poi.length}, zoning ${cur.bucket || cur.zoneBucket || 'C'}, overlap ${overlapPenalty > 0 ? 'rendah dijaga' : 'rendah'}`;
       return cur;
@@ -1875,8 +1883,9 @@ async function findBestLocation() {
     const dominant = getDominantCriteriaDriver();
     const corridorReason = loc.roadClass === 'main' ? 'main corridor frontage' : 'secondary connector frontage';
     const voronoiReason = `Voronoi opportunity didorong ${dominant.key}`;
+    const competitorPressure = selectedLoc?.competitorIntel?.pressure || 'medium';
     loc.selectionReason = loc.selectionReason || `dekat frontage komersial, akses jalan lebih kuat, dan POI sekitar lebih aktif`;
-    loc.selectionReason = `${corridorReason}; ${loc.selectionReason}; ${voronoiReason}`;
+    loc.selectionReason = `${corridorReason}; ${loc.selectionReason}; ${voronoiReason}; competitor pressure ${competitorPressure}`;
     if (strongestRegion) {
       loc.selectionReason += `; didukung region ${strongestRegion.label} (score ${strongestRegion.score})`;
     }
@@ -1954,6 +1963,7 @@ async function findBestLocation() {
           <span>${l.noResnap ? '📌 Pinned zone' : ''}</span>
         </div>
         <div style="font-size:9px;color:var(--t4);margin-top:4px;line-height:1.6">${l.rankReason || ''}</div>
+        <div style="font-size:8px;color:var(--t4);margin-top:4px">Base ${l.intelligenceBreakdown?.baseFit ?? '-'} · Road ${l.intelligenceBreakdown?.roadAccess ?? '-'} · Activity ${l.intelligenceBreakdown?.commercialActivity ?? '-'} · Corridor ${l.intelligenceBreakdown?.corridorBias ?? '-'} · Zone ${l.intelligenceBreakdown?.zone ?? '-'}</div>
       </div>
     `).join('');
   }

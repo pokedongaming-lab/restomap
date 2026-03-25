@@ -4,6 +4,16 @@ Format versi yang dipakai:
 - `REV-YYYYMMDD-XX`
 - Contoh: `REV-20260325-01`
 
+## REV-20260326-21
+- Commit: `(pending)`
+- Scope: Product Refactor 2 — Best Location Intelligence Core (phase 1)
+- Changes:
+  - Satukan competitor engine, corridor, region, dan Voronoi ke best-location ranking core
+  - Tambah scoring summary yang lebih eksplisit untuk tiap kandidat best-location
+  - Siapkan fondasi ranking engine yang lebih locator-grade
+- Reason:
+  - Memulai Product Refactor 2 agar best-location tidak lagi bergantung pada patch terpisah, tetapi memakai intelligence core yang terpadu
+
 ## REV-20260326-20
 - Commit: `3fe0ce3`
 - Scope: Product Refactor 1 — phase 5
