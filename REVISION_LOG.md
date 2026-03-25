@@ -4,6 +4,15 @@ Format versi yang dipakai:
 - `REV-YYYYMMDD-XX`
 - Contoh: `REV-20260325-01`
 
+## REV-20260325-48
+- Commit: `(pending)`
+- Scope: Stabilize best-location button runtime
+- Changes:
+  - Bungkus `findBestLocation()` dengan `try/catch` penuh
+  - Tambah error surfacing via `console.error` + alert supaya runtime issue tidak lagi terlihat seperti tombol mati
+- Reason:
+  - Menindak bug terbaru saat tombol `Cari Lokasi Terbaik` tidak merespons dan menegakkan pola kerja analyze => plan => build => validate => debug => improve
+
 ## REV-20260325-47
 - Commit: `287f67f`
 - Scope: Street-priority ranking + alasan pemilihan

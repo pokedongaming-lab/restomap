@@ -1467,35 +1467,35 @@ function initBrandSearch() {
 }
 
 async function findBestLocation() {
-  const traffic = parseInt(document.getElementById('critTraffic').value);
-  const buying = parseInt(document.getElementById('critBuying').value);
-  const pop = parseInt(document.getElementById('critPop').value);
-  const mainRoad = parseInt(document.getElementById('critMainRoad').value);
-  const altRoad = parseInt(document.getElementById('critAltRoad').value);
+  try {
+    const traffic = parseInt(document.getElementById('critTraffic').value);
+    const buying = parseInt(document.getElementById('critBuying').value);
+    const pop = parseInt(document.getElementById('critPop').value);
+    const mainRoad = parseInt(document.getElementById('critMainRoad').value);
+    const altRoad = parseInt(document.getElementById('critAltRoad').value);
 
-  const city = CITY_PRESETS[currentCityKey] || CITY_PRESETS.jakarta;
-  const anchor = getCityInlandAnchor();
-  const types = ['cbd','premium','commercial','trendy','suburban'];
+    const city = CITY_PRESETS[currentCityKey] || CITY_PRESETS.jakarta;
+    const anchor = getCityInlandAnchor();
+    const types = ['cbd','premium','commercial','trendy','suburban'];
 
-  // Generate 12 city-local candidates around inland anchor to avoid coast/harbor bias
-  const cityCandidates = Array.from({ length: 12 }).map((_, idx) => {
-    const ring = 0.005 + (idx % 4) * 0.0045;
-    const ang = (idx / 12) * Math.PI * 2;
-    const latJitter = Math.cos(ang) * ring;
-    const lngJitter = Math.sin(ang) * ring;
-    const type = types[idx % types.length];
-    const base = TYPE_STATS[type]?.score || 60;
-    const roadFit = (type === 'cbd' || type === 'premium') ? (mainRoad * 0.6 + altRoad * 0.4) : (mainRoad * 0.4 + altRoad * 0.6);
-    const fitScore = Math.round(base * 0.55 + traffic * 0.15 + buying * 0.15 + pop * 0.10 + roadFit * 0.05);
-    return {
-      id: `${currentCityKey}_${idx}`,
-      name: `${city.hotspots[idx % city.hotspots.length]}, ${city.name}`,
-      ...applyCoastGuard(anchor.lat + latJitter, anchor.lng + lngJitter),
-      type,
-      fitScore,
-    };
-  });
-
+    // Generate 12 city-local candidates around inland anchor to avoid coast/harbor bias
+    const cityCandidates = Array.from({ length: 12 }).map((_, idx) => {
+      const ring = 0.005 + (idx % 4) * 0.0045;
+      const ang = (idx / 12) * Math.PI * 2;
+      const latJitter = Math.cos(ang) * ring;
+      const lngJitter = Math.sin(ang) * ring;
+      const type = types[idx % types.length];
+      const base = TYPE_STATS[type]?.score || 60;
+      const roadFit = (type === 'cbd' || type === 'premium') ? (mainRoad * 0.6 + altRoad * 0.4) : (mainRoad * 0.4 + altRoad * 0.6);
+      const fitScore = Math.round(base * 0.55 + traffic * 0.15 + buying * 0.15 + pop * 0.10 + roadFit * 0.05);
+      return {
+        id: `${currentCityKey}_${idx}`,
+        name: `${city.hotspots[idx % city.hotspots.length]}, ${city.name}`,
+        ...applyCoastGuard(anchor.lat + latJitter, anchor.lng + lngJitter),
+        type,
+        fitScore,
+      };
+    });
   const topN = parseInt(document.getElementById('topNSelect')?.value || '5', 10);
   const bestList = cityCandidates.sort((a,b) => b.fitScore - a.fitScore).slice(0, topN);
 
@@ -1583,7 +1583,11 @@ async function findBestLocation() {
     `).join('');
   }
 
-  alert('Top ' + topN + ' lokasi terbaik di ' + city.name + ' berhasil dibuat.\n#1: ' + (best?.displayName || best?.name || '-') + ' (Score ' + (best?.fitScore || '-') + ')');
+    alert('Top ' + topN + ' lokasi terbaik di ' + city.name + ' berhasil dibuat.\n#1: ' + (best?.displayName || best?.name || '-') + ' (Score ' + (best?.fitScore || '-') + ')');
+  } catch (err) {
+    console.error('findBestLocation failed', err);
+    alert('Cari lokasi terbaik gagal: ' + (err?.message || err));
+  }
 }
 
 function editAssumsi() {
