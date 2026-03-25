@@ -4,6 +4,16 @@ Format versi yang dipakai:
 - `REV-YYYYMMDD-XX`
 - Contoh: `REV-20260325-01`
 
+## REV-20260326-19
+- Commit: `(pending)`
+- Scope: Product Refactor 1 — phase 4
+- Changes:
+  - Integrasikan competitor intelligence ke best-location / SWOT / cannibalization severity
+  - Tambah pressure-aware adjustments ke recommendation reasoning
+  - Satukan competitor engine sebagai input keputusan, bukan hanya tab terpisah
+- Reason:
+  - Melanjutkan Product Refactor 1 agar competitor intelligence benar-benar menjadi engine keputusan lintas modul
+
 ## REV-20260326-18
 - Commit: `bfb69e4`
 - Scope: Product Refactor 1 — phase 3

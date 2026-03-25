@@ -1232,6 +1232,7 @@ async function renderAnalysis(lat, lng) {
       avgDistance: Math.round(avgCompetitorDistance),
       avgRating: Number(avgCompetitorRating.toFixed(1)),
       pressure: competitionCount >= 12 ? 'high' : competitionCount >= 6 ? 'medium' : 'low',
+      severity: competitionCount >= 14 ? 22 : competitionCount >= 8 ? 14 : competitionCount >= 4 ? 8 : 3,
     };
 
     selectedLoc = {
@@ -1306,7 +1307,7 @@ async function renderAnalysis(lat, lng) {
     const setupCapex = Math.round(capexBase);
     const breakEvenMonths = profit > 0 ? Math.ceil(setupCapex / profit) : null;
 
-    const score = Math.max(1, Math.min(100, Math.round(demandIdx * 0.62 + (100 - Math.min(100, competitionPenalty)) * 0.38)));
+    const score = Math.max(1, Math.min(100, Math.round(demandIdx * 0.62 + (100 - Math.min(100, competitionPenalty + competitorIntel.severity)) * 0.38)));
 
     // Update overview
     document.getElementById('scoreValue').textContent = score;
@@ -1374,6 +1375,7 @@ async function renderAnalysis(lat, lng) {
         <div style="margin-top:12px;padding:8px;background:var(--a3);border:1px solid var(--b);">
           <strong>🤖 AI Recommendation:</strong><br>
           Lokasi ${score >= 70 ? 'SANGAT BAGUS' : score >= 50 ? 'CUKUP BAGUS' : 'PERLU PERHATIAN'} untuk restoran.<br>
+          Competitor pressure: <strong>${competitorIntel.pressure}</strong> · Severity <strong>${competitorIntel.severity}</strong><br>
           ${categories?.[0] ? `Terbaik: <strong>${categories[0].category}</strong>` : ''}
         </div>
       </div>
