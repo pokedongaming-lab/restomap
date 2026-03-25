@@ -4,6 +4,16 @@ Format versi yang dipakai:
 - `REV-YYYYMMDD-XX`
 - Contoh: `REV-20260325-01`
 
+## REV-20260325-26
+- Commit: `(pending)`
+- Scope: Finishing pass UX polish
+- Changes:
+  - Rapikan tampilan Competitor Snapshot + SWOT (visual hierarchy lebih jelas)
+  - Perbaiki readability warna SWOT (S/W/O/T pakai warna berbeda)
+  - Tambah responsive tweak untuk layar 1366 ke bawah (sidebar/panel/tab lebih proporsional)
+- Reason:
+  - Menutup tahap finishing pass agar tampilan lebih rapi untuk presentasi
+
 ## REV-20260325-25
 - Commit: `a28ddcd`
 - Scope: Interactive assumptions modal

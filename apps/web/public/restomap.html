@@ -99,6 +99,13 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--t);font-f
 .th-matrix{--bg:#000500;--bg2:#000a00;--bg3:#001100;--panel:#000a00;--b:rgba(0,255,65,.14);--b2:rgba(0,255,65,.4);--a:#00FF41;--t:#00E676;--t3:rgba(0,230,118,.85);--t4:rgba(0,230,118,.52)}
 .th-arctic{--bg:#000B14;--bg2:#001122;--bg3:#001a2e;--panel:#001122;--b:rgba(0,229,255,.14);--b2:rgba(0,229,255,.4);--a:#00E5FF;--t:#80DEEA;--t3:rgba(128,222,234,.85);--t4:rgba(128,222,234,.52)}
 .th-ember{--bg:#0D0000;--bg2:#150000;--bg3:#220000;--panel:#150000;--b:rgba(255,61,0,.16);--b2:rgba(255,61,0,.42);--a:#FF3D00;--t:#FFAB91;--t3:rgba(255,171,145,.85);--t4:rgba(255,171,145,.52)}
+
+@media (max-width:1366px){
+  .sidebar{width:250px}
+  .panel.open{width:360px}
+  .tab{font-size:7px;padding:6px 3px}
+  .map-coords{font-size:8px}
+}
 </style>
 </head>
 <body>
@@ -981,10 +988,13 @@ function renderCompetitors(competitors) {
   `;
 
   listEl.innerHTML = `
-    <div style="padding:10px;background:var(--a3);border:1px solid var(--b);border-radius:4px;margin-bottom:12px;font-size:9px;color:var(--t3)">
-      <div><strong style="color:var(--a)">COMPETITOR SNAPSHOT</strong></div>
-      <div>Total: ${norm.length} · Direct: ${direct.length} · Indirect: ${indirect.length} · Replacement: ${replacement.length}</div>
-      <div>Avg Direct Rating: ${avgDirectRating}</div>
+    <div style="padding:10px;background:var(--a3);border:1px solid var(--b2);border-radius:6px;margin-bottom:12px;font-size:9px;color:var(--t3)">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
+        <strong style="color:var(--a)">COMPETITOR SNAPSHOT</strong>
+        <span style="font-size:8px;color:var(--t4)">Category: ${currentCategory || 'all'}</span>
+      </div>
+      <div style="margin-top:6px">Total: <strong>${norm.length}</strong> · Direct: <strong>${direct.length}</strong> · Indirect: <strong>${indirect.length}</strong> · Replacement: <strong>${replacement.length}</strong></div>
+      <div>Avg Direct Rating: <strong>${avgDirectRating}</strong></div>
     </div>
 
     ${renderSection('DIRECT COMPETITORS', direct)}
@@ -992,13 +1002,13 @@ function renderCompetitors(competitors) {
     ${renderSection('REPLACEMENT COMPETITORS', replacement)}
     ${potentialHtml}
 
-    <div style="margin-top:8px;padding:10px;background:var(--bg3);border:1px solid var(--b);border-radius:4px">
+    <div style="margin-top:8px;padding:10px;background:var(--bg3);border:1px solid var(--b);border-radius:6px">
       <div style="font-size:9px;color:var(--a);letter-spacing:1px;margin-bottom:6px">SWOT ANALYSIS (RINGKAS)</div>
-      <div style="font-size:9px;color:var(--t3);line-height:1.7">
-        <div><strong>S:</strong> ${swot.s}</div>
-        <div><strong>W:</strong> ${swot.w}</div>
-        <div><strong>O:</strong> ${swot.o}</div>
-        <div><strong>T:</strong> ${swot.t}</div>
+      <div style="font-size:9px;color:var(--t3);line-height:1.75">
+        <div><strong style="color:var(--pos)">S:</strong> ${swot.s}</div>
+        <div><strong style="color:#f59e0b">W:</strong> ${swot.w}</div>
+        <div><strong style="color:#60a5fa">O:</strong> ${swot.o}</div>
+        <div><strong style="color:var(--neg)">T:</strong> ${swot.t}</div>
       </div>
     </div>
   `;
