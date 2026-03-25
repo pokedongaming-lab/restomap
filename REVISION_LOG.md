@@ -5,7 +5,7 @@ Format versi yang dipakai:
 - Contoh: `REV-20260325-01`
 
 ## REV-20260325-15
-- Commit: `(pending)`
+- Commit: `1ec52ff`
 - Scope: Best-location UX overhaul (RestoMap)
 - Changes:
   - Hapus marker hotspot default hitam-oranye (predefined markers)
