@@ -5,7 +5,7 @@ Format versi yang dipakai:
 - Contoh: `REV-20260325-01`
 
 ## REV-20260325-49
-- Commit: `(pending)`
+- Commit: `b40be0c`
 - Scope: Fix runtime error BL undefined pada best-location
 - Changes:
   - Ganti pemakaian `BL(...)` yang tidak tersedia di `restomap.html` dengan conditional `lang === 'id' ? ... : ...`
