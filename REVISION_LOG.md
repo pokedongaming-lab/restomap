@@ -4,6 +4,16 @@ Format versi yang dipakai:
 - `REV-YYYYMMDD-XX`
 - Contoh: `REV-20260325-01`
 
+## REV-20260325-57
+- Commit: `(pending)`
+- Scope: Pin 1 hasil per zone tanpa resnap ke cluster yang sama
+- Changes:
+  - Tambah `getPinnedZoneTargets()` dengan target zona final yang lebih jauh terpisah
+  - `enforceZoneSpread()` kini menandai hasil sebagai `noResnap` / `Pinned zone`
+  - Tahap final tidak lagi memanggil road/POI resnap ulang; hanya reverse geocode label agar hasil tetap satu titik per zone dan tidak collapse ke cluster yang sama
+- Reason:
+  - Menjalankan arahan user secara eksplisit: pin 1 hasil per zone + tanpa resnap ke cluster yang sama
+
 ## REV-20260325-56
 - Commit: `2bdc28f`
 - Scope: Final minimum-distance lock after all snapping
