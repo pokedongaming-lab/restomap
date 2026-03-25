@@ -5,7 +5,7 @@ Format versi yang dipakai:
 - Contoh: `REV-20260325-01`
 
 ## REV-20260325-50
-- Commit: `(pending)`
+- Commit: `5d84bbe`
 - Scope: Stronger spatial separation for Top-N markers
 - Changes:
   - `deconflictBestList()` diperketat dengan minimum separation 0.35 km
