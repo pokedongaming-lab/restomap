@@ -5,7 +5,7 @@ Format versi yang dipakai:
 - Contoh: `REV-20260325-01`
 
 ## REV-20260325-46
-- Commit: `(pending)`
+- Commit: `62fe662`
 - Scope: De-overlap marker + road-aligned snapping
 - Changes:
   - `validatePoiRoadCandidate()` kini memilih referensi jalan/POI berdasarkan geometri terdekat, bukan sekadar presence di sekitar
