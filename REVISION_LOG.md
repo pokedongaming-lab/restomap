@@ -5,7 +5,7 @@ Format versi yang dipakai:
 - Contoh: `REV-20260325-01`
 
 ## REV-20260325-25
-- Commit: `(pending)`
+- Commit: `a28ddcd`
 - Scope: Interactive assumptions modal
 - Changes:
   - Ganti flow prompt beruntun menjadi modal form interaktif `Edit Asumsi`
