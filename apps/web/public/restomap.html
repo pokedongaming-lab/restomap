@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
-:root{--bg:#030303;--bg2:#0a0a0a;--bg3:#111;--panel:#0d0d0d;--b:rgba(255,109,0,.15);--b2:rgba(255,109,0,.38);--a:#FF6D00;--a2:#FF8F00;--a3:rgba(255,109,0,.07);--t:#FFB74D;--t2:#FFA726;--t3:rgba(255,183,77,.45);--t4:rgba(255,183,77,.15);--pos:#69F0AE;--neg:#FF5252;--info:#4DA6FF;}
+:root{--bg:#081018;--bg2:#101a25;--bg3:#162232;--panel:#132030;--b:rgba(255,109,0,.22);--b2:rgba(255,109,0,.45);--a:#FF6D00;--a2:#FF8F00;--a3:rgba(255,109,0,.10);--t:#FFD08A;--t2:#FFB14A;--t3:rgba(255,208,138,.86);--t4:rgba(255,208,138,.58);--pos:#69F0AE;--neg:#FF5252;--info:#4DA6FF;}
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--t);font-family:'Share Tech Mono',monospace;font-size:11px}
 .tb{display:flex;align-items:center;height:38px;background:var(--bg2);border-bottom:1px solid var(--b2)}
@@ -35,12 +35,13 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--t);font-f
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.12}}
 
 .app{display:flex;height:calc(100vh - 38px)}
-.sidebar{width:280px;background:var(--bg2);border-right:1px solid var(--b);display:flex;flex-direction:column;overflow-y:auto}
+.sidebar{width:280px;background:linear-gradient(180deg,#16283b 0%, #111f2f 55%, #0f1b29 100%);border-right:1px solid var(--b);display:flex;flex-direction:column;overflow-y:auto}
 .sb-section{padding:12px;border-bottom:1px solid var(--b)}
-.sb-label{font-size:8px;color:var(--t3);letter-spacing:1px;margin-bottom:6px}
+.sb-label{font-size:10px;color:var(--t2);letter-spacing:1px;margin-bottom:8px;font-weight:700;text-transform:uppercase}
 .sb-select,.sb-input{width:100%;background:var(--bg3);border:1px solid var(--b);color:var(--t);padding:8px;font-size:11px;font-family:inherit}
 .sb-slider{width:100%;accent-color:var(--a)}
-.sb-range{display:flex;justify-content:space-between;font-size:8px;color:var(--t4);margin-top:4px}
+.sb-range{display:flex;justify-content:space-between;font-size:9px;color:var(--t3);margin-top:4px}
+#lblCritTraffic,#lblCritBuying,#lblCritPop,#lblCritMain,#lblCritAlt{font-size:10px !important;color:var(--t3) !important;font-weight:600}
 .sb-btn{width:100%;padding:10px;background:var(--a);border:none;color:#000;font-size:10px;font-weight:bold;cursor:pointer;margin-top:8px}
 .sb-btn-outline{width:100%;padding:10px;background:var(--a3);border:1px solid var(--a);color:var(--a);font-size:10px;cursor:pointer;margin-top:6px}
 .sb-chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}

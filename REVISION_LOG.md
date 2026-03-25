@@ -4,6 +4,17 @@ Format versi yang dipakai:
 - `REV-YYYYMMDD-XX`
 - Contoh: `REV-20260325-01`
 
+## REV-20260325-11
+- Commit: `(pending)`
+- Scope: Readability + visual theme (RestoMap)
+- Changes:
+  - Naikkan kontras default theme (tidak dominan hitam murni)
+  - Sidebar diubah ke gradasi navy agar teks lebih terbaca
+  - Label sidebar diperbesar dan diperjelas
+  - Label kriteria slider (Traffic/Daya Beli/Populasi/Jalan Utama/Jalan Alternatif) diperbesar dan dibuat lebih kontras
+- Reason:
+  - Teks pada panel kiri kurang jelas pada tampilan sebelumnya
+
 ## REV-20260325-01
 - Commit: `987c53f`
 - Scope: UI cleanup (RestoMap)
