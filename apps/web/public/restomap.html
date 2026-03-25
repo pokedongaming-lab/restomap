@@ -704,33 +704,41 @@ function isSeaLikeAddress(addr = '') {
 }
 
 async function adjustInlandIfNeeded(loc) {
-  const firstAddr = await reverseGeocodeLabel(loc.lat, loc.lng, loc.name);
-  if (!isSeaLikeAddress(firstAddr)) {
-    loc.displayName = firstAddr;
+  const city = CITY_PRESETS[currentCityKey] || CITY_PRESETS.jakarta;
+
+  let curLat = loc.lat;
+  let curLng = loc.lng;
+  let addr = await reverseGeocodeLabel(curLat, curLng, loc.name);
+  if (!isSeaLikeAddress(addr)) {
+    loc.displayName = addr;
     return loc;
   }
 
-  const nudges = [
-    { lat: 0.0012, lng: 0.0030 },
-    { lat: -0.0010, lng: 0.0035 },
-    { lat: 0.0020, lng: 0.0020 },
-    { lat: -0.0020, lng: 0.0025 },
-    { lat: 0.0005, lng: 0.0045 },
-  ];
+  // Iterative inland snap: move step-by-step toward city center until address is no longer sea-like
+  for (let i = 0; i < 10; i++) {
+    const towardCenterLat = (city.lat - curLat) * 0.28;
+    const towardCenterLng = (city.lng - curLng) * 0.28;
+    const lateral = (i % 2 === 0 ? 1 : -1) * 0.00035 * (1 + i * 0.05);
 
-  for (const n of nudges) {
-    const nLat = loc.lat + n.lat;
-    const nLng = loc.lng + n.lng;
-    const a = await reverseGeocodeLabel(nLat, nLng, loc.name);
-    if (!isSeaLikeAddress(a)) {
-      loc.lat = nLat;
-      loc.lng = nLng;
-      loc.displayName = a;
+    curLat = curLat + towardCenterLat + lateral;
+    curLng = curLng + towardCenterLng + (lateral * 0.4);
+
+    addr = await reverseGeocodeLabel(curLat, curLng, loc.name);
+    if (!isSeaLikeAddress(addr)) {
+      loc.lat = curLat;
+      loc.lng = curLng;
+      loc.displayName = addr;
       return loc;
     }
   }
 
-  loc.displayName = firstAddr;
+  // Hard fallback to guaranteed inland near city core (to avoid any marker in sea)
+  const fallbackLat = city.lat + 0.0025;
+  const fallbackLng = city.lng + 0.0035;
+  const fallbackAddr = await reverseGeocodeLabel(fallbackLat, fallbackLng, `${city.name}`);
+  loc.lat = fallbackLat;
+  loc.lng = fallbackLng;
+  loc.displayName = fallbackAddr || `${city.name} (inland fallback)`;
   return loc;
 }
 

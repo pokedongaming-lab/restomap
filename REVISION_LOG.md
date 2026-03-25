@@ -4,6 +4,16 @@ Format versi yang dipakai:
 - `REV-YYYYMMDD-XX`
 - Contoh: `REV-20260325-01`
 
+## REV-20260325-41
+- Commit: `(pending)`
+- Scope: Hard inland lock untuk titik rekomendasi
+- Changes:
+  - `adjustInlandIfNeeded` diubah menjadi iterative inland snap menuju city center (hingga 10 iterasi)
+  - Tambah fallback darat paksa dekat city core jika tetap terdeteksi sea-like
+  - Menjamin marker rekomendasi tidak menetap di area laut/pelabuhan
+- Reason:
+  - Menangani kasus lanjutan titik #3 yang masih jatuh di laut (evidence screenshot)
+
 ## REV-20260325-40
 - Commit: `e077186`
 - Scope: Fix titik laut + animasi marker Top-N
