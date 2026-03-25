@@ -4,6 +4,17 @@ Format versi yang dipakai:
 - `REV-YYYYMMDD-XX`
 - Contoh: `REV-20260325-01`
 
+## REV-20260325-23
+- Commit: `(pending)`
+- Scope: Financial Assumptions panel
+- Changes:
+  - Tambah panel `Asumsi Finansial` di Overview
+  - Tampilkan asumsi inti: seats, turnover, avg check, occupancy, monthly covers
+  - Tampilkan struktur cost: COGS, labor ratio, marketing, rent factor, CAPEX
+  - Tambah fallback message saat mode fallback
+- Reason:
+  - Permintaan user agar dasar hitung finansial transparan dan mudah dipahami
+
 ## REV-20260325-22
 - Commit: `eed68c8`
 - Scope: Realistic financial formulas (RestoMap)

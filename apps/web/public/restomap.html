@@ -299,6 +299,8 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--t);font-f
             <div class="mb-val pos" id="marginVal">—</div>
           </div>
         </div>
+        <div class="section-title">📘 ASUMSI FINANSIAL</div>
+        <div id="financialAssumptions" style="font-size:9px;color:var(--t3);line-height:1.7;background:var(--bg3);border:1px solid var(--b);padding:10px;border-radius:4px;margin-bottom:10px">—</div>
         <div class="section-title" data-i18="lblComp">KOMPETITOR</div>
         <div id="competitorCount">—</div>
         <button class="btn-builder" id="btnBusinessPlan" onclick="goToBuilder()">BUAT BUSINESS PLAN →</button>
@@ -785,6 +787,12 @@ async function renderAnalysis(lat, lng) {
     document.getElementById('breakEven').textContent = breakEvenMonths ? `${breakEvenMonths} bln` : '>36 bln';
     document.getElementById('marginVal').textContent = marginPct.toFixed(1) + '%';
     document.getElementById('competitorCount').textContent = (competitors?.length || 0) + ' ' + tt('competitorsUnit');
+    document.getElementById('financialAssumptions').innerHTML = `
+      <div>Seats: <strong>${cfg.seats}</strong> · Turnover/hari: <strong>${cfg.turnover.toFixed(1)}x</strong> · Avg Check: <strong>Rp ${(cfg.avgCheck/1000).toFixed(0)}K</strong></div>
+      <div>Occupancy: <strong>${(occupancy*100).toFixed(1)}%</strong> · Monthly Covers: <strong>${monthlyCovers.toLocaleString()}</strong></div>
+      <div>COGS: <strong>${(cfg.cogs*100).toFixed(0)}%</strong> · Labor: <strong>~${((labor/revM)*100).toFixed(1)}%</strong> · Marketing: <strong>6%</strong></div>
+      <div>Rent Factor (${currentCityKey}): <strong>${(cityRentFactor[currentCityKey] || 0.9).toFixed(2)}x</strong> · CAPEX: <strong>Rp ${(setupCapex/1000000).toFixed(0)}JT</strong></div>
+    `;
     
     // Update panel header
     document.getElementById('phLoc').textContent = (selectedLoc.name || tt('selectedLocation')).toUpperCase();
@@ -850,6 +858,8 @@ async function renderAnalysis(lat, lng) {
     const stats = TYPE_STATS.cbd;
     document.getElementById('scoreValue').textContent = stats.score;
     document.getElementById('phLoc').textContent = (selectedLoc.name || 'Lokasi').toUpperCase();
+    const fa = document.getElementById('financialAssumptions');
+    if (fa) fa.textContent = 'Asumsi finansial belum tersedia (fallback mode).';
     restoreActiveTab();
   }
 }
