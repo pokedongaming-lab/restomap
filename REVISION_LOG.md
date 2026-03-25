@@ -5,7 +5,7 @@ Format versi yang dipakai:
 - Contoh: `REV-20260325-01`
 
 ## REV-20260325-17
-- Commit: `(pending)`
+- Commit: `3f8564e`
 - Scope: Map readability (RestoMap)
 - Changes:
   - Hapus custom dark map style pada Google Maps
