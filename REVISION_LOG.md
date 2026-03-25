@@ -5,7 +5,7 @@ Format versi yang dipakai:
 - Contoh: `REV-20260325-01`
 
 ## REV-20260325-36
-- Commit: `(pending)`
+- Commit: `6f55e8e`
 - Scope: Batch B.5 Launch Strategy
 - Changes:
   - Step 6 ditingkatkan dengan budget recommendation berbasis market score + concept
