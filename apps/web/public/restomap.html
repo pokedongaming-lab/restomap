@@ -1511,7 +1511,7 @@ async function findBestLocation() {
   await Promise.all(bestList.map(async (loc, idx) => {
     loc.displayName = await reverseGeocodeLabel(loc.lat, loc.lng, loc.displayName || loc.name);
     loc.selectionReason = loc.selectionReason || `Street priority ${loc.streetPriority || loc.fitScore}; akses jalan dan POI sekitar lebih kuat.`;
-    loc.rankReason = `${BL('Dipilih karena','Chosen because')} ${loc.selectionReason}`;
+    loc.rankReason = `${lang === 'id' ? 'Dipilih karena' : 'Chosen because'} ${loc.selectionReason}`;
   }));
   bestList.sort((a,b) => (b.streetPriority || b.fitScore) - (a.streetPriority || a.fitScore));
 

@@ -4,6 +4,15 @@ Format versi yang dipakai:
 - `REV-YYYYMMDD-XX`
 - Contoh: `REV-20260325-01`
 
+## REV-20260325-49
+- Commit: `(pending)`
+- Scope: Fix runtime error BL undefined pada best-location
+- Changes:
+  - Ganti pemakaian `BL(...)` yang tidak tersedia di `restomap.html` dengan conditional `lang === 'id' ? ... : ...`
+  - Menutup error runtime `BL is not defined` yang memblokir tombol `Cari Lokasi Terbaik`
+- Reason:
+  - Debug hasil validasi user menunjukkan akar masalah spesifik pada string bilingual ranking reason
+
 ## REV-20260325-48
 - Commit: `56a2a9f`
 - Scope: Stabilize best-location button runtime
