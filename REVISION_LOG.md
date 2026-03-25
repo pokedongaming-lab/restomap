@@ -5,7 +5,7 @@ Format versi yang dipakai:
 - Contoh: `REV-20260325-01`
 
 ## REV-20260325-14
-- Commit: `(pending)`
+- Commit: `623b598`
 - Scope: CTA position refinement (RestoMap)
 - Changes:
   - Pindahkan tombol `Cari Lokasi Terbaik` ke bawah tombol `Simpan Lokasi`
