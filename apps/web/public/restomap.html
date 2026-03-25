@@ -81,6 +81,16 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--t);font-f
 .section-title{font-size:8px;color:var(--t4);letter-spacing:2px;text-transform:uppercase;margin:12px 0 8px;padding-bottom:4px;border-bottom:1px solid var(--b)}
 
 .btn-builder{width:100%;padding:12px;background:var(--a);border:none;color:#000;font-size:11px;font-weight:bold;cursor:pointer;margin-top:10px}
+
+/* Modal */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:9999}
+.modal.on{display:flex}
+.modal-card{width:min(560px,92vw);background:var(--bg2);border:1px solid var(--b2);padding:14px;border-radius:8px}
+.modal-title{font-size:12px;color:var(--a);letter-spacing:1px;margin-bottom:10px}
+.modal-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.modal-grid .fi{padding:8px}
+.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
+
 /* THEMES */
 .th-dgrey{--bg:#111827;--bg2:#1f2937;--bg3:#374151;--panel:#1f2937;--b:rgba(148,163,184,.30);--b2:rgba(148,163,184,.55);--a:#f59e0b;--t:#f3f4f6;--t3:rgba(243,244,246,.86);--t4:rgba(243,244,246,.55)}
 .th-grey{--bg:#1f2937;--bg2:#334155;--bg3:#475569;--panel:#334155;--b:rgba(203,213,225,.28);--b2:rgba(203,213,225,.5);--a:#fb923c;--t:#f8fafc;--t3:rgba(248,250,252,.86);--t4:rgba(248,250,252,.55)}
@@ -364,6 +374,26 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--t);font-f
       <div class="tab-pane" id="tab-ai">
         <div id="aiContent"></div>
       </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="assumptionModal">
+  <div class="modal-card">
+    <div class="modal-title">✏️ EDIT ASUMSI FINANSIAL</div>
+    <div class="modal-grid">
+      <div class="fg"><div class="fl">Seats</div><input class="fi" id="asSeats" type="number"></div>
+      <div class="fg"><div class="fl">Turnover/day</div><input class="fi" id="asTurnover" type="number" step="0.1"></div>
+      <div class="fg"><div class="fl">Avg Check (Rp)</div><input class="fi" id="asAvgCheck" type="number"></div>
+      <div class="fg"><div class="fl">COGS %</div><input class="fi" id="asCogs" type="number" step="0.1"></div>
+      <div class="fg"><div class="fl">Labor %</div><input class="fi" id="asLabor" type="number" step="0.1"></div>
+      <div class="fg"><div class="fl">Marketing %</div><input class="fi" id="asMarketing" type="number" step="0.1"></div>
+      <div class="fg"><div class="fl">Rent Factor</div><input class="fi" id="asRentFactor" type="number" step="0.01"></div>
+      <div class="fg"><div class="fl">CAPEX (Rp)</div><input class="fi" id="asCapex" type="number"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="sb-btn-outline" onclick="closeAssumptionModal()">Batal</button>
+      <button class="sb-btn" onclick="applyAssumptionModal()">Apply</button>
     </div>
   </div>
 </div>
@@ -1268,18 +1298,38 @@ function findBestLocation() {
 }
 
 function editAssumsi() {
-  const cur = assumptionOverrides || {};
-  const next = {
-    seats: parseFloat(prompt('Seats (kursi):', String(cur.seats ?? 42))) || (cur.seats ?? 42),
-    turnover: parseFloat(prompt('Turnover per hari (x):', String(cur.turnover ?? 2.2))) || (cur.turnover ?? 2.2),
-    avgCheck: parseFloat(prompt('Avg Check (Rp):', String(cur.avgCheck ?? 55000))) || (cur.avgCheck ?? 55000),
-    cogs: (parseFloat(prompt('COGS % (contoh 35):', String((cur.cogs ?? 0.36) * 100))) || ((cur.cogs ?? 0.36) * 100)) / 100,
-    laborPct: (parseFloat(prompt('Labor % (contoh 18):', String((cur.laborPct ?? 0.18) * 100))) || ((cur.laborPct ?? 0.18) * 100)) / 100,
-    marketingPct: (parseFloat(prompt('Marketing % (contoh 6):', String((cur.marketingPct ?? 0.06) * 100))) || ((cur.marketingPct ?? 0.06) * 100)) / 100,
-    rentFactor: parseFloat(prompt('Rent Factor kota (contoh 1.00):', String(cur.rentFactor ?? 1.00))) || (cur.rentFactor ?? 1.00),
-    capex: parseFloat(prompt('CAPEX baseline (Rp):', String(cur.capex ?? 450000000))) || (cur.capex ?? 450000000)
+  const cur = assumptionOverrides || {
+    seats: 42, turnover: 2.2, avgCheck: 55000, cogs: 0.36,
+    laborPct: 0.18, marketingPct: 0.06, rentFactor: 1.00, capex: 450000000
   };
-  assumptionOverrides = next;
+  document.getElementById('asSeats').value = cur.seats;
+  document.getElementById('asTurnover').value = cur.turnover;
+  document.getElementById('asAvgCheck').value = cur.avgCheck;
+  document.getElementById('asCogs').value = (cur.cogs * 100).toFixed(1);
+  document.getElementById('asLabor').value = (cur.laborPct * 100).toFixed(1);
+  document.getElementById('asMarketing').value = (cur.marketingPct * 100).toFixed(1);
+  document.getElementById('asRentFactor').value = cur.rentFactor;
+  document.getElementById('asCapex').value = cur.capex;
+  document.getElementById('assumptionModal').classList.add('on');
+}
+
+function closeAssumptionModal() {
+  document.getElementById('assumptionModal').classList.remove('on');
+}
+
+function applyAssumptionModal() {
+  const toNum = (id, fallback) => parseFloat(document.getElementById(id).value) || fallback;
+  assumptionOverrides = {
+    seats: toNum('asSeats', 42),
+    turnover: toNum('asTurnover', 2.2),
+    avgCheck: toNum('asAvgCheck', 55000),
+    cogs: toNum('asCogs', 36) / 100,
+    laborPct: toNum('asLabor', 18) / 100,
+    marketingPct: toNum('asMarketing', 6) / 100,
+    rentFactor: toNum('asRentFactor', 1.0),
+    capex: toNum('asCapex', 450000000)
+  };
+  closeAssumptionModal();
   if (selectedLoc) {
     scheduleRenderAnalysis(selectedLoc.lat, selectedLoc.lng, 50);
   } else {
@@ -1395,6 +1445,10 @@ setTheme(savedTheme);
 setTimeout(renderSaved, 500);
 setTimeout(initBrandSearch, 500);
 setTimeout(updateLabels, 50);
+setTimeout(() => {
+  const modal = document.getElementById('assumptionModal');
+  if (modal) modal.addEventListener('click', (e) => { if (e.target === modal) closeAssumptionModal(); });
+}, 50);
 </script>
 
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAzlXgIm1ofUw-A26fQp0zylxczS8oNaJk&libraries=places&callback=initMap" async defer></script>

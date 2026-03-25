@@ -4,6 +4,17 @@ Format versi yang dipakai:
 - `REV-YYYYMMDD-XX`
 - Contoh: `REV-20260325-01`
 
+## REV-20260325-25
+- Commit: `(pending)`
+- Scope: Interactive assumptions modal
+- Changes:
+  - Ganti flow prompt beruntun menjadi modal form interaktif `Edit Asumsi`
+  - Form berisi field lengkap (seats, turnover, avg check, COGS, labor, marketing, rent factor, CAPEX)
+  - Tombol `Apply` langsung simpan override dan trigger re-kalkulasi
+  - Support klik backdrop untuk menutup modal
+- Reason:
+  - Permintaan user untuk UX edit asumsi yang lebih nyaman
+
 ## REV-20260325-24
 - Commit: `91a755e`
 - Scope: Editable financial assumptions
