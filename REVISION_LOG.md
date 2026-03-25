@@ -5,7 +5,7 @@ Format versi yang dipakai:
 - Contoh: `REV-20260325-01`
 
 ## REV-20260326-02
-- Commit: `(pending)`
+- Commit: `00fb8cd`
 - Scope: Refactor best-location phase 2b
 - Changes:
   - Tambah alternate seed offsets per zone untuk fallback komersial yang lebih variatif
