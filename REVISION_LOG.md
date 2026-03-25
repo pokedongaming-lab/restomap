@@ -5,7 +5,7 @@ Format versi yang dipakai:
 - Contoh: `REV-20260325-01`
 
 ## REV-20260325-11
-- Commit: `(pending)`
+- Commit: `9763f8f`
 - Scope: Readability + visual theme (RestoMap)
 - Changes:
   - Naikkan kontras default theme (tidak dominan hitam murni)
