@@ -1233,6 +1233,7 @@ async function renderAnalysis(lat, lng) {
       avgRating: Number(avgCompetitorRating.toFixed(1)),
       pressure: competitionCount >= 12 ? 'high' : competitionCount >= 6 ? 'medium' : 'low',
       severity: competitionCount >= 14 ? 22 : competitionCount >= 8 ? 14 : competitionCount >= 4 ? 8 : 3,
+      ratingBand: avgCompetitorRating >= 4.4 ? 'premium' : avgCompetitorRating >= 4.0 ? 'solid' : 'standard',
     };
 
     selectedLoc = {
@@ -1356,7 +1357,7 @@ async function renderAnalysis(lat, lng) {
         <div>⏱️ Break-even: <strong>${breakEvenMonths ? breakEvenMonths : '>36'} bulan</strong></div>
         <div>📈 Margin: <strong style="color:${marginPct >= 0 ? 'var(--pos)' : 'var(--neg)'}">${marginPct.toFixed(1)}%</strong></div>
         <div>👥 Kompetitor: <strong>${competitors?.length || 0}</strong> · Pressure: <strong>${competitorIntel.pressure}</strong></div>
-        <div>📍 Avg Competitor Distance: <strong>${competitorIntel.avgDistance}m</strong> · Avg Rating: <strong>${competitorIntel.avgRating}</strong></div>
+        <div>📍 Avg Competitor Distance: <strong>${competitorIntel.avgDistance}m</strong> · Avg Rating: <strong>${competitorIntel.avgRating}</strong> · Band: <strong>${competitorIntel.ratingBand}</strong></div>
         ${factors ? `<div>🚗 Traffic: <strong>${factors.traffic}/100</strong></div>` : ''}
         ${factors ? `<div>💰 Income: <strong>${factors.income}/100</strong></div>` : ''}
 
@@ -1489,6 +1490,7 @@ function renderCompetitors(competitors) {
       <div style="margin-top:6px">Total: <strong>${norm.length}</strong> · Direct: <strong>${direct.length}</strong> · Indirect: <strong>${indirect.length}</strong> · Replacement: <strong>${replacement.length}</strong></div>
       <div>Avg Direct Rating: <strong>${avgDirectRating}</strong></div>
       <div>Avg Competitor Distance: <strong>${selectedLoc?.competitorIntel?.avgDistance ?? '-' }m</strong> · Pressure: <strong>${selectedLoc?.competitorIntel?.pressure ?? '-'}</strong></div>
+      <div>Rating Band: <strong>${selectedLoc?.competitorIntel?.ratingBand ?? '-'}</strong> · Severity: <strong>${selectedLoc?.competitorIntel?.severity ?? '-'}</strong></div>
     </div>
 
     ${renderSection('DIRECT COMPETITORS', direct)}

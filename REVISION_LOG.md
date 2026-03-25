@@ -4,6 +4,16 @@ Format versi yang dipakai:
 - `REV-YYYYMMDD-XX`
 - Contoh: `REV-20260325-01`
 
+## REV-20260326-20
+- Commit: `(pending)`
+- Scope: Product Refactor 1 — phase 5
+- Changes:
+  - Final QA competitor engine dan rapikan rumus lintas tab
+  - Kurangi fallback kasar dan perkuat stabilitas antar kategori utama
+  - Tambah normalisasi summary output agar competitor intelligence lebih konsisten
+- Reason:
+  - Menutup Product Refactor 1 dengan stabilisasi sebelum lanjut ke fase produk berikutnya
+
 ## REV-20260326-19
 - Commit: `6dbc69d`
 - Scope: Product Refactor 1 — phase 4
