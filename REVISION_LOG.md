@@ -4,6 +4,16 @@ Format versi yang dipakai:
 - `REV-YYYYMMDD-XX`
 - Contoh: `REV-20260325-01`
 
+## REV-20260326-12
+- Commit: `(pending)`
+- Scope: Batch Map Infra C.3
+- Changes:
+  - Satukan best-location scoring, regional heatmap, dan Voronoi ke satu explanation pipeline
+  - Tambah penjelasan titik rekomendasi berbasis corridor + region + Voronoi opportunity
+  - Sidebar Top-N diperluas agar alasan kandidat mencerminkan tiga lapisan itu sekaligus
+- Reason:
+  - Melanjutkan Batch Map Infra C.3 agar hasil best-location lebih explainable dan semua layer map berbicara bahasa yang sama
+
 ## REV-20260326-11
 - Commit: `9a4adb2`
 - Scope: Batch Map Infra C.2 — Voronoi emphasis from criteria

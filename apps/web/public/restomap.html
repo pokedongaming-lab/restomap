@@ -1433,6 +1433,20 @@ function getRegionalHeatColor(score) {
   return { fill: '#ef4444', stroke: '#dc2626', label: 'Low' };
 }
 
+function getDominantCriteriaDriver() {
+  const critTraffic = parseInt(document.getElementById('critTraffic')?.value || '0', 10);
+  const critBuying = parseInt(document.getElementById('critBuying')?.value || '0', 10);
+  const critPop = parseInt(document.getElementById('critPop')?.value || '0', 10);
+  const critMain = parseInt(document.getElementById('critMainRoad')?.value || '0', 10);
+  const critAlt = parseInt(document.getElementById('critAltRoad')?.value || '0', 10);
+  return [
+    { key: 'traffic', value: critTraffic, fill: '#f97316', stroke: '#ea580c' },
+    { key: 'buying', value: critBuying, fill: '#2563eb', stroke: '#1d4ed8' },
+    { key: 'population', value: critPop, fill: '#22c55e', stroke: '#16a34a' },
+    { key: 'road', value: Math.max(critMain, critAlt), fill: '#8b5cf6', stroke: '#7c3aed' },
+  ].sort((a,b) => b.value - a.value)[0];
+}
+
 function toggleHeatmap() {
   const layers = [];
   const popOn = parseInt(document.getElementById('critPop')?.value || '0', 10) > 0;
@@ -1545,17 +1559,7 @@ function toggleHeatmap() {
 
   // Voronoi proxy overlay based on selected category/brand competitors + active criteria emphasis
   if (voronoiOn && (latestCompetitors?.length || 0) > 0) {
-    const critTraffic = parseInt(document.getElementById('critTraffic')?.value || '0', 10);
-    const critBuying = parseInt(document.getElementById('critBuying')?.value || '0', 10);
-    const critPop = parseInt(document.getElementById('critPop')?.value || '0', 10);
-    const critMain = parseInt(document.getElementById('critMainRoad')?.value || '0', 10);
-    const critAlt = parseInt(document.getElementById('critAltRoad')?.value || '0', 10);
-    const dominant = [
-      { key: 'traffic', value: critTraffic, fill: '#f97316', stroke: '#ea580c' },
-      { key: 'buying', value: critBuying, fill: '#2563eb', stroke: '#1d4ed8' },
-      { key: 'population', value: critPop, fill: '#22c55e', stroke: '#16a34a' },
-      { key: 'road', value: Math.max(critMain, critAlt), fill: '#8b5cf6', stroke: '#7c3aed' },
-    ].sort((a,b) => b.value - a.value)[0];
+    const dominant = getDominantCriteriaDriver();
     const n = Math.min(6, latestCompetitors.length);
     for (let i = 0; i < n; i++) {
       const ang1 = (i / n) * Math.PI * 2;
@@ -1777,7 +1781,11 @@ async function findBestLocation() {
   for (const loc of bestList) {
     loc.displayName = await reverseGeocodeLabel(loc.lat, loc.lng, loc.displayName || loc.name);
     const strongestRegion = selectedLoc?.regionalHeatmap?.length ? [...selectedLoc.regionalHeatmap].sort((a,b) => b.score - a.score)[0] : null;
+    const dominant = getDominantCriteriaDriver();
+    const corridorReason = loc.roadClass === 'main' ? 'main corridor frontage' : 'secondary connector frontage';
+    const voronoiReason = `Voronoi opportunity didorong ${dominant.key}`;
     loc.selectionReason = loc.selectionReason || `dekat frontage komersial, akses jalan lebih kuat, dan POI sekitar lebih aktif`;
+    loc.selectionReason = `${corridorReason}; ${loc.selectionReason}; ${voronoiReason}`;
     if (strongestRegion) {
       loc.selectionReason += `; didukung region ${strongestRegion.label} (score ${strongestRegion.score})`;
     }
