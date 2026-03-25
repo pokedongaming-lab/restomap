@@ -4,6 +4,17 @@ Format versi yang dipakai:
 - `REV-YYYYMMDD-XX`
 - Contoh: `REV-20260325-01`
 
+## REV-20260325-13
+- Commit: `(pending)`
+- Scope: Theme persistence + legacy color preservation
+- Changes:
+  - Tambah persistence tema via `localStorage` key `restosuite_theme`
+  - Sinkronkan tema antar RestoMap ↔ RestoBuilder
+  - Pertahankan warna lama (Matrix, Arctic, Ember) sebagai opsi legacy
+  - Tetap sediakan tema baru (Dark Grey, Grey, Navy, Blue)
+- Reason:
+  - User minta tema tersimpan dan warna lama tetap tersedia
+
 ## REV-20260325-12
 - Commit: `6cc0fc2`
 - Scope: Theme expansion (RestoMap + RestoBuilder)

@@ -100,6 +100,9 @@ select.fi option{background:var(--bg3)}
 .th-grey{--bg:#1f2937;--bg2:#334155;--bg3:#475569;--panel:#334155;--b:rgba(203,213,225,.28);--b2:rgba(203,213,225,.5);--a:#fb923c;--t:#f8fafc;--t3:rgba(248,250,252,.86);--t4:rgba(248,250,252,.55)}
 .th-navy{--bg:#081018;--bg2:#101a25;--bg3:#162232;--panel:#132030;--b:rgba(255,109,0,.22);--b2:rgba(255,109,0,.45);--a:#FF6D00;--t:#FFD08A;--t3:rgba(255,208,138,.86);--t4:rgba(255,208,138,.58)}
 .th-blue{--bg:#0f172a;--bg2:#1e3a8a;--bg3:#1e40af;--panel:#1e3a8a;--b:rgba(147,197,253,.28);--b2:rgba(147,197,253,.55);--a:#60a5fa;--t:#e0f2fe;--t3:rgba(224,242,254,.88);--t4:rgba(224,242,254,.58)}
+.th-matrix{--bg:#000500;--bg2:#000a00;--bg3:#001100;--panel:#000a00;--b:rgba(0,255,65,.14);--b2:rgba(0,255,65,.4);--a:#00FF41;--t:#00E676;--t3:rgba(0,230,118,.85);--t4:rgba(0,230,118,.52)}
+.th-arctic{--bg:#000B14;--bg2:#001122;--bg3:#001a2e;--panel:#001122;--b:rgba(0,229,255,.14);--b2:rgba(0,229,255,.4);--a:#00E5FF;--t:#80DEEA;--t3:rgba(128,222,234,.85);--t4:rgba(128,222,234,.52)}
+.th-ember{--bg:#0D0000;--bg2:#150000;--bg3:#220000;--panel:#150000;--b:rgba(255,61,0,.16);--b2:rgba(255,61,0,.42);--a:#FF3D00;--t:#FFAB91;--t3:rgba(255,171,145,.85);--t4:rgba(255,171,145,.52)}
 </style>
 </head>
 <body>
@@ -122,10 +125,13 @@ select.fi option{background:var(--bg3)}
     <button class="lang-btn" id="btnLangEN" onclick="setLangBuilder('en')">EN</button>
   </div>
   <div class="theme-grp">
-    <div class="tc" style="background:#1f2937" onclick="setThemeBuilder('th-dgrey', this)" title="Dark Grey"></div>
-    <div class="tc" style="background:#334155" onclick="setThemeBuilder('th-grey', this)" title="Grey"></div>
-    <div class="tc on" style="background:#1e3a5f" onclick="setThemeBuilder('th-navy', this)" title="Navy"></div>
-    <div class="tc" style="background:#1d4ed8" onclick="setThemeBuilder('th-blue', this)" title="Blue"></div>
+    <div class="tc" data-theme="th-dgrey" style="background:#1f2937" onclick="setThemeBuilder('th-dgrey', this)" title="Dark Grey"></div>
+    <div class="tc" data-theme="th-grey" style="background:#334155" onclick="setThemeBuilder('th-grey', this)" title="Grey"></div>
+    <div class="tc on" data-theme="th-navy" style="background:#1e3a5f" onclick="setThemeBuilder('th-navy', this)" title="Navy"></div>
+    <div class="tc" data-theme="th-blue" style="background:#1d4ed8" onclick="setThemeBuilder('th-blue', this)" title="Blue"></div>
+    <div class="tc" data-theme="th-matrix" style="background:#00FF41" onclick="setThemeBuilder('th-matrix', this)" title="Matrix (Legacy)"></div>
+    <div class="tc" data-theme="th-arctic" style="background:#00E5FF" onclick="setThemeBuilder('th-arctic', this)" title="Arctic (Legacy)"></div>
+    <div class="tc" data-theme="th-ember" style="background:#FF3D00" onclick="setThemeBuilder('th-ember', this)" title="Ember (Legacy)"></div>
   </div>
 </div>
 
@@ -189,13 +195,16 @@ const methodMetrics = {
 document.getElementById('locationInfo').textContent = '📍 LOKASI: ' + locationData.city.toUpperCase() + ' (' + locationData.lat.toFixed(2) + ', ' + locationData.lng.toFixed(2) + ')';
 
 let lang = 'id';
-let themeBuilder = 'th-navy';
+let themeBuilder = localStorage.getItem('restosuite_theme') || 'th-navy';
 function BL(idText, enText){ return lang === 'id' ? idText : enText; }
 
 function setThemeBuilder(themeClass, el){
   themeBuilder = themeClass;
   document.body.className = themeClass;
-  document.querySelectorAll('.tc').forEach(x => x.classList.remove('on'));
+  localStorage.setItem('restosuite_theme', themeClass || 'th-navy');
+  document.querySelectorAll('.tc').forEach(x => {
+    x.classList.toggle('on', (x.dataset.theme || '') === themeClass);
+  });
   if (el) el.classList.add('on');
 }
 
@@ -538,6 +547,7 @@ function renderStep8(body) {
 
 // INIT
 document.body.className = themeBuilder;
+setThemeBuilder(themeBuilder);
 renderStep();
 setInterval(() => {
   document.getElementById('clock').textContent = new Date().toLocaleTimeString(lang === 'id' ? 'id-ID' : 'en-US');
