@@ -579,9 +579,95 @@ function renderStep8(body) {
       </div>
     </div>
 
-    <button class="btn-export" onclick="alert('Exporting PDF...')">📄 ${BL('EXPORT BUSINESS PLAN PDF','EXPORT BUSINESS PLAN PDF')}</button>
-    <button class="btn-export" style="background:var(--a)" onclick="alert('WhatsApp share...')">📱 ${BL('BAGIKAN VIA WHATSAPP','SHARE VIA WHATSAPP')}</button>
+    <button class="btn-export" onclick="exportBusinessPlan()">📄 ${BL('EXPORT BUSINESS PLAN PDF','EXPORT BUSINESS PLAN PDF')}</button>
+    <button class="btn-export" style="background:var(--a)" onclick="shareBusinessPlan()">📱 ${BL('BAGIKAN VIA WHATSAPP','SHARE VIA WHATSAPP')}</button>
   `;
+}
+
+function buildBusinessPlanHtml(){
+  const rev = restaurantData.seating * restaurantData.avgCheck * 26 * 0.7;
+  const cogs = rev * 0.30;
+  const laborFactor = 0.9 + (methodMetrics.cannibal > 20 ? 0.15 : 0.05);
+  const labor = Math.round(25000000 * laborFactor);
+  const rent = restaurantData.spaceArea * 250000;
+  const mmmFactor = Math.max(0.75, Math.min(1.25, methodMetrics.mmm / 70));
+  const milpFactor = Math.max(0.75, Math.min(1.20, methodMetrics.milp / 70));
+  const marketing = Math.round(restaurantData.marketingBudget * mmmFactor * milpFactor);
+  const opex = cogs + labor + rent + marketing;
+  const profit = rev - opex;
+
+  return `<!doctype html><html><head><meta charset="utf-8"><title>Business Plan - ${restaurantData.name || 'Resto'}</title>
+  <style>
+    body{font-family:Inter,Arial,sans-serif;background:#f7f8fb;color:#111;padding:28px;line-height:1.55}
+    .h{font-size:28px;font-weight:800;margin-bottom:4px}
+    .sub{color:#475569;margin-bottom:18px}
+    .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:14px 0 18px}
+    .card{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:12px}
+    .k{font-size:12px;color:#64748b;text-transform:uppercase;letter-spacing:.05em}
+    .v{font-size:22px;font-weight:700;color:#0f172a}
+    h2{font-size:16px;margin:18px 0 8px;color:#0f172a}
+    table{width:100%;border-collapse:collapse;background:#fff;border:1px solid #e2e8f0}
+    th,td{padding:8px 10px;border-bottom:1px solid #e2e8f0;text-align:left;font-size:13px}
+    th{background:#f1f5f9;color:#334155}
+  </style></head><body>
+    <div class="h">RestoSuite Business Plan</div>
+    <div class="sub">${restaurantData.name || 'Unnamed Restaurant'} · ${locationData.city} · ${new Date().toLocaleDateString(lang === 'id' ? 'id-ID' : 'en-US')}</div>
+
+    <div class="grid">
+      <div class="card"><div class="k">Score</div><div class="v">${locationData.score}/100</div></div>
+      <div class="card"><div class="k">Revenue / Month</div><div class="v">Rp ${(rev/1000000).toFixed(1)} JT</div></div>
+      <div class="card"><div class="k">Profit / Month</div><div class="v">Rp ${(profit/1000000).toFixed(1)} JT</div></div>
+    </div>
+
+    <h2>Executive Summary</h2>
+    <p>Concept: <strong>${restaurantData.concept}</strong> | Cuisine: <strong>${restaurantData.cuisine}</strong> | Seats: <strong>${restaurantData.seating}</strong></p>
+
+    <h2>Market & Method Trace</h2>
+    <table>
+      <tr><th>Method</th><th>Value</th><th>Note</th></tr>
+      <tr><td>Bayes Demand</td><td>${methodMetrics.bayes.toFixed(1)}</td><td>Demand intensity score</td></tr>
+      <tr><td>HHI Competition</td><td>${methodMetrics.hhi.toFixed(1)}</td><td>Competition concentration</td></tr>
+      <tr><td>Voronoi Gap</td><td>${methodMetrics.voronoi.toFixed(1)}</td><td>Spatial opportunity gap</td></tr>
+      <tr><td>Cannibal Overlap</td><td>${methodMetrics.cannibal.toFixed(1)}%</td><td>Overlap risk</td></tr>
+      <tr><td>MMM Efficiency</td><td>${methodMetrics.mmm.toFixed(1)}</td><td>Marketing efficiency</td></tr>
+      <tr><td>MILP Feasibility</td><td>${methodMetrics.milp.toFixed(1)}</td><td>Budget allocation fit</td></tr>
+    </table>
+
+    <h2>Financial Breakdown</h2>
+    <table>
+      <tr><th>Component</th><th>Value</th></tr>
+      <tr><td>Revenue</td><td>Rp ${(rev/1000000).toFixed(1)} JT</td></tr>
+      <tr><td>COGS (30%)</td><td>Rp ${(cogs/1000000).toFixed(1)} JT</td></tr>
+      <tr><td>Labor</td><td>Rp ${(labor/1000000).toFixed(1)} JT</td></tr>
+      <tr><td>Rent</td><td>Rp ${(rent/1000000).toFixed(1)} JT</td></tr>
+      <tr><td>Marketing (MMM+MILP)</td><td>Rp ${(marketing/1000000).toFixed(1)} JT</td></tr>
+      <tr><td><strong>Profit</strong></td><td><strong>Rp ${(profit/1000000).toFixed(1)} JT</strong></td></tr>
+    </table>
+  </body></html>`;
+}
+
+function exportBusinessPlan(){
+  const html = buildBusinessPlanHtml();
+  const blob = new Blob([html], {type:'text/html;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `BusinessPlan_${(restaurantData.name || 'Resto').replace(/\s+/g,'_')}.html`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+function shareBusinessPlan(){
+  const summary = `Business Plan ${restaurantData.name || 'Resto'}\nCity: ${locationData.city}\nScore: ${locationData.score}/100\nConcept: ${restaurantData.concept}\nSeats: ${restaurantData.seating}`;
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(summary).then(() => {
+      alert(BL('Ringkasan plan disalin. Tempel ke WhatsApp.', 'Plan summary copied. Paste into WhatsApp.'));
+    }).catch(() => alert(summary));
+  } else {
+    alert(summary);
+  }
 }
 
 // INIT

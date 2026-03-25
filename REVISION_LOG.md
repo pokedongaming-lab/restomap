@@ -4,6 +4,17 @@ Format versi yang dipakai:
 - `REV-YYYYMMDD-XX`
 - Contoh: `REV-20260325-01`
 
+## REV-20260325-29
+- Commit: `(pending)`
+- Scope: Prioritas 4 - Export business plan profesional
+- Changes:
+  - Tambah exporter dokumen business plan profesional (HTML report)
+  - Tambah section Executive Summary, Method Trace, dan Financial Breakdown pada file export
+  - Tombol export di Step 8 kini menghasilkan file `BusinessPlan_*.html`
+  - Tombol share menyalin ringkasan plan untuk WhatsApp
+- Reason:
+  - Menjalankan Step 3 workflow bertahap sesuai prioritas user
+
 ## REV-20260325-28
 - Commit: `f5e436c`
 - Scope: Monitoring ringan
