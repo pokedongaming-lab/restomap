@@ -5,7 +5,7 @@ Format versi yang dipakai:
 - Contoh: `REV-20260325-01`
 
 ## REV-20260326-06
-- Commit: `(pending)`
+- Commit: `e7031f9`
 - Scope: Batch Map Infra B — BPS-style regional heatmap foundation
 - Changes:
   - Tambah `getRegionalHeatmapCells()` di API untuk mengembalikan cell heatmap regional bergaya kecamatan/kab-kota
