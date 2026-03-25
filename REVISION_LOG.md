@@ -5,7 +5,7 @@ Format versi yang dipakai:
 - Contoh: `REV-20260325-01`
 
 ## REV-20260325-58
-- Commit: `(pending)`
+- Commit: `1195612`
 - Scope: Refactor best-location pipeline (phase 1)
 - Changes:
   - Ganti source kandidat dari marker sintetis cluster-heavy menjadi zone-seeded commercial-lot candidates
