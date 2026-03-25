@@ -4,6 +4,17 @@ Format versi yang dipakai:
 - `REV-YYYYMMDD-XX`
 - Contoh: `REV-20260325-01`
 
+## REV-20260325-19
+- Commit: `(pending)`
+- Scope: Category expansion + Builder sync
+- Changes:
+  - Perluas daftar kategori restoran di RestoMap (Google-aligned categories)
+  - Mapping kategori -> concept default di RestoBuilder
+  - Mapping kategori -> cuisine default di RestoBuilder
+  - Cuisine selector di Step 1 sekarang sinkron dengan nilai default dari category
+- Reason:
+  - Permintaan user agar kategori lebih lengkap dan terhubung langsung ke RestoBuilder
+
 ## REV-20260325-18
 - Commit: `92b86bd`
 - Scope: Top-N visualization behavior

@@ -232,8 +232,41 @@ const STEPS_EN = [
 const getSteps = () => (lang === 'id' ? STEPS_ID : STEPS_EN);
 
 let currentStep = 1;
+
+const CATEGORY_TO_CONCEPT = {
+  restaurant: 'casual',
+  cafe: 'coffee',
+  coffee_shop: 'coffee',
+  fast_food_restaurant: 'fastfood',
+  indonesian_restaurant: 'casual',
+  japanese_restaurant: 'casual',
+  korean_restaurant: 'casual',
+  chinese_restaurant: 'casual',
+  seafood_restaurant: 'casual',
+  steak_house: 'fine',
+  pizza_restaurant: 'casual',
+  bakery: 'coffee',
+  dessert_shop: 'coffee',
+  noodle_shop: 'casual',
+  vegetarian_restaurant: 'casual'
+};
+
+const CATEGORY_TO_CUISINE = {
+  indonesian_restaurant: 'indonesian',
+  japanese_restaurant: 'japanese',
+  korean_restaurant: 'korean',
+  chinese_restaurant: 'chinese',
+  seafood_restaurant: 'western',
+  steak_house: 'western',
+  pizza_restaurant: 'western',
+  noodle_shop: 'indonesian',
+  vegetarian_restaurant: 'western'
+};
+
 let restaurantData = {
-  concept: 'coffee', cuisine: 'indonesian', name: '', seating: 30, avgCheck: 35000,
+  concept: CATEGORY_TO_CONCEPT[locationData.category] || 'coffee',
+  cuisine: CATEGORY_TO_CUISINE[locationData.category] || 'indonesian',
+  name: '', seating: 30, avgCheck: 35000,
   menuItems: [], spaceArea: 80, kitchenArea: 25,
   staff: { gm: 1, chef: 2, server: 3 },
   salaries: { gm: 15000000, chef: 8000000, server: 4500000 },
@@ -313,7 +346,13 @@ function renderStep1(body) {
       </div>
       <div class="fg">
         <div class="fl">${BL('JENIS MASAKAN','CUISINE TYPE')}</div>
-        <select class="fi"><option>Indonesian</option><option>Western</option><option>Japanese</option><option>Korean</option><option>Chinese</option></select>
+        <select class="fi" onchange="restaurantData.cuisine=this.value">
+          <option value="indonesian" ${restaurantData.cuisine==='indonesian'?'selected':''}>Indonesian</option>
+          <option value="western" ${restaurantData.cuisine==='western'?'selected':''}>Western</option>
+          <option value="japanese" ${restaurantData.cuisine==='japanese'?'selected':''}>Japanese</option>
+          <option value="korean" ${restaurantData.cuisine==='korean'?'selected':''}>Korean</option>
+          <option value="chinese" ${restaurantData.cuisine==='chinese'?'selected':''}>Chinese</option>
+        </select>
       </div>
       <div class="fg"><div class="fl">${BL('KURSI','SEATS')}</div><input type="number" class="fi" value="${restaurantData.seating}" onchange="restaurantData.seating=parseInt(this.value)"></div>
     </div>
