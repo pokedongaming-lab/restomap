@@ -5,7 +5,7 @@ Format versi yang dipakai:
 - Contoh: `REV-20260325-01`
 
 ## REV-20260325-43
-- Commit: `(pending)`
+- Commit: `77cefb3`
 - Scope: POI/Road-only candidate validation
 - Changes:
   - Tambah `placesNearby()` wrapper untuk Google Places nearby search
