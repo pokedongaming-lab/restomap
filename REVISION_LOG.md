@@ -4,6 +4,16 @@ Format versi yang dipakai:
 - `REV-YYYYMMDD-XX`
 - Contoh: `REV-20260325-01`
 
+## REV-20260326-06
+- Commit: `(pending)`
+- Scope: Batch Map Infra B — BPS-style regional heatmap foundation
+- Changes:
+  - Tambah `getRegionalHeatmapCells()` di API untuk mengembalikan cell heatmap regional bergaya kecamatan/kab-kota
+  - Tambah endpoint `GET /heatmap/regional`
+  - Frontend kini fetch regional heatmap dan render circle cells regional sebagai dasar heatmap berbasis wilayah
+- Reason:
+  - Menjalankan fondasi Batch Map Infra B agar heatmap tidak lagi murni radial sintetis, tetapi mulai mengikuti model area administratif/BPS
+
 ## REV-20260326-05
 - Commit: `c6ff49f`
 - Scope: Batch Map Infra A — hard road-class routing

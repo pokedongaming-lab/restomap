@@ -649,6 +649,16 @@ async function fetchHeatmapFactors(lat, lng, radius) {
   }
 }
 
+async function fetchRegionalHeatmap(lat, lng, radius) {
+  try {
+    const json = await fetchWithTimeoutRetry(`${API_BASE}/heatmap/regional?lat=${lat}&lng=${lng}&radius=${radius}`);
+    return json.data?.cells || [];
+  } catch (e) {
+    console.error('API Error regional heatmap:', e);
+    return [];
+  }
+}
+
 async function fetchGapCategory(lat, lng, radius) {
   try {
     const json = await fetchWithTimeoutRetry(`${API_BASE}/gap-category?lat=${lat}&lng=${lng}&radius=${radius}`);
@@ -1153,8 +1163,9 @@ async function renderAnalysis(lat, lng) {
   
   try {
     // Fetch from API
-    const [factors, competitors, categories] = await Promise.all([
+    const [factors, regionalHeatmap, competitors, categories] = await Promise.all([
       fetchHeatmapFactors(lat, lng, currentRadius),
+      fetchRegionalHeatmap(lat, lng, currentRadius),
       fetchCompetitors(lat, lng, currentRadius, currentCategory),
       fetchGapCategory(lat, lng, currentRadius)
     ]);
@@ -1178,6 +1189,7 @@ async function renderAnalysis(lat, lng) {
       factors,
       competitors,
       categories,
+      regionalHeatmap,
       methodScores: {
         bayesDemand,
         hhiProxy,
@@ -1462,41 +1474,39 @@ function toggleHeatmap() {
   const center = selectedLoc ? { lat: selectedLoc.lat, lng: selectedLoc.lng } : map.getCenter()?.toJSON();
   if (!center) return;
 
-  // Heat layers as translucent circles
-  if (popOn) {
+  const regionalCells = selectedLoc?.regionalHeatmap || [];
+  const drawRegional = (color, stroke, key) => {
+    if (!regionalCells.length) return false;
+    regionalCells.forEach((cell) => {
+      const intensity = key === 'population' ? cell.factors.population : key === 'traffic' ? cell.factors.traffic : cell.factors.income;
+      heatmapCircles.push(new google.maps.Circle({
+        map,
+        center: cell.center,
+        radius: Math.max(260, cell.radius),
+        fillColor: color,
+        fillOpacity: Math.max(0.08, Math.min(0.24, intensity / 500)),
+        strokeColor: stroke,
+        strokeOpacity: 0.62,
+        strokeWeight: 1,
+      }));
+    });
+    return true;
+  };
+
+  // Heat layers as translucent circles / BPS-style regional cells
+  if (popOn && !drawRegional('#22c55e', '#16a34a', 'population')) {
     heatmapCircles.push(new google.maps.Circle({
-      map,
-      center,
-      radius: Math.max(500, currentRadius * 1.2),
-      fillColor: '#22c55e',
-      fillOpacity: 0.18,
-      strokeColor: '#16a34a',
-      strokeOpacity: 0.55,
-      strokeWeight: 1,
+      map, center, radius: Math.max(500, currentRadius * 1.2), fillColor: '#22c55e', fillOpacity: 0.18, strokeColor: '#16a34a', strokeOpacity: 0.55, strokeWeight: 1,
     }));
   }
-  if (trafficOn) {
+  if (trafficOn && !drawRegional('#f97316', '#ea580c', 'traffic')) {
     heatmapCircles.push(new google.maps.Circle({
-      map,
-      center,
-      radius: Math.max(400, currentRadius * 0.95),
-      fillColor: '#f97316',
-      fillOpacity: 0.2,
-      strokeColor: '#ea580c',
-      strokeOpacity: 0.55,
-      strokeWeight: 1,
+      map, center, radius: Math.max(400, currentRadius * 0.95), fillColor: '#f97316', fillOpacity: 0.2, strokeColor: '#ea580c', strokeOpacity: 0.55, strokeWeight: 1,
     }));
   }
-  if (incomeOn) {
+  if (incomeOn && !drawRegional('#2563eb', '#1d4ed8', 'income')) {
     heatmapCircles.push(new google.maps.Circle({
-      map,
-      center,
-      radius: Math.max(320, currentRadius * 0.75),
-      fillColor: '#2563eb',
-      fillOpacity: 0.2,
-      strokeColor: '#1d4ed8',
-      strokeOpacity: 0.55,
-      strokeWeight: 1,
+      map, center, radius: Math.max(320, currentRadius * 0.75), fillColor: '#2563eb', fillOpacity: 0.2, strokeColor: '#1d4ed8', strokeOpacity: 0.55, strokeWeight: 1,
     }));
   }
 

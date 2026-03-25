@@ -1,5 +1,5 @@
 import type { FastifyInstance } from 'fastify'
-import { getLocationFactors, getProvinces, getDomains } from '../services/BPSService'
+import { getLocationFactors, getProvinces, getDomains, getRegionalHeatmapCells } from '../services/BPSService'
 
 export async function heatmapRoutes(app: FastifyInstance) {
 
@@ -34,6 +34,31 @@ export async function heatmapRoutes(app: FastifyInstance) {
     } catch (err: any) {
       app.log.error(err)
       return reply.code(500).send({ ok: false, error: 'Failed to fetch heatmap data' })
+    }
+  })
+
+  // GET /heatmap/regional?lat=&lng=&radius=
+  // Returns regional heatmap cells aligned to BPS-style administrative areas
+  app.get('/heatmap/regional', async (request, reply) => {
+    const { lat, lng, radius } = request.query as { lat?: string; lng?: string; radius?: string }
+
+    if (!lat || !lng || !radius) {
+      return reply.code(400).send({ ok: false, error: 'MISSING_PARAMS', message: 'lat, lng, and radius are required' })
+    }
+
+    try {
+      const cells = await getRegionalHeatmapCells(parseFloat(lat), parseFloat(lng), parseInt(radius))
+      return reply.send({
+        ok: true,
+        data: {
+          location: { lat: parseFloat(lat), lng: parseFloat(lng), radius: parseInt(radius) },
+          cells,
+          source: 'bps_region_model',
+        },
+      })
+    } catch (err: any) {
+      app.log.error(err)
+      return reply.code(500).send({ ok: false, error: 'Failed to fetch regional heatmap data' })
     }
   })
 

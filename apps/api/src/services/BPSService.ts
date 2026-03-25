@@ -12,6 +12,17 @@ type ScoreFactorData = {
   competition: number
 }
 
+export type RegionalHeatmapCell = {
+  id: string
+  label: string
+  level: 'kecamatan' | 'kab_kota'
+  center: { lat: number; lng: number }
+  radius: number
+  score: number
+  factors: ScoreFactorData
+  source: 'bps_region_model'
+}
+
 type BPSDomain = {
   domain_id: string
   domain_name: string
@@ -50,6 +61,14 @@ export async function getDomains(type: 'all' | 'prov' | 'kab' | 'kabbyprov' = 'a
   if (provId) params.provId = provId
   const data = await bpsFetch('/domain', params)
   return data.data || []
+}
+
+export async function getProvinces(): Promise<BPSDomain[]> {
+  return getDomains('prov')
+}
+
+export async function getCities(provinceId: string): Promise<BPSDomain[]> {
+  return getDomains('kabbyprov', provinceId)
 }
 
 export async function getSubjects(domainId: string): Promise<BPSSubject[]> {
@@ -138,6 +157,21 @@ function calculateLocationFactors(lat: number, lng: number, domainId: string): S
     traffic: Math.min(95, Math.max(35, data.traffic + variation)),
     competition: Math.min(85, Math.max(15, data.competition + variation)),
   }
+}
+
+export async function getRegionalHeatmapCells(
+  lat: number,
+  lng: number,
+  radius: number
+): Promise<RegionalHeatmapCell[]> {
+  const base = await getLocationFactors(lat, lng, radius)
+  const kmScale = Math.max(1, Math.min(4, radius / 1000))
+  const cells: RegionalHeatmapCell[] = [
+    { id: 'core', label: 'Kecamatan Inti', level: 'kecamatan', center: { lat: lat + 0.004 * kmScale, lng }, radius: Math.round(radius * 0.45), score: Math.round(base.population * 0.35 + base.income * 0.25 + base.traffic * 0.25 + (100 - base.competition) * 0.15), factors: { ...base }, source: 'bps_region_model' },
+    { id: 'east', label: 'Kecamatan Timur', level: 'kecamatan', center: { lat: lat + 0.001 * kmScale, lng: lng + 0.006 * kmScale }, radius: Math.round(radius * 0.40), score: Math.round(base.population * 0.30 + base.income * 0.25 + base.traffic * 0.30 + (100 - base.competition) * 0.15), factors: { ...base, traffic: Math.min(95, base.traffic + 4) }, source: 'bps_region_model' },
+    { id: 'south', label: 'Kab/Kota Selatan', level: 'kab_kota', center: { lat: lat - 0.006 * kmScale, lng: lng + 0.001 * kmScale }, radius: Math.round(radius * 0.55), score: Math.round(base.population * 0.28 + base.income * 0.28 + base.traffic * 0.22 + (100 - base.competition) * 0.22), factors: { ...base, income: Math.max(25, base.income - 3) }, source: 'bps_region_model' },
+  ]
+  return cells
 }
 
 export async function getLocationFactors(
