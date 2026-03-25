@@ -5,7 +5,7 @@ Format versi yang dipakai:
 - Contoh: `REV-20260325-01`
 
 ## REV-20260325-29
-- Commit: `(pending)`
+- Commit: `5b9becf`
 - Scope: Prioritas 4 - Export business plan profesional
 - Changes:
   - Tambah exporter dokumen business plan profesional (HTML report)
