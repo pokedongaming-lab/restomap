@@ -4,6 +4,15 @@ Format versi yang dipakai:
 - `REV-YYYYMMDD-XX`
 - Contoh: `REV-20260325-01`
 
+## REV-20260326-15
+- Commit: `(pending)`
+- Scope: Batch Infra D — competitor classification safety net
+- Changes:
+  - `renderCompetitors()` kini memakai fallback nearest competitors jika filter direct/indirect terlalu ketat
+  - Mencegah kondisi tab Competitor terlihat kosong padahal data mentah kompetitor sebenarnya ada
+- Reason:
+  - User masih melihat tab Competitor kosong setelah normalisasi category, berarti bottleneck berikutnya ada di layer klasifikasi/render UI
+
 ## REV-20260326-14
 - Commit: `af25dab`
 - Scope: Batch Infra D kickoff — competitor recovery

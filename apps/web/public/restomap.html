@@ -1374,9 +1374,17 @@ function renderCompetitors(competitors) {
   const isIndirect = (c) => !isDirect(c) && c.distanceNum <= 2500;
   const isReplacement = (c) => !isDirect(c) && !isIndirect(c) && c.distanceNum <= 3500;
 
-  const direct = norm.filter(isDirect).slice(0, 8);
-  const indirect = norm.filter(isIndirect).slice(0, 6);
-  const replacement = norm.filter(isReplacement).slice(0, 6);
+  let direct = norm.filter(isDirect).slice(0, 8);
+  let indirect = norm.filter(isIndirect).slice(0, 6);
+  let replacement = norm.filter(isReplacement).slice(0, 6);
+
+  // Safety net: if category matching is too strict, keep nearest competitors visible instead of empty sections.
+  if (direct.length === 0 && norm.length > 0) {
+    direct = [...norm].sort((a,b) => a.distanceNum - b.distanceNum).slice(0, 5);
+  }
+  if (indirect.length === 0 && norm.length > direct.length) {
+    indirect = norm.filter(c => !direct.some(d => d.name === c.name)).sort((a,b) => a.distanceNum - b.distanceNum).slice(0, 4);
+  }
 
   const potential = (selectedLoc?.categories || []).slice(0, 4).map((x, i) => ({
     name: x.category || `Opportunity ${i+1}`,
