@@ -5,7 +5,7 @@ Format versi yang dipakai:
 - Contoh: `REV-20260325-01`
 
 ## REV-20260326-05
-- Commit: `(pending)`
+- Commit: `c6ff49f`
 - Scope: Batch Map Infra A — hard road-class routing
 - Changes:
   - Pisahkan routing koridor utama vs secondary connector secara eksplisit
