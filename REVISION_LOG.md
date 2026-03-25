@@ -5,7 +5,7 @@ Format versi yang dipakai:
 - Contoh: `REV-20260325-01`
 
 ## REV-20260326-14
-- Commit: `(pending)`
+- Commit: `af25dab`
 - Scope: Batch Infra D kickoff — competitor recovery
 - Changes:
   - Tambah `normalizeCompetitorCategory()` agar kategori UI seperti `cafe` dipetakan ke kandidat API yang lebih realistis (`cafe`, `coffee_shop`, `restaurant`)
