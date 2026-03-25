@@ -4,6 +4,16 @@ Format versi yang dipakai:
 - `REV-YYYYMMDD-XX`
 - Contoh: `REV-20260325-01`
 
+## REV-20260326-04
+- Commit: `(pending)`
+- Scope: Main road weight fix for best-location ranking
+- Changes:
+  - Perkuat pengaruh slider `Jalan Utama` pada scoring final kandidat
+  - Tambah preferensi koridor utama vs secondary road di ranking frontage komersial
+  - Alasan pemilihan diperjelas agar mencerminkan dominasi jalan utama / jalan alternatif
+- Reason:
+  - Input `Jalan Utama` sebelumnya belum terasa memengaruhi titik rekomendasi karena ketimpa pipeline komersial lain
+
 ## REV-20260326-03
 - Commit: `a1b30d1`
 - Scope: Refactor best-location phase 2c

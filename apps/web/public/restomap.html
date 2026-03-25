@@ -766,12 +766,13 @@ function getRoadKey(name = '', lat, lng) {
   return `${base}:${latKey}:${lngKey}`;
 }
 
-function scoreCommercialCandidate(baseFit, roadCount, poiCount, distFromAnchorKm, bucket, corridorBias = 0, overlapPenalty = 0) {
+function scoreCommercialCandidate(baseFit, roadCount, poiCount, distFromAnchorKm, bucket, corridorBias = 0, overlapPenalty = 0, mainRoadWeight = 50, altRoadWeight = 50) {
   const roadScore = Math.min(20, roadCount * 3.5);
   const poiScore = Math.min(22, poiCount * 2.8);
   const spreadPenalty = Math.max(0, distFromAnchorKm < 0.35 ? 18 : distFromAnchorKm < 0.55 ? 8 : 0);
   const zoningBonus = ['C','N','E','S','W'].includes(bucket) ? 8 : 4;
-  return Math.round(baseFit * 0.58 + roadScore + poiScore + zoningBonus + corridorBias - spreadPenalty - overlapPenalty);
+  const roadDominance = Math.round((mainRoadWeight * 0.22) + (altRoadWeight * 0.08));
+  return Math.round(baseFit * 0.52 + roadScore + poiScore + zoningBonus + corridorBias + roadDominance - spreadPenalty - overlapPenalty);
 }
 
 async function harvestCommercialCandidates(seed, usedRoadKeys = new Set()) {
@@ -862,10 +863,15 @@ async function validatePoiRoadCandidate(loc, usedRoadKeys = new Set()) {
       cur.roadKey = picked.roadKey;
       usedRoadKeys.add(picked.roadKey);
       const distFromAnchorKm = distanceKm(cur.lat, cur.lng, anchor.lat, anchor.lng);
-      const corridorBias = cur.corridorBias || (/boulevard|avenue|main|sudirman|gatsu|thamrin|yani|pandanaran|ringroad/i.test(picked.name || '') ? 10 : (cur.frontageBoost || 0));
+      const isMainCorridor = /boulevard|avenue|main|sudirman|gatsu|thamrin|yani|pandanaran|ringroad/i.test(picked.name || '');
+      const corridorBias = cur.corridorBias || (isMainCorridor ? 10 : (cur.frontageBoost || 0));
       const overlapPenalty = cur.overlapPenalty || 0;
-      cur.candidateScore = scoreCommercialCandidate(cur.fitScore || 0, roads.length, poi.length, distFromAnchorKm, cur.bucket || cur.zoneBucket || 'C', corridorBias, overlapPenalty);
-      cur.selectionReason = `frontage ${roads.length > 0 ? 'kuat' : 'cukup'}, aktivitas komersial ${poi.length}, zoning ${cur.bucket || cur.zoneBucket || 'C'}, overlap ${overlapPenalty > 0 ? 'rendah dijaga' : 'rendah'}`;
+      const mainRoadWeight = cur.mainRoadWeight || 50;
+      const altRoadWeight = cur.altRoadWeight || 50;
+      const weightedCorridorBias = corridorBias + (isMainCorridor ? Math.round(mainRoadWeight * 0.12) : Math.round(altRoadWeight * 0.08));
+      cur.candidateScore = scoreCommercialCandidate(cur.fitScore || 0, roads.length, poi.length, distFromAnchorKm, cur.bucket || cur.zoneBucket || 'C', weightedCorridorBias, overlapPenalty, mainRoadWeight, altRoadWeight);
+      const roadReason = mainRoadWeight >= altRoadWeight ? 'dekat koridor jalan utama' : 'dekat konektor jalan alternatif';
+      cur.selectionReason = `${roadReason}, frontage ${roads.length > 0 ? 'kuat' : 'cukup'}, aktivitas komersial ${poi.length}, zoning ${cur.bucket || cur.zoneBucket || 'C'}, overlap ${overlapPenalty > 0 ? 'rendah dijaga' : 'rendah'}`;
       return cur;
     }
 
@@ -1659,6 +1665,8 @@ async function findBestLocation() {
         frontageBoost: chosen?.frontageBoost || 0,
         corridorBias: chosen?.corridorBias || 0,
         overlapPenalty,
+        mainRoadWeight: mainRoad,
+        altRoadWeight: altRoad,
       });
       if (chosen?.roadKey) usedRoadKeys.add(chosen.roadKey);
     }
