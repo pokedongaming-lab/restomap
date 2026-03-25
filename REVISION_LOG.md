@@ -5,7 +5,7 @@ Format versi yang dipakai:
 - Contoh: `REV-20260325-01`
 
 ## REV-20260326-07
-- Commit: `(pending)`
+- Commit: `e445843`
 - Scope: Batch Map Infra B.2
 - Changes:
   - Upgrade render regional heatmap ke polygon-like blocks / choropleth-lite
