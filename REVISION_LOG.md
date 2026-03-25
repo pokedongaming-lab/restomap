@@ -4,6 +4,16 @@ Format versi yang dipakai:
 - `REV-YYYYMMDD-XX`
 - Contoh: `REV-20260325-01`
 
+## REV-20260326-01
+- Commit: `(pending)`
+- Scope: Refactor best-location phase 2
+- Changes:
+  - Tambah commercial frontage candidate harvesting dari seed zone menggunakan Places API
+  - Tambah fallback alternate seeds per zone untuk hindari cluster/road yang sama
+  - Tambah alasan pemilihan berbasis frontage + komersial + zoning fit yang lebih spesifik
+- Reason:
+  - Melanjutkan phase 2 refactor agar source kandidat lebih dekat ke ruko/lahan komersial realistis, bukan sekadar hasil snapping marker
+
 ## REV-20260325-58
 - Commit: `1195612`
 - Scope: Refactor best-location pipeline (phase 1)
