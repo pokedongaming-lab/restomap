@@ -5,7 +5,7 @@ Format versi yang dipakai:
 - Contoh: `REV-20260325-01`
 
 ## REV-20260326-15
-- Commit: `(pending)`
+- Commit: `bd44be4`
 - Scope: Batch Infra D — competitor classification safety net
 - Changes:
   - `renderCompetitors()` kini memakai fallback nearest competitors jika filter direct/indirect terlalu ketat
