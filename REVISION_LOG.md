@@ -5,7 +5,7 @@ Format versi yang dipakai:
 - Contoh: `REV-20260325-01`
 
 ## REV-20260326-16
-- Commit: `(pending)`
+- Commit: `dbdbab2`
 - Scope: Product Refactor 1 — Competitor Intelligence Core (phase 1)
 - Changes:
   - Bangun fondasi unified competitor classification (direct / indirect / replacement) berbasis category alias + distance + brand intent
