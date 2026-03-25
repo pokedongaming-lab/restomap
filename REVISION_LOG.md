@@ -5,7 +5,7 @@ Format versi yang dipakai:
 - Contoh: `REV-20260325-01`
 
 ## REV-20260325-37
-- Commit: `(pending)`
+- Commit: `6b8d4d2`
 - Scope: Batch B.6 Financial Model detail + infographic
 - Changes:
   - Step 7 ditingkatkan ke mode skenario (Conservative/Base/Aggressive)
