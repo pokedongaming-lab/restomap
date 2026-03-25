@@ -4,6 +4,15 @@ Format versi yang dipakai:
 - `REV-YYYYMMDD-XX`
 - Contoh: `REV-20260325-01`
 
+## REV-20260326-14
+- Commit: `(pending)`
+- Scope: Batch Infra D kickoff — competitor recovery
+- Changes:
+  - Tambah `normalizeCompetitorCategory()` agar kategori UI seperti `cafe` dipetakan ke kandidat API yang lebih realistis (`cafe`, `coffee_shop`, `restaurant`)
+  - `fetchCompetitors()` kini mencoba beberapa category alias sebelum fallback ke pencarian luas
+- Reason:
+  - Screenshot menunjukkan tab Competitor kosong untuk `cafe`, sehingga perlu normalisasi kategori agar data lintas tab kembali konsisten
+
 ## REV-20260326-13
 - Commit: `331c72f`
 - Scope: Precision/realism pass before Batch Infra D

@@ -608,13 +608,29 @@ async function fetchWithTimeoutRetry(url, opts = {}, timeoutMs = 7000, retries =
 }
 
 // ═══ API FUNCTIONS ═══
+function normalizeCompetitorCategory(category = '') {
+  const q = String(category || '').trim().toLowerCase();
+  const map = {
+    cafe: ['cafe', 'coffee_shop', 'restaurant'],
+    coffee: ['coffee_shop', 'cafe', 'restaurant'],
+    coffee_shop: ['coffee_shop', 'cafe', 'restaurant'],
+    restaurant: ['restaurant', 'cafe'],
+    fastfood: ['fast_food_restaurant', 'restaurant'],
+    fast_food_restaurant: ['fast_food_restaurant', 'restaurant'],
+  };
+  return map[q] || [q];
+}
+
 async function fetchCompetitors(lat, lng, radius, category) {
   try {
-    const json = await fetchWithTimeoutRetry(`${API_BASE}/competitors?lat=${lat}&lng=${lng}&radius=${radius}&category=${category || ''}`);
-    const primary = json.data?.competitors || [];
-    if (primary.length > 0 || !category) return primary;
+    const categories = normalizeCompetitorCategory(category);
+    for (const cat of categories) {
+      const json = await fetchWithTimeoutRetry(`${API_BASE}/competitors?lat=${lat}&lng=${lng}&radius=${radius}&category=${cat || ''}`);
+      const primary = json.data?.competitors || [];
+      if (primary.length > 0) return primary;
+    }
 
-    // Fallback: broaden search if brand/category is too narrow so competitor tab does not go empty.
+    // Fallback: broaden search if category/brand is too narrow so competitor tab does not go empty.
     const fallbackJson = await fetchWithTimeoutRetry(`${API_BASE}/competitors?lat=${lat}&lng=${lng}&radius=${radius}`);
     return fallbackJson.data?.competitors || [];
   } catch (e) {
