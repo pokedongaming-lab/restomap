@@ -5,7 +5,7 @@ Format versi yang dipakai:
 - Contoh: `REV-20260325-01`
 
 ## REV-20260325-21
-- Commit: `(pending)`
+- Commit: `6442a27`
 - Scope: Competitor intelligence report
 - Changes:
   - Struktur report kompetitor menjadi 4 grup: Direct / Indirect / Replacement / Potential
