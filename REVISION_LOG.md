@@ -5,7 +5,7 @@ Format versi yang dipakai:
 - Contoh: `REV-20260325-01`
 
 ## REV-20260326-13
-- Commit: `(pending)`
+- Commit: `331c72f`
 - Scope: Precision/realism pass before Batch Infra D
 - Changes:
   - `fetchCompetitors()` kini fallback ke pencarian lebih luas saat category/brand terlalu sempit agar tab competitor tidak kosong
