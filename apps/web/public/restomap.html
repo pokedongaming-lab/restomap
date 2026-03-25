@@ -126,15 +126,29 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--t);font-f
   <!-- SIDEBAR -->
   <div class="sidebar">
     <div class="sb-section">
+      <button class="sb-btn" id="btnFindBestTop" onclick="findBestLocation()">🎯 CARI LOKASI TERBAIK</button>
+    </div>
+
+    <div class="sb-section">
       <div class="sb-label" data-i18="lblCity">KOTA</div>
       <select class="sb-select" id="citySelect" onchange="changeCity(this.value)">
-        <option value="-6.2088,106.8234">Jakarta</option>
-        <option value="-7.5755,110.8243">Semarang</option>
-        <option value="-6.9175,107.6191">Bandung</option>
-        <option value="-7.2505,112.7528">Surabaya</option>
-        <option value="1.4828,124.8421">Manado</option>
-        <option value="-5.1425,119.4125">Makassar</option>
-        <option value="3.5881,98.6739">Medan</option>
+        <option value="jakarta">Jakarta</option>
+        <option value="surabaya">Surabaya</option>
+        <option value="bandung">Bandung</option>
+        <option value="medan">Medan</option>
+        <option value="semarang">Semarang</option>
+        <option value="makassar">Makassar</option>
+        <option value="palembang">Palembang</option>
+        <option value="batam">Batam</option>
+        <option value="denpasar">Denpasar</option>
+        <option value="balikpapan">Balikpapan</option>
+        <option value="samarinda">Samarinda</option>
+        <option value="pontianak">Pontianak</option>
+        <option value="banjarmasin">Banjarmasin</option>
+        <option value="pekanbaru">Pekanbaru</option>
+        <option value="yogyakarta">Yogyakarta</option>
+        <option value="malang">Malang</option>
+        <option value="manado">Manado</option>
       </select>
     </div>
     
@@ -208,7 +222,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--t);font-f
         <div id="lblCritAlt" style="font-size:8px;color:var(--t4)">Jalan Alternatif</div>
         <input type="range" class="sb-slider" id="critAltRoad" min="0" max="100" value="65">
       </div>
-      <button class="sb-btn" id="btnFindBest" onclick="findBestLocation()">🎯 CARI LOKASI TERBAIK</button>
+
     </div>
     
     <div class="saved-list" id="savedList">
@@ -218,7 +232,6 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--t);font-f
     
     <div class="sb-section">
       <button class="sb-btn-outline" onclick="saveLocation()" data-i18="lblSave">💾 SIMPAN LOKASI</button>
-      <button class="sb-btn" onclick="goToBuilder()" data-i18="lblBuilder">→ LANJUT KE BUILDER</button>
     </div>
   </div>
   
@@ -454,6 +467,7 @@ function updateLabels() {
   setTxt('lblCritMain', c.main);
   setTxt('lblCritAlt', c.alt);
   setTxt('btnFindBest', c.find);
+  setTxt('btnFindBestTop', c.find);
   setTxt('tabLblOverview', c.tabOverview);
   setTxt('tabLblCompetitors', c.tabCompetitors);
   setTxt('tabLblHeatmap', c.tabHeatmap);
@@ -497,8 +511,29 @@ const LOCS = [
 const TYPE_STATS = {
   cbd:{score:78,revM:487,be:14,comp:28,check:74,margin:18.3},
   premium:{score:82,revM:620,be:18,comp:20,check:95,margin:21.5},
+  commercial:{score:72,revM:390,be:15,comp:18,check:66,margin:16.2},
   trendy:{score:74,revM:415,be:13,comp:22,check:68,margin:17.1},
   suburban:{score:60,revM:238,be:10,comp:9,check:42,margin:14.0},
+};
+
+const CITY_PRESETS = {
+  jakarta:{name:'Jakarta',lat:-6.2088,lng:106.8456,hotspots:['Sudirman','Thamrin','SCBD','Kuningan']},
+  surabaya:{name:'Surabaya',lat:-7.2575,lng:112.7521,hotspots:['Tunjungan','Rungkut','Darmo','Pakuwon']},
+  bandung:{name:'Bandung',lat:-6.9175,lng:107.6191,hotspots:['Dago','Cihampelas','Braga','Setiabudi']},
+  medan:{name:'Medan',lat:3.5952,lng:98.6722,hotspots:['Kesawan','Setiabudi','Sunggal','Ringroad']},
+  semarang:{name:'Semarang',lat:-6.9667,lng:110.4167,hotspots:['Simpang Lima','Pandanaran','Tembalang','Banyumanik']},
+  makassar:{name:'Makassar',lat:-5.1477,lng:119.4327,hotspots:['Panakkukang','Losari','Alauddin','BTP']},
+  palembang:{name:'Palembang',lat:-2.9761,lng:104.7754,hotspots:['Ilir Barat','Sudirman','Plaju','Jakabaring']},
+  batam:{name:'Batam',lat:1.0456,lng:104.0305,hotspots:['Nagoya','Batam Center','Batu Aji','Sekupang']},
+  denpasar:{name:'Denpasar',lat:-8.6500,lng:115.2167,hotspots:['Renon','Teuku Umar','Sanur','Gatsu']},
+  balikpapan:{name:'Balikpapan',lat:-1.2379,lng:116.8529,hotspots:['Balikpapan Baru','Sepinggan','Klandasan','MT Haryono']},
+  samarinda:{name:'Samarinda',lat:-0.5022,lng:117.1536,hotspots:['Sungai Kunjang','Samarinda Ulu','Temindung','Loa Janan']},
+  pontianak:{name:'Pontianak',lat:-0.0263,lng:109.3425,hotspots:['Gajah Mada','Sutoyo','Ayani','Siantan']},
+  banjarmasin:{name:'Banjarmasin',lat:-3.3167,lng:114.5908,hotspots:['A Yani','Kayu Tangi','Gatot Subroto','Banjar Indah']},
+  pekanbaru:{name:'Pekanbaru',lat:0.5071,lng:101.4478,hotspots:['Sudirman','Arengka','Panam','Riau Ujung']},
+  yogyakarta:{name:'Yogyakarta',lat:-7.7956,lng:110.3695,hotspots:['Malioboro','Gejayan','Seturan','Sleman City']},
+  malang:{name:'Malang',lat:-7.9666,lng:112.6326,hotspots:['Ijen','Soekarno Hatta','Dinoyo','Lowokwaru']},
+  manado:{name:'Manado',lat:1.4748,lng:124.8421,hotspots:['Boulevard','Megamas','Tikala','Malalayang']}
 };
 
 // ═══ STATE ═══
@@ -506,6 +541,7 @@ let map, marker, geocoder;
 let selectedLoc = null;
 let currentRadius = 1000;
 let currentCategory = '';
+let currentCityKey = 'jakarta';
 let tier = 'free';
 let activeTab = 'overview';
 let renderDebounceTimer = null;
@@ -567,10 +603,10 @@ async function fetchGapCategory(lat, lng, radius) {
 
 // ═══ GOOGLE MAPS ═══
 function initMap() {
-  const jakarta = { lat: -6.2088, lng: 106.8456 };
-  
+  const initial = CITY_PRESETS[currentCityKey] || CITY_PRESETS.jakarta;
+
   map = new google.maps.Map(document.getElementById('map'), {
-    center: jakarta,
+    center: { lat: initial.lat, lng: initial.lng },
     zoom: 12,
     styles: [
       { elementType: "geometry", stylers: [{ color: "#1a1a1a" }] },
@@ -898,10 +934,11 @@ function analyzeCannibal() {
 }
 
 // ═══ SIDEBAR FUNCTIONS ═══
-function changeCity(coords) {
-  const [lat, lng] = coords.split(',').map(Number);
+function changeCity(cityKey) {
+  currentCityKey = cityKey;
+  const city = CITY_PRESETS[cityKey] || CITY_PRESETS.jakarta;
   if (map) {
-    map.setCenter({ lat, lng });
+    map.setCenter({ lat: city.lat, lng: city.lng });
     map.setZoom(12);
   }
 }
@@ -940,8 +977,24 @@ function findBestLocation() {
 
   const targetScore = Math.round((traffic * 0.27 + buying * 0.25 + pop * 0.2 + mainRoad * 0.18 + altRoad * 0.10));
 
-  // Find best location by weighted similarity to user criteria
-  const best = LOCS.reduce((bestLoc, loc) => {
+  // Generate city-local candidates so result always follows selected city
+  const city = CITY_PRESETS[currentCityKey] || CITY_PRESETS.jakarta;
+  const hotspots = city.hotspots || ['Pusat Kota','CBD','Commercial Hub','Transit Hub'];
+  const cityCandidates = hotspots.map((h, idx) => {
+    const latJitter = (idx - 1.5) * 0.018;
+    const lngJitter = (1.5 - idx) * 0.018;
+    const types = ['cbd','premium','commercial','suburban'];
+    const type = types[idx % types.length];
+    return {
+      id: `${currentCityKey}_${idx}`,
+      name: `${h}, ${city.name}`,
+      lat: city.lat + latJitter,
+      lng: city.lng + lngJitter,
+      type
+    };
+  });
+
+  const best = cityCandidates.reduce((bestLoc, loc) => {
     const base = TYPE_STATS[loc.type]?.score || 60;
     const roadFit = (loc.type === 'cbd' || loc.type === 'premium') ? (mainRoad * 0.6 + altRoad * 0.4) : (mainRoad * 0.4 + altRoad * 0.6);
     const fit = Math.round(base * 0.55 + traffic * 0.15 + buying * 0.15 + pop * 0.10 + roadFit * 0.05);
