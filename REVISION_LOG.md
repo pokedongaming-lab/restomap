@@ -4,6 +4,15 @@ Format versi yang dipakai:
 - `REV-YYYYMMDD-XX`
 - Contoh: `REV-20260325-01`
 
+## REV-20260325-30
+- Commit: `(pending)`
+- Scope: Step 4 refactor cleanup
+- Changes:
+  - Hapus data hotspot `LOCS` yang sudah tidak digunakan lagi
+  - Rapikan data section agar hanya menyisakan source yang aktif dipakai (TYPE_STATS, CITY_PRESETS)
+- Reason:
+  - Mengurangi dead code dan memudahkan maintenance
+
 ## REV-20260325-29
 - Commit: `5b9becf`
 - Scope: Prioritas 4 - Export business plan profesional
