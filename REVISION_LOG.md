@@ -5,7 +5,7 @@ Format versi yang dipakai:
 - Contoh: `REV-20260325-01`
 
 ## REV-20260325-32
-- Commit: `(pending)`
+- Commit: `c8ea50e`
 - Scope: Batch B.1 Market Analysis infografis interaktif
 - Changes:
   - Step 2 diubah menjadi market infographic interaktif berbasis bar progress per metrik
