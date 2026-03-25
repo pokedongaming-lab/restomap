@@ -5,7 +5,7 @@ Format versi yang dipakai:
 - Contoh: `REV-20260325-01`
 
 ## REV-20260326-11
-- Commit: `(pending)`
+- Commit: `9a4adb2`
 - Scope: Batch Map Infra C.2 — Voronoi emphasis from criteria
 - Changes:
   - Sinkronkan render Voronoi dengan bobot kriteria aktif
