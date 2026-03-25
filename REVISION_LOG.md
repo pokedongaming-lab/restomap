@@ -4,6 +4,17 @@ Format versi yang dipakai:
 - `REV-YYYYMMDD-XX`
 - Contoh: `REV-20260325-01`
 
+## REV-20260325-43
+- Commit: `(pending)`
+- Scope: POI/Road-only candidate validation
+- Changes:
+  - Tambah `placesNearby()` wrapper untuk Google Places nearby search
+  - Tambah `validatePoiRoadCandidate()` agar kandidat hanya lolos jika punya road/POI komersial terdekat
+  - Jika kandidat tidak valid, titik digeser lagi ke inland anchor sampai valid atau fallback ke anchor
+  - Sidebar Top-N kini menampilkan status validasi (`POI/Road OK` / `Inland fallback`)
+- Reason:
+  - Menambah lapisan validasi akhir supaya titik rekomendasi tidak muncul di area kosong, laut, atau pelabuhan tepi pesisir
+
 ## REV-20260325-42
 - Commit: `ff6f69f`
 - Scope: Anti-pelabuhan / anti-pesisir untuk best-location

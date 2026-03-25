@@ -720,6 +720,49 @@ function distanceKm(aLat, aLng, bLat, bLng) {
   return 2 * R * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
 }
 
+function placesNearby(location, request) {
+  return new Promise((resolve) => {
+    if (!map || !window.google?.maps?.places?.PlacesService) return resolve([]);
+    const service = new google.maps.places.PlacesService(map);
+    service.nearbySearch({ location, ...request }, (results, status) => {
+      if (status === google.maps.places.PlacesServiceStatus.OK && Array.isArray(results)) resolve(results);
+      else resolve([]);
+    });
+  });
+}
+
+async function validatePoiRoadCandidate(loc) {
+  if (!window.google?.maps?.places) return loc;
+  const anchor = getCityInlandAnchor();
+  let cur = { ...loc };
+
+  for (let i = 0; i < 6; i++) {
+    const point = new google.maps.LatLng(cur.lat, cur.lng);
+    const [roads, poi] = await Promise.all([
+      placesNearby(point, { radius: 180, keyword: 'jalan' }),
+      placesNearby(point, { radius: 220, type: 'restaurant' })
+    ]);
+
+    const roadHit = roads.length > 0;
+    const poiHit = poi.length > 0;
+    if (roadHit || poiHit) {
+      cur.poiValidated = true;
+      cur.poiCount = poi.length;
+      cur.roadCount = roads.length;
+      return cur;
+    }
+
+    cur.lat += (anchor.lat - cur.lat) * 0.38;
+    cur.lng += (anchor.lng - cur.lng) * 0.38;
+  }
+
+  cur.lat = anchor.lat;
+  cur.lng = anchor.lng;
+  cur.poiValidated = false;
+  cur.poiFallback = true;
+  return cur;
+}
+
 async function adjustInlandIfNeeded(loc) {
   const city = CITY_PRESETS[currentCityKey] || CITY_PRESETS.jakarta;
   const anchor = getCityInlandAnchor();
@@ -1355,9 +1398,12 @@ async function findBestLocation() {
   const topN = parseInt(document.getElementById('topNSelect')?.value || '5', 10);
   const bestList = cityCandidates.sort((a,b) => b.fitScore - a.fitScore).slice(0, topN);
 
-  // Resolve real-world address labels and nudge inland if point is sea-like
+  // Resolve real-world address labels, nudge inland, then validate against POI/road presence
   await Promise.all(bestList.map(async (loc) => {
     await adjustInlandIfNeeded(loc);
+    const validated = await validatePoiRoadCandidate(loc);
+    Object.assign(loc, validated);
+    loc.displayName = await reverseGeocodeLabel(loc.lat, loc.lng, loc.displayName || loc.name);
   }));
 
   // Clear previous best markers
@@ -1416,9 +1462,10 @@ async function findBestLocation() {
     listEl.innerHTML = bestList.map((l, i) => `
       <div style="background:var(--bg3);border:1px solid var(--b);padding:10px;margin-bottom:8px;border-radius:4px">
         <div style="font-size:11px;color:${i===0?'var(--a)':'var(--t)'};margin-bottom:4px">#${i+1} ${l.displayName || l.name}</div>
-        <div style="font-size:9px;color:var(--t3);display:flex;gap:12px">
+        <div style="font-size:9px;color:var(--t3);display:flex;gap:12px;flex-wrap:wrap">
           <span>📊 Score ${l.fitScore}</span>
           <span>📍 ${l.lat.toFixed(4)}, ${l.lng.toFixed(4)}</span>
+          <span>${l.poiFallback ? '🛟 Inland fallback' : (l.poiValidated ? '🛣️ POI/Road OK' : '🔎 Validating')}</span>
         </div>
       </div>
     `).join('');
