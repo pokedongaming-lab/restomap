@@ -5,7 +5,7 @@ Format versi yang dipakai:
 - Contoh: `REV-20260325-01`
 
 ## REV-20260325-55
-- Commit: `(pending)`
+- Commit: `55120a7`
 - Scope: Make Top-N spread respond to radius
 - Changes:
   - `findBestLocation()` kini membaca `radiusSlider/currentRadius` untuk membentuk `radiusScale`
