@@ -5,7 +5,7 @@ Format versi yang dipakai:
 - Contoh: `REV-20260325-01`
 
 ## REV-20260325-12
-- Commit: `(pending)`
+- Commit: `6cc0fc2`
 - Scope: Theme expansion (RestoMap + RestoBuilder)
 - Changes:
   - Tambah pilihan tema non-hitam: Dark Grey, Grey, Navy, Blue
