@@ -776,29 +776,44 @@ function scoreCommercialCandidate(baseFit, roadCount, poiCount, distFromAnchorKm
 
 async function harvestCommercialCandidates(seed, usedRoadKeys = new Set()) {
   if (!window.google?.maps?.places) return [];
-  const point = new google.maps.LatLng(seed.lat, seed.lng);
-  const [restaurants, cafes, stores] = await Promise.all([
-    placesNearby(point, { radius: 260, type: 'restaurant' }),
-    placesNearby(point, { radius: 260, type: 'cafe' }),
-    placesNearby(point, { radius: 260, keyword: 'ruko' })
-  ]);
+  const probeOffsets = [
+    { lat: 0, lng: 0 },
+    { lat: 0.0018, lng: 0.0012 },
+    { lat: -0.0018, lng: 0.0014 },
+    { lat: 0.0012, lng: -0.0018 },
+  ];
 
-  return [...restaurants, ...cafes, ...stores]
+  let all = [];
+  for (const off of probeOffsets) {
+    const probe = applyCoastGuard(seed.lat + off.lat, seed.lng + off.lng);
+    const point = new google.maps.LatLng(probe.lat, probe.lng);
+    const [restaurants, cafes, stores] = await Promise.all([
+      placesNearby(point, { radius: 260, type: 'restaurant' }),
+      placesNearby(point, { radius: 260, type: 'cafe' }),
+      placesNearby(point, { radius: 260, keyword: 'ruko' })
+    ]);
+    all.push(...restaurants, ...cafes, ...stores);
+  }
+
+  return all
     .filter(r => r.geometry?.location)
     .map((r) => {
       const p = r.geometry.location;
+      const name = r.name || '';
+      const frontageBoost = /ruko|shop|mart|plaza|trade|boulevard|avenue/i.test(name) ? 8 : 0;
       return {
         lat: p.lat(),
         lng: p.lng(),
-        name: r.name || '',
-        roadKey: getRoadKey(r.name || '', p.lat(), p.lng()),
+        name,
+        roadKey: getRoadKey(name, p.lat(), p.lng()),
         userRatingsTotal: r.user_ratings_total || 0,
         rating: r.rating || 0,
+        frontageBoost,
       };
     })
     .filter(c => !usedRoadKeys.has(c.roadKey))
-    .sort((a,b) => b.userRatingsTotal - a.userRatingsTotal || b.rating - a.rating)
-    .slice(0, 3);
+    .sort((a,b) => (b.frontageBoost - a.frontageBoost) || (b.userRatingsTotal - a.userRatingsTotal) || (b.rating - a.rating))
+    .slice(0, 5);
 }
 
 async function validatePoiRoadCandidate(loc, usedRoadKeys = new Set()) {
@@ -1636,6 +1651,7 @@ async function findBestLocation() {
         bucket: seed.bucket,
         fitScore,
         harvestedFrontage: harvested.length,
+        frontageBoost: chosen?.frontageBoost || 0,
       });
       if (chosen?.roadKey) usedRoadKeys.add(chosen.roadKey);
     }

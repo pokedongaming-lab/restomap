@@ -4,6 +4,16 @@ Format versi yang dipakai:
 - `REV-YYYYMMDD-XX`
 - Contoh: `REV-20260325-01`
 
+## REV-20260326-02
+- Commit: `(pending)`
+- Scope: Refactor best-location phase 2b
+- Changes:
+  - Tambah alternate seed offsets per zone untuk fallback komersial yang lebih variatif
+  - Tambah filter frontage/strip komersial yang lebih tegas dan hindari cluster bentrok
+  - Tambah Voronoi/zone spacing bias supaya kandidat visual tidak saling rapat
+- Reason:
+  - Melanjutkan phase 2b agar kandidat best-location lebih realistis sebagai frontage komersial dan lebih tersebar di peta
+
 ## REV-20260326-01
 - Commit: `7e0b606`
 - Scope: Refactor best-location phase 2
