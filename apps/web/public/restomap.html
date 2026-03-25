@@ -132,10 +132,6 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--t);font-f
   <!-- SIDEBAR -->
   <div class="sidebar">
     <div class="sb-section">
-      <button class="sb-btn" id="btnFindBestTop" onclick="findBestLocation()">🎯 CARI LOKASI TERBAIK</button>
-    </div>
-
-    <div class="sb-section">
       <div class="sb-label" data-i18="lblCity">KOTA</div>
       <select class="sb-select" id="citySelect" onchange="changeCity(this.value)">
         <option value="jakarta">Jakarta</option>
@@ -238,6 +234,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--t);font-f
     
     <div class="sb-section">
       <button class="sb-btn-outline" onclick="saveLocation()" data-i18="lblSave">💾 SIMPAN LOKASI</button>
+      <button class="sb-btn" id="btnFindBestTop" onclick="findBestLocation()">🎯 CARI LOKASI TERBAIK</button>
     </div>
   </div>
   

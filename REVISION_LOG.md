@@ -4,6 +4,15 @@ Format versi yang dipakai:
 - `REV-YYYYMMDD-XX`
 - Contoh: `REV-20260325-01`
 
+## REV-20260325-14
+- Commit: `(pending)`
+- Scope: CTA position refinement (RestoMap)
+- Changes:
+  - Pindahkan tombol `Cari Lokasi Terbaik` ke bawah tombol `Simpan Lokasi`
+  - Hapus posisi lama di bagian atas sidebar
+- Reason:
+  - Permintaan user agar urutan CTA lebih natural (save lalu find best)
+
 ## REV-20260325-13
 - Commit: `1f6c969`
 - Scope: Theme persistence + legacy color preservation
