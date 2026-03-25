@@ -5,7 +5,7 @@ Format versi yang dipakai:
 - Contoh: `REV-20260325-01`
 
 ## REV-20260325-31
-- Commit: `(pending)`
+- Commit: `6c88a5d`
 - Scope: Batch A foundation sync
 - Changes:
   - Sinkronisasi asumsi RestoMap -> RestoBuilder via query params (asSeats, asAvgCheck, turnover, COGS, labor, marketing, rent factor, CAPEX)
