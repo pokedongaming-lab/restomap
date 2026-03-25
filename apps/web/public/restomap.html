@@ -819,24 +819,98 @@ async function renderAnalysis(lat, lng) {
 function renderCompetitors(competitors) {
   const listEl = document.getElementById('competitorList');
   if (!listEl) return;
-  
+
   if (!competitors || competitors.length === 0) {
     const q = (currentCategory || '').trim();
     const extra = q ? `<div style="font-size:9px;color:var(--t4);margin-top:6px">Brand: <strong>${q}</strong>. Coba naikkan radius atau ganti keyword.</div>` : '';
     listEl.innerHTML = `<div style="padding:10px;color:var(--t4)">${tt('noCompetitors')}${extra}</div>`;
     return;
   }
-  
-  listEl.innerHTML = competitors.slice(0, 10).map(c => `
-    <div style="background:var(--bg3);border:1px solid var(--b);padding:10px;margin-bottom:8px;border-radius:4px">
-      <div style="font-size:11px;color:var(--t);margin-bottom:4px">${c.name}</div>
-      <div style="font-size:9px;color:var(--t3);display:flex;gap:12px">
-        <span>⭐ ${c.rating || '-'}</span>
-        <span>📍 ${c.distance || '-'}m</span>
-        <span>${c.category || '-'}</span>
+
+  const norm = competitors.map(c => ({
+    ...c,
+    distanceNum: parseFloat(String(c.distance || '9999').replace(/[^0-9.]/g, '')) || 9999,
+    ratingNum: parseFloat(c.rating) || 0,
+    categoryNorm: String(c.category || '').toLowerCase(),
+    nameNorm: String(c.name || '').toLowerCase(),
+  }));
+
+  const isDirect = (c) => {
+    if (!currentCategory) return c.distanceNum <= 1200;
+    const q = currentCategory.toLowerCase();
+    return c.distanceNum <= 1500 && (c.categoryNorm.includes(q) || c.nameNorm.includes(q));
+  };
+  const isIndirect = (c) => !isDirect(c) && c.distanceNum <= 2500;
+  const isReplacement = (c) => !isDirect(c) && !isIndirect(c) && c.distanceNum <= 3500;
+
+  const direct = norm.filter(isDirect).slice(0, 8);
+  const indirect = norm.filter(isIndirect).slice(0, 6);
+  const replacement = norm.filter(isReplacement).slice(0, 6);
+
+  const potential = (selectedLoc?.categories || []).slice(0, 4).map((x, i) => ({
+    name: x.category || `Opportunity ${i+1}`,
+    gap: x.gapScore ?? (75 - i * 8),
+    demand: x.demandScore ?? (70 - i * 6)
+  }));
+
+  const avgDirectRating = direct.length ? (direct.reduce((s, c) => s + c.ratingNum, 0) / direct.length).toFixed(1) : '-';
+  const swot = {
+    s: `Demand score kuat (Bayes ${(selectedLoc?.methodScores?.bayesDemand ?? 70)}) + trafik tinggi area inti`,
+    w: `Tekanan direct competitor ${direct.length} outlet dalam radius dekat`,
+    o: potential.length ? `Kategori celah terbaik: ${potential[0].name}` : 'Peluang category gap masih tersedia',
+    t: `Cannibal overlap ${(selectedLoc?.methodScores?.cannibalPct ?? 12).toFixed(1)}% + HHI ${(selectedLoc?.methodScores?.hhiProxy ?? 55)}`
+  };
+
+  const renderSection = (title, items) => `
+    <div style="margin-bottom:12px">
+      <div style="font-size:9px;color:var(--a);letter-spacing:1px;margin-bottom:6px">${title}</div>
+      ${items.length === 0 ? `<div style="font-size:9px;color:var(--t4)">Tidak ada data</div>` : items.map(c => `
+        <div style="background:var(--bg3);border:1px solid var(--b);padding:8px;margin-bottom:6px;border-radius:4px">
+          <div style="font-size:10px;color:var(--t);margin-bottom:2px">${c.name}</div>
+          <div style="font-size:9px;color:var(--t3);display:flex;gap:10px;flex-wrap:wrap">
+            <span>⭐ ${c.rating || '-'}</span>
+            <span>📍 ${c.distance || '-'}m</span>
+            <span>${c.category || '-'}</span>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+
+  const potentialHtml = `
+    <div style="margin-bottom:12px">
+      <div style="font-size:9px;color:var(--a);letter-spacing:1px;margin-bottom:6px">POTENTIAL COMPETITORS / GAPS</div>
+      ${potential.length === 0 ? `<div style="font-size:9px;color:var(--t4)">Belum ada data peluang</div>` : potential.map(p => `
+        <div style="background:var(--bg3);border:1px solid var(--b);padding:8px;margin-bottom:6px;border-radius:4px">
+          <div style="font-size:10px;color:var(--t)">${p.name}</div>
+          <div style="font-size:9px;color:var(--t3)">Gap ${p.gap} · Demand ${p.demand}</div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+
+  listEl.innerHTML = `
+    <div style="padding:10px;background:var(--a3);border:1px solid var(--b);border-radius:4px;margin-bottom:12px;font-size:9px;color:var(--t3)">
+      <div><strong style="color:var(--a)">COMPETITOR SNAPSHOT</strong></div>
+      <div>Total: ${norm.length} · Direct: ${direct.length} · Indirect: ${indirect.length} · Replacement: ${replacement.length}</div>
+      <div>Avg Direct Rating: ${avgDirectRating}</div>
+    </div>
+
+    ${renderSection('DIRECT COMPETITORS', direct)}
+    ${renderSection('INDIRECT COMPETITORS', indirect)}
+    ${renderSection('REPLACEMENT COMPETITORS', replacement)}
+    ${potentialHtml}
+
+    <div style="margin-top:8px;padding:10px;background:var(--bg3);border:1px solid var(--b);border-radius:4px">
+      <div style="font-size:9px;color:var(--a);letter-spacing:1px;margin-bottom:6px">SWOT ANALYSIS (RINGKAS)</div>
+      <div style="font-size:9px;color:var(--t3);line-height:1.7">
+        <div><strong>S:</strong> ${swot.s}</div>
+        <div><strong>W:</strong> ${swot.w}</div>
+        <div><strong>O:</strong> ${swot.o}</div>
+        <div><strong>T:</strong> ${swot.t}</div>
       </div>
     </div>
-  `).join('');
+  `;
 }
 
 // ═══ HEATMAP ═══

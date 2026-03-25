@@ -4,6 +4,17 @@ Format versi yang dipakai:
 - `REV-YYYYMMDD-XX`
 - Contoh: `REV-20260325-01`
 
+## REV-20260325-21
+- Commit: `(pending)`
+- Scope: Competitor intelligence report
+- Changes:
+  - Struktur report kompetitor menjadi 4 grup: Direct / Indirect / Replacement / Potential
+  - Tambah snapshot summary (total, direct count, avg direct rating)
+  - Tambah potential competitor/gap cards dari hasil category-gap
+  - Tambah SWOT analysis ringkas (S/W/O/T) berbasis metrik lokasi (Bayes/HHI/Cannibal)
+- Reason:
+  - Menjawab kebutuhan analisa kompetitor yang lebih lengkap untuk keputusan bisnis
+
 ## REV-20260325-20
 - Commit: `cdfa892`
 - Scope: Heatmap + Voronoi visual overlays
