@@ -617,11 +617,6 @@ function initMap() {
   map = new google.maps.Map(document.getElementById('map'), {
     center: { lat: initial.lat, lng: initial.lng },
     zoom: 12,
-    styles: [
-      { elementType: "geometry", stylers: [{ color: "#1a1a1a" }] },
-      { elementType: "labels.text.stroke", stylers: [{ color: "#1a1a1a" }] },
-      { elementType: "labels.text.fill", stylers: [{ color: "#746855" }] },
-    ],
     disableDefaultUI: false,
     zoomControl: true,
     clickableIcons: false,

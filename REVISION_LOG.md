@@ -4,6 +4,15 @@ Format versi yang dipakai:
 - `REV-YYYYMMDD-XX`
 - Contoh: `REV-20260325-01`
 
+## REV-20260325-17
+- Commit: `(pending)`
+- Scope: Map readability (RestoMap)
+- Changes:
+  - Hapus custom dark map style pada Google Maps
+  - Kembalikan ke style default Google (terang/lebih jelas)
+- Reason:
+  - User minta map tidak gelap agar detail jalan/lokasi lebih mudah terbaca
+
 ## REV-20260325-16
 - Commit: `ff372e4`
 - Scope: Top-N best-location selector (RestoMap)
