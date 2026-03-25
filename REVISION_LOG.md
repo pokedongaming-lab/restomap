@@ -5,7 +5,7 @@ Format versi yang dipakai:
 - Contoh: `REV-20260325-01`
 
 ## REV-20260326-03
-- Commit: `(pending)`
+- Commit: `a1b30d1`
 - Scope: Refactor best-location phase 2c
 - Changes:
   - Tambah commercial corridor filtering dan Voronoi spacing bias
