@@ -4,6 +4,16 @@ Format versi yang dipakai:
 - `REV-YYYYMMDD-XX`
 - Contoh: `REV-20260325-01`
 
+## REV-20260325-54
+- Commit: `(pending)`
+- Scope: Road uniqueness lock
+- Changes:
+  - Tambah `getRoadKey()` untuk identitas unik road/POI snapping reference
+  - `validatePoiRoadCandidate()` kini menerima `usedRoadKeys` dan menghindari referensi jalan yang sudah dipakai marker sebelumnya
+  - Validasi Top-N diubah menjadi berurutan (bukan `Promise.all`) supaya lock per-road bisa diterapkan deterministik
+- Reason:
+  - Menangani bukti terbaru bahwa marker #2/#3/#5 tetap bertumpuk karena beberapa zona tersnap ke ruas jalan/cluster POI yang sama
+
 ## REV-20260325-53
 - Commit: `85e24d0`
 - Scope: Hard uniqueness by primary zone for Top 5

@@ -759,7 +759,14 @@ function placesNearby(location, request) {
   });
 }
 
-async function validatePoiRoadCandidate(loc) {
+function getRoadKey(name = '', lat, lng) {
+  const base = normalizeStreetName(name || 'unknown-road');
+  const latKey = Number(lat || 0).toFixed(3);
+  const lngKey = Number(lng || 0).toFixed(3);
+  return `${base}:${latKey}:${lngKey}`;
+}
+
+async function validatePoiRoadCandidate(loc, usedRoadKeys = new Set()) {
   if (!window.google?.maps?.places) return loc;
   const anchor = getCityInlandAnchor();
   let cur = { ...loc };
@@ -775,28 +782,34 @@ async function validatePoiRoadCandidate(loc) {
       .filter(r => r.geometry?.location)
       .map(r => {
         const p = r.geometry.location;
+        const roadKey = getRoadKey(r.name || '', p.lat(), p.lng());
         return {
           lat: p.lat(),
           lng: p.lng(),
           dist: distanceKm(cur.lat, cur.lng, p.lat(), p.lng()),
           rating: r.rating || 0,
           userRatingsTotal: r.user_ratings_total || 0,
-          name: r.name || ''
+          name: r.name || '',
+          roadKey
         };
       })
       .sort((a,b) => a.dist - b.dist || b.userRatingsTotal - a.userRatingsTotal || b.rating - a.rating);
 
-    if (refs.length) {
-      const bestRef = refs[0];
-      cur.lat = bestRef.lat;
-      cur.lng = bestRef.lng;
+    const unlockedRefs = refs.filter(r => !usedRoadKeys.has(r.roadKey));
+    const picked = unlockedRefs[0] || refs[0];
+
+    if (picked) {
+      cur.lat = picked.lat;
+      cur.lng = picked.lng;
       cur = { ...cur, ...applyCoastGuard(cur.lat, cur.lng) };
       cur.poiValidated = true;
       cur.poiCount = poi.length;
       cur.roadCount = roads.length;
-      cur.poiRefName = bestRef.name;
-      cur.streetName = roads[0]?.name || bestRef.name || '';
-      cur.selectionReason = `Akses jalan ${roads.length}, POI ${poi.length}, referensi ${bestRef.name || 'terdekat'}`;
+      cur.poiRefName = picked.name;
+      cur.streetName = roads[0]?.name || picked.name || '';
+      cur.roadKey = picked.roadKey;
+      usedRoadKeys.add(picked.roadKey);
+      cur.selectionReason = `Akses jalan ${roads.length}, POI ${poi.length}, referensi ${picked.name || 'terdekat'}`;
       return cur;
     }
 
@@ -1546,23 +1559,25 @@ async function findBestLocation() {
   const topN = requestedTopN;
   const bestList = cityCandidates.sort((a,b) => b.fitScore - a.fitScore).slice(0, topN);
 
-  // Resolve real-world address labels, nudge inland, then validate against POI/road presence
-  await Promise.all(bestList.map(async (loc) => {
+  const usedRoadKeys = new Set();
+
+  // Resolve real-world address labels, nudge inland, then validate against unique POI/road presence
+  for (const loc of bestList) {
     await adjustInlandIfNeeded(loc);
-    const validated = await validatePoiRoadCandidate(loc);
+    const validated = await validatePoiRoadCandidate(loc, usedRoadKeys);
     Object.assign(loc, validated);
     loc.displayName = await reverseGeocodeLabel(loc.lat, loc.lng, loc.displayName || loc.name);
-  }));
+  }
 
   deconflictBestList(bestList);
   enforceZoneSpread(bestList);
-  await Promise.all(bestList.map(async (loc, idx) => {
-    const validated = await validatePoiRoadCandidate(loc);
+  for (const loc of bestList) {
+    const validated = await validatePoiRoadCandidate(loc, usedRoadKeys);
     Object.assign(loc, validated);
     loc.displayName = await reverseGeocodeLabel(loc.lat, loc.lng, loc.displayName || loc.name);
     loc.selectionReason = loc.selectionReason || `Street priority ${loc.streetPriority || loc.fitScore}; akses jalan dan POI sekitar lebih kuat.`;
     loc.rankReason = `${lang === 'id' ? 'Dipilih karena' : 'Chosen because'} ${loc.selectionReason}`;
-  }));
+  }
   bestList.sort((a,b) => (b.streetPriority || b.fitScore) - (a.streetPriority || a.fitScore));
 
   // Clear previous best markers
