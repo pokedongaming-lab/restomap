@@ -5,7 +5,7 @@ Format versi yang dipakai:
 - Contoh: `REV-20260325-01`
 
 ## REV-20260325-35
-- Commit: `(pending)`
+- Commit: `977959b`
 - Scope: Batch B.4 Operations & Team
 - Changes:
   - Step 5 diubah ke mode struktur divisi kustom (editable)
