@@ -4,6 +4,16 @@ Format versi yang dipakai:
 - `REV-YYYYMMDD-XX`
 - Contoh: `REV-20260325-01`
 
+## REV-20260325-58
+- Commit: `(pending)`
+- Scope: Refactor best-location pipeline (phase 1)
+- Changes:
+  - Ganti source kandidat dari marker sintetis cluster-heavy menjadi zone-seeded commercial-lot candidates
+  - Tambah scoring baru berbasis frontage road, commercial POI density, zoning fit, dan spread penalty
+  - Tambah alasan pemilihan yang lebih proper untuk kandidat properti/jalan komersial
+- Reason:
+  - Menjalankan refactor best-location agar hasil tidak lagi sekadar marker snap, tetapi mendekati kandidat ruko/lahan komersial yang realistis
+
 ## REV-20260325-57
 - Commit: `48205f1`
 - Scope: Pin 1 hasil per zone tanpa resnap ke cluster yang sama

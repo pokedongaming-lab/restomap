@@ -766,6 +766,14 @@ function getRoadKey(name = '', lat, lng) {
   return `${base}:${latKey}:${lngKey}`;
 }
 
+function scoreCommercialCandidate(baseFit, roadCount, poiCount, distFromAnchorKm, bucket) {
+  const roadScore = Math.min(20, roadCount * 3.5);
+  const poiScore = Math.min(22, poiCount * 2.8);
+  const spreadPenalty = Math.max(0, distFromAnchorKm < 0.35 ? 18 : distFromAnchorKm < 0.55 ? 8 : 0);
+  const zoningBonus = ['C','N','E','S','W'].includes(bucket) ? 8 : 4;
+  return Math.round(baseFit * 0.58 + roadScore + poiScore + zoningBonus - spreadPenalty);
+}
+
 async function validatePoiRoadCandidate(loc, usedRoadKeys = new Set()) {
   if (!window.google?.maps?.places) return loc;
   const anchor = getCityInlandAnchor();
@@ -809,7 +817,9 @@ async function validatePoiRoadCandidate(loc, usedRoadKeys = new Set()) {
       cur.streetName = roads[0]?.name || picked.name || '';
       cur.roadKey = picked.roadKey;
       usedRoadKeys.add(picked.roadKey);
-      cur.selectionReason = `Akses jalan ${roads.length}, POI ${poi.length}, referensi ${picked.name || 'terdekat'}`;
+      const distFromAnchorKm = distanceKm(cur.lat, cur.lng, anchor.lat, anchor.lng);
+      cur.candidateScore = scoreCommercialCandidate(cur.fitScore || 0, roads.length, poi.length, distFromAnchorKm, cur.bucket || cur.zoneBucket || 'C');
+      cur.selectionReason = `dekat frontage/jalan (${roads.length}), cluster komersial (${poi.length}), referensi ${picked.name || 'terdekat'}`;
       return cur;
     }
 
@@ -1612,10 +1622,10 @@ async function findBestLocation() {
   finalDistanceLock(bestList);
   for (const loc of bestList) {
     loc.displayName = await reverseGeocodeLabel(loc.lat, loc.lng, loc.displayName || loc.name);
-    loc.selectionReason = loc.selectionReason || `Street priority ${loc.streetPriority || loc.fitScore}; akses jalan dan POI sekitar lebih kuat.`;
+    loc.selectionReason = loc.selectionReason || `dekat frontage komersial, akses jalan lebih kuat, dan POI sekitar lebih aktif`;
     loc.rankReason = `${lang === 'id' ? 'Dipilih karena' : 'Chosen because'} ${loc.selectionReason}`;
   }
-  bestList.sort((a,b) => (b.streetPriority || b.fitScore) - (a.streetPriority || a.fitScore));
+  bestList.sort((a,b) => (b.candidateScore || b.streetPriority || b.fitScore) - (a.candidateScore || a.streetPriority || a.fitScore));
 
   // Clear previous best markers
   bestMarkers.forEach(m => m.setMap(null));
@@ -1675,6 +1685,7 @@ async function findBestLocation() {
         <div style="font-size:11px;color:${i===0?'var(--a)':'var(--t)'};margin-bottom:4px">#${i+1} ${l.displayName || l.name}</div>
         <div style="font-size:9px;color:var(--t3);display:flex;gap:12px;flex-wrap:wrap">
           <span>📊 Score ${l.fitScore}</span>
+          <span>🏬 Commercial Score ${l.candidateScore || '-'}</span>
           <span>🛣️ Street Priority ${l.streetPriority || '-'}</span>
           <span>📍 ${l.lat.toFixed(4)}, ${l.lng.toFixed(4)}</span>
           <span>${l.poiFallback ? '🛟 Inland fallback' : (l.poiValidated ? '🛣️ POI/Road OK' : '🔎 Validating')}</span>
