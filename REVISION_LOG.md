@@ -4,6 +4,16 @@ Format versi yang dipakai:
 - `REV-YYYYMMDD-XX`
 - Contoh: `REV-20260325-01`
 
+## REV-20260325-53
+- Commit: `(pending)`
+- Scope: Hard uniqueness by primary zone for Top 5
+- Changes:
+  - Untuk `Top 5`, source kandidat kini dibatasi hanya ke 5 seed utama: C/N/E/S/W
+  - Seed diagonal (NE/SE/SW/NW) hanya dipakai saat user minta hasil lebih dari 5
+  - Mencegah dua hasil Top 5 lahir dari cluster/zona yang masih terlalu mirip
+- Reason:
+  - Menangani bukti terbaru bahwa marker tetap menumpuk walau zone-seeded generation sudah diterapkan
+
 ## REV-20260325-52
 - Commit: `7e45c45`
 - Scope: Zone-seeded candidate generation

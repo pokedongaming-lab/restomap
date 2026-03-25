@@ -1512,17 +1512,21 @@ async function findBestLocation() {
 
     const city = CITY_PRESETS[currentCityKey] || CITY_PRESETS.jakarta;
     const anchor = getCityInlandAnchor();
-    const zoneSeeds = [
+    const primaryZoneSeeds = [
       { bucket: 'C', lat: anchor.lat, lng: anchor.lng + 0.0022, type: 'cbd' },
       { bucket: 'N', lat: anchor.lat + 0.0046, lng: anchor.lng + 0.0008, type: 'premium' },
       { bucket: 'E', lat: anchor.lat + 0.0012, lng: anchor.lng + 0.0048, type: 'commercial' },
       { bucket: 'S', lat: anchor.lat - 0.0048, lng: anchor.lng + 0.0010, type: 'trendy' },
       { bucket: 'W', lat: anchor.lat + 0.0008, lng: anchor.lng - 0.0046, type: 'suburban' },
+    ];
+    const secondaryZoneSeeds = [
       { bucket: 'NE', lat: anchor.lat + 0.0038, lng: anchor.lng + 0.0038, type: 'premium' },
       { bucket: 'SE', lat: anchor.lat - 0.0038, lng: anchor.lng + 0.0036, type: 'commercial' },
       { bucket: 'SW', lat: anchor.lat - 0.0036, lng: anchor.lng - 0.0036, type: 'suburban' },
       { bucket: 'NW', lat: anchor.lat + 0.0036, lng: anchor.lng - 0.0038, type: 'cbd' },
     ];
+    const requestedTopN = parseInt(document.getElementById('topNSelect')?.value || '5', 10);
+    const zoneSeeds = requestedTopN <= 5 ? primaryZoneSeeds : [...primaryZoneSeeds, ...secondaryZoneSeeds];
 
     // Generate candidates from explicit city zones first, not from one center-heavy cluster
     const cityCandidates = zoneSeeds.map((seed, idx) => {
@@ -1539,7 +1543,7 @@ async function findBestLocation() {
         fitScore,
       };
     });
-  const topN = parseInt(document.getElementById('topNSelect')?.value || '5', 10);
+  const topN = requestedTopN;
   const bestList = cityCandidates.sort((a,b) => b.fitScore - a.fitScore).slice(0, topN);
 
   // Resolve real-world address labels, nudge inland, then validate against POI/road presence
