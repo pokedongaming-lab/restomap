@@ -5,7 +5,7 @@ Format versi yang dipakai:
 - Contoh: `REV-20260325-01`
 
 ## REV-20260325-53
-- Commit: `(pending)`
+- Commit: `85e24d0`
 - Scope: Hard uniqueness by primary zone for Top 5
 - Changes:
   - Untuk `Top 5`, source kandidat kini dibatasi hanya ke 5 seed utama: C/N/E/S/W
