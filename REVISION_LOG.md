@@ -5,7 +5,7 @@ Format versi yang dipakai:
 - Contoh: `REV-20260325-01`
 
 ## REV-20260326-01
-- Commit: `(pending)`
+- Commit: `7e0b606`
 - Scope: Refactor best-location phase 2
 - Changes:
   - Tambah commercial frontage candidate harvesting dari seed zone menggunakan Places API
