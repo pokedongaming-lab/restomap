@@ -4,6 +4,18 @@ Format versi yang dipakai:
 - `REV-YYYYMMDD-XX`
 - Contoh: `REV-20260325-01`
 
+## REV-20260325-34
+- Commit: `(pending)`
+- Scope: Batch B.3 Space Design interaktif
+- Changes:
+  - Step 4 diubah jadi space design interaktif berbasis konsep + area
+  - Tambah zoning output (hall/kitchen/storage/service)
+  - Tambah draft floorplan preview (look & feel visual)
+  - Tambah partner selection (consultant, contractor, architect, vendor)
+  - Simpan hasil ke `builderModel.spaceDesign`
+- Reason:
+  - Menjalankan Batch B.3 sesuai arahan user (space design + output visual + partner options)
+
 ## REV-20260325-33
 - Commit: `f96a547`
 - Scope: Batch B.2 Menu Design AI generator

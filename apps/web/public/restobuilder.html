@@ -637,15 +637,53 @@ function renderStep3(body) {
 
 // STEP 4: SPACE DESIGN (AI + FENG SHUI)
 function renderStep4(body) {
+  const rentPerM2 = locationData.city.toLowerCase().includes('jakarta') ? 300000 : 250000;
+  const totalRent = restaurantData.spaceArea * rentPerM2;
+  const hall = Math.max(20, Math.round(restaurantData.spaceArea * 0.48));
+  const kitchen = Math.max(10, Math.round(restaurantData.spaceArea * 0.28));
+  const storage = Math.max(6, Math.round(restaurantData.spaceArea * 0.12));
+  const service = Math.max(6, Math.round(restaurantData.spaceArea * 0.12));
+
+  builderModel.spaceDesign = {
+    totalArea: restaurantData.spaceArea,
+    kitchenArea: restaurantData.kitchenArea,
+    zoning: { hall, kitchen, storage, service },
+    rentPerM2,
+    totalRent,
+    partners: { consultant: null, contractor: null, architect: null, vendor: null }
+  };
+
   body.innerHTML = `
-    <div class="form-grid">
-      <div class="fg"><div class="fl">${BL('TOTAL AREA (M²)','TOTAL AREA (M²)')}</div><input type="number" class="fi" value="${restaurantData.spaceArea}"></div>
-      <div class="fg"><div class="fl">${BL('DAPUR (M²)','KITCHEN (M²)')}</div><input type="number" class="fi" value="${restaurantData.kitchenArea}"></div>
+    <div class="metrics-grid">
+      <div class="metric-box"><div class="mb-label">${BL('TOTAL AREA','TOTAL AREA')}</div><div class="mb-val">${restaurantData.spaceArea} m²</div></div>
+      <div class="metric-box"><div class="mb-label">${BL('SEWA / M²','RENT / M²')}</div><div class="mb-val">Rp ${(rentPerM2/1000).toFixed(0)}K</div></div>
+      <div class="metric-box"><div class="mb-label">${BL('TOTAL SEWA','TOTAL RENT')}</div><div class="mb-val">Rp ${(totalRent/1000000).toFixed(1)}JT</div></div>
     </div>
+
     <div class="form-grid">
-      <div class="fg"><div class="fl">${BL('SEWA/M²','RENT/M²')}</div><input type="text" class="fi" value="Rp 250,000" disabled></div>
-      <div class="fg"><div class="fl">${BL('TOTAL SEWA','TOTAL RENT')}</div><input type="text" class="fi" value="Rp ${(restaurantData.spaceArea * 250000).toLocaleString()}" disabled></div>
+      <div class="fg"><div class="fl">${BL('TOTAL AREA (M²)','TOTAL AREA (M²)')}</div><input type="number" class="fi" value="${restaurantData.spaceArea}" onchange="restaurantData.spaceArea=parseInt(this.value)||restaurantData.spaceArea; renderStep()"></div>
+      <div class="fg"><div class="fl">${BL('DAPUR (M²)','KITCHEN (M²)')}</div><input type="number" class="fi" value="${restaurantData.kitchenArea}" onchange="restaurantData.kitchenArea=parseInt(this.value)||restaurantData.kitchenArea; renderStep()"></div>
     </div>
+
+    <div class="section-title">🗺️ ${BL('LAYOUT LOOK & FEEL','LAYOUT LOOK & FEEL')}</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+      <div style="background:var(--bg3);border:1px solid var(--b);border-radius:6px;padding:10px">
+        <div style="font-size:9px;color:var(--a);margin-bottom:6px">${BL('ZONING OUTPUT','ZONING OUTPUT')}</div>
+        <div style="font-size:9px;line-height:1.7;color:var(--t3)">
+          • Hall: <strong>${hall} m²</strong><br>
+          • Kitchen: <strong>${kitchen} m²</strong><br>
+          • Storage: <strong>${storage} m²</strong><br>
+          • Service/BOH: <strong>${service} m²</strong>
+        </div>
+      </div>
+      <div style="background:linear-gradient(135deg,#1f2937,#334155);border:1px solid var(--b);border-radius:6px;padding:10px;min-height:120px;position:relative">
+        <div style="position:absolute;top:8px;left:8px;font-size:8px;color:#cbd5e1">${BL('DRAFT FLOORPLAN PREVIEW','DRAFT FLOORPLAN PREVIEW')}</div>
+        <div style="position:absolute;left:10px;bottom:10px;width:58%;height:54%;background:rgba(34,197,94,.25);border:1px dashed #22c55e"></div>
+        <div style="position:absolute;right:10px;bottom:10px;width:34%;height:42%;background:rgba(249,115,22,.25);border:1px dashed #f97316"></div>
+        <div style="position:absolute;right:10px;top:28px;width:34%;height:20%;background:rgba(59,130,246,.25);border:1px dashed #3b82f6"></div>
+      </div>
+    </div>
+
     <div class="ai-box">
       <div class="ai-title">🏠 ${BL('AI SPACE + FENG SHUI','AI SPACE + FENG SHUI')}</div>
       <div class="ai-content">
@@ -658,8 +696,17 @@ function renderStep4(body) {
         • ${BL('Tanaman: Tenggara','Plants: Southeast')}<br>
         • ${BL('Pencahayaan hangat','Warm lighting')}
       </div>
-      <button class="ai-btn">🎲 ${BL('GENERATE LAYOUT AI','GENERATE AI LAYOUT')}</button>
+      <button class="ai-btn" onclick="alert('${BL('Layout AI diperbarui','AI layout refreshed')}')">🎲 ${BL('GENERATE LAYOUT AI','GENERATE AI LAYOUT')}</button>
     </div>
+
+    <div class="section-title">🤝 ${BL('PARTNER PILIHAN','PARTNER SELECTION')}</div>
+    <div class="form-grid cols3">
+      <div class="fg"><div class="fl">${BL('CONSULTANT','CONSULTANT')}</div><select class="fi" onchange="builderModel.spaceDesign.partners.consultant=this.value"><option value=''>${BL('Pilih','Select')}</option><option>Hospitality Consultant A</option><option>F&B Strategist B</option></select></div>
+      <div class="fg"><div class="fl">${BL('CONTRACTOR','CONTRACTOR')}</div><select class="fi" onchange="builderModel.spaceDesign.partners.contractor=this.value"><option value=''>${BL('Pilih','Select')}</option><option>Contractor C</option><option>Build Team D</option></select></div>
+      <div class="fg"><div class="fl">${BL('ARCHITECT','ARCHITECT')}</div><select class="fi" onchange="builderModel.spaceDesign.partners.architect=this.value"><option value=''>${BL('Pilih','Select')}</option><option>Architect E</option><option>Studio F</option></select></div>
+      <div class="fg span2"><div class="fl">${BL('VENDOR TERKAIT','RELATED VENDOR')}</div><input class="fi" placeholder="${BL('Kitchen equipment, POS, furniture','Kitchen equipment, POS, furniture')}" onchange="builderModel.spaceDesign.partners.vendor=this.value"></div>
+    </div>
+
     <button class="btn-nav" onclick="nextStep()">${BL('LANJUT KE OPERATIONS →','CONTINUE TO OPERATIONS →')}</button>
   `;
 }
