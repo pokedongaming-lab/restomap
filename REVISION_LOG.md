@@ -4,6 +4,16 @@ Format versi yang dipakai:
 - `REV-YYYYMMDD-XX`
 - Contoh: `REV-20260325-01`
 
+## REV-20260326-11
+- Commit: `(pending)`
+- Scope: Batch Map Infra C.2 — Voronoi emphasis from criteria
+- Changes:
+  - Sinkronkan render Voronoi dengan bobot kriteria aktif
+  - Voronoi highlight akan berubah mengikuti dominance traffic/population/buying/road criteria
+  - Panel insight akan menjelaskan emphasis Voronoi aktif
+- Reason:
+  - Melanjutkan Batch Map Infra C.2 agar Voronoi bukan layer statis, tapi ikut membaca input kriteria user
+
 ## REV-20260326-10
 - Commit: `5b22e29`
 - Scope: Batch Map Infra C — unify criteria and heatmap controls

@@ -1543,13 +1543,24 @@ function toggleHeatmap() {
     }));
   }
 
-  // Voronoi proxy overlay based on selected category/brand competitors
+  // Voronoi proxy overlay based on selected category/brand competitors + active criteria emphasis
   if (voronoiOn && (latestCompetitors?.length || 0) > 0) {
+    const critTraffic = parseInt(document.getElementById('critTraffic')?.value || '0', 10);
+    const critBuying = parseInt(document.getElementById('critBuying')?.value || '0', 10);
+    const critPop = parseInt(document.getElementById('critPop')?.value || '0', 10);
+    const critMain = parseInt(document.getElementById('critMainRoad')?.value || '0', 10);
+    const critAlt = parseInt(document.getElementById('critAltRoad')?.value || '0', 10);
+    const dominant = [
+      { key: 'traffic', value: critTraffic, fill: '#f97316', stroke: '#ea580c' },
+      { key: 'buying', value: critBuying, fill: '#2563eb', stroke: '#1d4ed8' },
+      { key: 'population', value: critPop, fill: '#22c55e', stroke: '#16a34a' },
+      { key: 'road', value: Math.max(critMain, critAlt), fill: '#8b5cf6', stroke: '#7c3aed' },
+    ].sort((a,b) => b.value - a.value)[0];
     const n = Math.min(6, latestCompetitors.length);
     for (let i = 0; i < n; i++) {
       const ang1 = (i / n) * Math.PI * 2;
       const ang2 = ((i + 1) / n) * Math.PI * 2;
-      const r = 0.012 + (i % 3) * 0.004;
+      const r = 0.012 + (i % 3) * 0.004 + (dominant.value / 1000);
       const path = [
         center,
         { lat: center.lat + Math.cos(ang1) * r, lng: center.lng + Math.sin(ang1) * r },
@@ -1558,11 +1569,17 @@ function toggleHeatmap() {
       const p = new google.maps.Polygon({
         map,
         paths: path,
-        fillColor: '#8b5cf6',
-        fillOpacity: 0.12,
-        strokeColor: '#7c3aed',
+        fillColor: dominant.fill,
+        fillOpacity: 0.10 + (dominant.value / 1000),
+        strokeColor: dominant.stroke,
         strokeOpacity: 0.7,
-        strokeWeight: 1,
+        strokeWeight: 1.2,
+      });
+      p.addListener('click', () => {
+        const heatEl = document.getElementById('heatmapContent');
+        if (heatEl) {
+          heatEl.innerHTML += `<div style="margin-top:8px;padding:10px;background:var(--bg2);border:1px solid var(--b);border-radius:6px;font-size:10px;color:var(--t3)"><strong>Voronoi Emphasis</strong><div>${dominant.key.toUpperCase()} is currently the strongest driver from criteria.</div></div>`;
+        }
       });
       voronoiPolygons.push(p);
     }
