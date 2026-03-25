@@ -5,7 +5,7 @@ Format versi yang dipakai:
 - Contoh: `REV-20260325-01`
 
 ## REV-20260325-26
-- Commit: `(pending)`
+- Commit: `9381feb`
 - Scope: Finishing pass UX polish
 - Changes:
   - Rapikan tampilan Competitor Snapshot + SWOT (visual hierarchy lebih jelas)
