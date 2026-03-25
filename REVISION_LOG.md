@@ -4,6 +4,16 @@ Format versi yang dipakai:
 - `REV-YYYYMMDD-XX`
 - Contoh: `REV-20260325-01`
 
+## REV-20260325-51
+- Commit: `(pending)`
+- Scope: Zone bucket allocation untuk Top-N
+- Changes:
+  - Tambah `assignZoneBucket()` dan `enforceZoneSpread()` agar Top-N disebar ke zona berbeda (C/N/E/S/W)
+  - Setelah deconflict, marker diposisikan ulang ke zone target lalu divalidasi ulang ke road/POI terdekat
+  - Sidebar kini menampilkan status `Zone spread` untuk hasil yang dipaksa menyebar
+- Reason:
+  - Menangani kasus bukti visual terbaru saat beberapa titik masih berdekatan walau radius diperluas
+
 ## REV-20260325-50
 - Commit: `5d84bbe`
 - Scope: Stronger spatial separation for Top-N markers

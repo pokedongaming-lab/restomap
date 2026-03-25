@@ -828,6 +828,36 @@ function buildStreetPriorityScore(loc) {
   return Math.round(fit * 0.72 + poiBonus + roadBonus);
 }
 
+function assignZoneBucket(loc) {
+  const anchor = getCityInlandAnchor();
+  const dx = loc.lng - anchor.lng;
+  const dy = loc.lat - anchor.lat;
+  if (Math.abs(dx) > Math.abs(dy)) return dx >= 0 ? 'E' : 'W';
+  return dy >= 0 ? 'N' : 'S';
+}
+
+function enforceZoneSpread(bestList) {
+  const anchor = getCityInlandAnchor();
+  const zoneTargets = {
+    N: { lat: anchor.lat + 0.0046, lng: anchor.lng + 0.0008 },
+    E: { lat: anchor.lat + 0.0012, lng: anchor.lng + 0.0048 },
+    S: { lat: anchor.lat - 0.0048, lng: anchor.lng + 0.0010 },
+    W: { lat: anchor.lat + 0.0008, lng: anchor.lng - 0.0046 },
+    C: { lat: anchor.lat, lng: anchor.lng + 0.0022 },
+  };
+
+  const order = ['C','N','E','S','W'];
+  bestList.forEach((loc, idx) => {
+    const bucket = order[idx] || assignZoneBucket(loc);
+    const target = applyCoastGuard(zoneTargets[bucket].lat, zoneTargets[bucket].lng);
+    loc.lat = target.lat;
+    loc.lng = target.lng;
+    loc.zoneBucket = bucket;
+    loc.zoneAdjusted = true;
+  });
+  return bestList;
+}
+
 function deconflictBestList(bestList) {
   const minKm = 0.35;
   const anchor = getCityInlandAnchor();
@@ -1514,7 +1544,10 @@ async function findBestLocation() {
   }));
 
   deconflictBestList(bestList);
+  enforceZoneSpread(bestList);
   await Promise.all(bestList.map(async (loc, idx) => {
+    const validated = await validatePoiRoadCandidate(loc);
+    Object.assign(loc, validated);
     loc.displayName = await reverseGeocodeLabel(loc.lat, loc.lng, loc.displayName || loc.name);
     loc.selectionReason = loc.selectionReason || `Street priority ${loc.streetPriority || loc.fitScore}; akses jalan dan POI sekitar lebih kuat.`;
     loc.rankReason = `${lang === 'id' ? 'Dipilih karena' : 'Chosen because'} ${loc.selectionReason}`;
@@ -1583,6 +1616,7 @@ async function findBestLocation() {
           <span>📍 ${l.lat.toFixed(4)}, ${l.lng.toFixed(4)}</span>
           <span>${l.poiFallback ? '🛟 Inland fallback' : (l.poiValidated ? '🛣️ POI/Road OK' : '🔎 Validating')}</span>
           <span>${l.deconflicted ? '↔️ Deconflicted' : ''}</span>
+          <span>${l.zoneAdjusted ? '🧭 Zone spread ' + (l.zoneBucket || '') : ''}</span>
         </div>
         <div style="font-size:9px;color:var(--t4);margin-top:4px;line-height:1.6">${l.rankReason || ''}</div>
       </div>
