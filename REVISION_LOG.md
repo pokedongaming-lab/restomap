@@ -4,6 +4,16 @@ Format versi yang dipakai:
 - `REV-YYYYMMDD-XX`
 - Contoh: `REV-20260325-01`
 
+## REV-20260326-05
+- Commit: `(pending)`
+- Scope: Batch Map Infra A — hard road-class routing
+- Changes:
+  - Pisahkan routing koridor utama vs secondary connector secara eksplisit
+  - Seed/candidate generation akan diarahkan menurut kelas jalan yang dipilih user
+  - Alasan hasil akan menyebut class corridor yang dipakai
+- Reason:
+  - Menjalankan Batch Map Infra A agar rekomendasi best-location benar-benar mengikuti kelas jalan, bukan hanya bias score ringan
+
 ## REV-20260326-04
 - Commit: `e22ea10`
 - Scope: Main road weight fix for best-location ranking
