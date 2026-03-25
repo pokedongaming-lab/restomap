@@ -5,7 +5,7 @@ Format versi yang dipakai:
 - Contoh: `REV-20260325-01`
 
 ## REV-20260325-13
-- Commit: `(pending)`
+- Commit: `1f6c969`
 - Scope: Theme persistence + legacy color preservation
 - Changes:
   - Tambah persistence tema via `localStorage` key `restosuite_theme`
