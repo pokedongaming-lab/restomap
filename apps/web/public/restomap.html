@@ -829,7 +829,8 @@ function buildStreetPriorityScore(loc) {
 }
 
 function deconflictBestList(bestList) {
-  const minKm = 0.22;
+  const minKm = 0.35;
+  const anchor = getCityInlandAnchor();
   const usedStreets = new Set();
 
   bestList.forEach((loc) => {
@@ -851,11 +852,16 @@ function deconflictBestList(bestList) {
       const sameStreet = a.streetKey && b.streetKey && a.streetKey === b.streetKey;
       const dist = distanceKm(a.lat, a.lng, b.lat, b.lng);
       if (dist < minKm || sameStreet) {
-        const push = 0.0018 + (j * 0.00045);
-        const moved = applyCoastGuard(b.lat + push, b.lng + push);
-        b.lat = moved.lat;
-        b.lng = moved.lng;
+        const angle = (j / Math.max(bestList.length, 1)) * Math.PI * 2;
+        const radial = 0.0032 + (j * 0.0006);
+        const candidate = applyCoastGuard(
+          anchor.lat + Math.cos(angle) * radial,
+          anchor.lng + Math.sin(angle) * radial
+        );
+        b.lat = candidate.lat;
+        b.lng = candidate.lng;
         b.deconflicted = true;
+        b.streetConflict = true;
       }
     }
   }

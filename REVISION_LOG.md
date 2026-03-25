@@ -4,6 +4,16 @@ Format versi yang dipakai:
 - `REV-YYYYMMDD-XX`
 - Contoh: `REV-20260325-01`
 
+## REV-20260325-50
+- Commit: `(pending)`
+- Scope: Stronger spatial separation for Top-N markers
+- Changes:
+  - `deconflictBestList()` diperketat dengan minimum separation 0.35 km
+  - Marker yang konflik kini direlokasi secara radial dari inland anchor, bukan sekadar offset kecil dari titik lama
+  - Conflict pada jalan yang sama tetap ditandai dan dipisahkan lebih agresif
+- Reason:
+  - Menangani bukti visual terbaru bahwa beberapa titik rekomendasi masih terlalu berdekatan di pusat Manado
+
 ## REV-20260325-49
 - Commit: `b40be0c`
 - Scope: Fix runtime error BL undefined pada best-location
