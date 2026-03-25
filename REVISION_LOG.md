@@ -5,7 +5,7 @@ Format versi yang dipakai:
 - Contoh: `REV-20260325-01`
 
 ## REV-20260325-19
-- Commit: `(pending)`
+- Commit: `e1c496e`
 - Scope: Category expansion + Builder sync
 - Changes:
   - Perluas daftar kategori restoran di RestoMap (Google-aligned categories)
