@@ -622,11 +622,20 @@ function normalizeCompetitorCategory(category = '') {
 }
 
 function getCategoryIntent(category = '') {
-  const aliases = normalizeCompetitorCategory(category);
+  const query = String(category || '').trim().toLowerCase();
+  const aliases = normalizeCompetitorCategory(query);
+  const brandFamilies = {
+    starbucks: ['starbucks', 'coffee_shop', 'cafe'],
+    kopikenangan: ['kopi kenangan', 'coffee_shop', 'cafe'],
+    kfc: ['kfc', 'fast_food_restaurant', 'restaurant'],
+    mcdonalds: ['mcdonalds', 'mcd', 'fast_food_restaurant', 'restaurant'],
+  };
+  const family = brandFamilies[query] || [];
   return {
-    query: String(category || '').trim().toLowerCase(),
-    aliases,
-    brandLike: !!category && !aliases.includes(String(category || '').trim().toLowerCase()),
+    query,
+    aliases: [...new Set([...aliases, ...family])],
+    brandLike: family.length > 0,
+    family,
   };
 }
 
@@ -635,10 +644,12 @@ function classifyCompetitorBucket(c, intent) {
   const categoryNorm = String(c.category || '').toLowerCase();
   const nameNorm = String(c.name || '').toLowerCase();
   const aliasHit = intent.aliases.some(a => categoryNorm.includes(a) || nameNorm.includes(a));
+  const familyHit = (intent.family || []).some(a => categoryNorm.includes(a) || nameNorm.includes(a));
+  const broadFoodHit = categoryNorm.includes('restaurant') || categoryNorm.includes('cafe') || categoryNorm.includes('coffee');
 
-  if (distanceNum <= 1200 && aliasHit) return 'direct';
-  if (distanceNum <= 2200 && (aliasHit || categoryNorm.includes('restaurant') || categoryNorm.includes('cafe'))) return 'indirect';
-  if (distanceNum <= 3500) return 'replacement';
+  if (distanceNum <= 1400 && (familyHit || aliasHit)) return 'direct';
+  if (distanceNum <= 2400 && (aliasHit || broadFoodHit)) return 'indirect';
+  if (distanceNum <= 3800) return 'replacement';
   return 'outside';
 }
 
@@ -1445,6 +1456,7 @@ function renderCompetitors(competitors) {
     </div>
   `;
 
+  const topThreats = [...direct].sort((a,b) => a.distanceNum - b.distanceNum || b.ratingNum - a.ratingNum).slice(0,3);
   const potentialHtml = `
     <div style="margin-bottom:12px">
       <div style="font-size:9px;color:var(--a);letter-spacing:1px;margin-bottom:6px">POTENTIAL COMPETITORS / GAPS</div>
@@ -1452,6 +1464,15 @@ function renderCompetitors(competitors) {
         <div style="background:var(--bg3);border:1px solid var(--b);padding:8px;margin-bottom:6px;border-radius:4px">
           <div style="font-size:10px;color:var(--t)">${p.name}</div>
           <div style="font-size:9px;color:var(--t3)">Gap ${p.gap} · Demand ${p.demand}</div>
+        </div>
+      `).join('')}
+    </div>
+    <div style="margin-bottom:12px">
+      <div style="font-size:9px;color:var(--a);letter-spacing:1px;margin-bottom:6px">TOP THREATS</div>
+      ${topThreats.length === 0 ? `<div style="font-size:9px;color:var(--t4)">Belum ada ancaman utama</div>` : topThreats.map(t => `
+        <div style="background:var(--bg3);border:1px solid var(--b);padding:8px;margin-bottom:6px;border-radius:4px">
+          <div style="font-size:10px;color:var(--t)">${t.name}</div>
+          <div style="font-size:9px;color:var(--t3)">Distance ${t.distanceNum}m · Rating ${t.ratingNum.toFixed(1)} · Bucket ${t.bucket}</div>
         </div>
       `).join('')}
     </div>

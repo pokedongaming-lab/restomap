@@ -4,6 +4,16 @@ Format versi yang dipakai:
 - `REV-YYYYMMDD-XX`
 - Contoh: `REV-20260325-01`
 
+## REV-20260326-18
+- Commit: `(pending)`
+- Scope: Product Refactor 1 — phase 3
+- Changes:
+  - Tambah brand family handling dan intent matching yang lebih matang
+  - Perhalus direct / indirect / replacement classification berbasis intent kategori/brand
+  - Upgrade competitor tab ke output analysis-grade
+- Reason:
+  - Melanjutkan Product Refactor 1 agar competitor intelligence lebih dekat ke engine market analysis profesional
+
 ## REV-20260326-17
 - Commit: `4f8d864`
 - Scope: Product Refactor 1 — phase 2
