@@ -4,6 +4,16 @@ Format versi yang dipakai:
 - `REV-YYYYMMDD-XX`
 - Contoh: `REV-20260325-01`
 
+## REV-20260326-13
+- Commit: `(pending)`
+- Scope: Precision/realism pass before Batch Infra D
+- Changes:
+  - `fetchCompetitors()` kini fallback ke pencarian lebih luas saat category/brand terlalu sempit agar tab competitor tidak kosong
+  - `renderAnalysis()` mengganti cannibalization random ke kalkulasi deterministik berbasis jumlah kompetitor, jarak rata-rata, dan rating rata-rata
+  - Logic lintas tab dibuat lebih konsisten: competitor count, cannibalization, dan model scoring membaca basis data yang sama
+- Reason:
+  - Menindak laporan bahwa informasi kompetitor hilang dan memperbaiki presisi/realism hitungan sebelum lanjut ke Batch Infra D
+
 ## REV-20260326-12
 - Commit: `3b7de2a`
 - Scope: Batch Map Infra C.3

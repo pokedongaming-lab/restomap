@@ -611,7 +611,12 @@ async function fetchWithTimeoutRetry(url, opts = {}, timeoutMs = 7000, retries =
 async function fetchCompetitors(lat, lng, radius, category) {
   try {
     const json = await fetchWithTimeoutRetry(`${API_BASE}/competitors?lat=${lat}&lng=${lng}&radius=${radius}&category=${category || ''}`);
-    return json.data?.competitors || [];
+    const primary = json.data?.competitors || [];
+    if (primary.length > 0 || !category) return primary;
+
+    // Fallback: broaden search if brand/category is too narrow so competitor tab does not go empty.
+    const fallbackJson = await fetchWithTimeoutRetry(`${API_BASE}/competitors?lat=${lat}&lng=${lng}&radius=${radius}`);
+    return fallbackJson.data?.competitors || [];
   } catch (e) {
     console.error('API Error competitors:', e);
     return [];
@@ -1152,10 +1157,17 @@ async function renderAnalysis(lat, lng) {
     
     // Derive method scores to sync with RestoBuilder modules
     const competitionCount = competitors?.length || 0;
+    const avgCompetitorDistance = competitionCount > 0
+      ? competitors.reduce((sum, c) => sum + (parseFloat(String(c.distance || '0').replace(/[^0-9.]/g, '')) || currentRadius), 0) / competitionCount
+      : currentRadius;
+    const avgCompetitorRating = competitionCount > 0
+      ? competitors.reduce((sum, c) => sum + (parseFloat(c.rating) || 0), 0) / competitionCount
+      : 0;
     const hhiProxy = Math.min(100, Math.round(Math.max(0, 100 - competitionCount * 3.2)));
     const bayesDemand = factors ? Math.round((factors.population * 0.45 + factors.income * 0.30 + factors.traffic * 0.25)) : 70;
     const voronoiGap = Math.min(100, Math.max(0, Math.round((categories?.[0]?.gapScore ?? 50))));
-    const cannibalPct = Math.round((Math.random() * 20 + 5) * 10) / 10;
+    const cannibalBase = competitionCount > 0 ? Math.max(6, Math.min(28, 26 - (avgCompetitorDistance / Math.max(currentRadius, 1)) * 12 + avgCompetitorRating)) : 8;
+    const cannibalPct = Math.round(cannibalBase * 10) / 10;
     const mmmEfficiency = Math.min(100, Math.round((bayesDemand * 0.55 + hhiProxy * 0.45)));
     const milpFeasible = Math.min(100, Math.round((mmmEfficiency * 0.6 + voronoiGap * 0.4)));
 
