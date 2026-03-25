@@ -4,6 +4,17 @@ Format versi yang dipakai:
 - `REV-YYYYMMDD-XX`
 - Contoh: `REV-20260325-01`
 
+## REV-20260325-24
+- Commit: `(pending)`
+- Scope: Editable financial assumptions
+- Changes:
+  - Tambah tombol `✏️ Edit Asumsi` pada panel Asumsi Finansial
+  - User bisa ubah seats, turnover, avg check, COGS, labor %, marketing %, rent factor, CAPEX
+  - Perubahan asumsi langsung memicu re-kalkulasi metrik (revenue/margin/break-even)
+  - Formula finansial menggunakan override asumsi saat tersedia
+- Reason:
+  - Permintaan user agar asumsi dapat diedit dan hasilnya langsung terlihat
+
 ## REV-20260325-23
 - Commit: `8b98e3f`
 - Scope: Financial Assumptions panel

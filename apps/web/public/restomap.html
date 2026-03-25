@@ -300,7 +300,8 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--t);font-f
           </div>
         </div>
         <div class="section-title">📘 ASUMSI FINANSIAL</div>
-        <div id="financialAssumptions" style="font-size:9px;color:var(--t3);line-height:1.7;background:var(--bg3);border:1px solid var(--b);padding:10px;border-radius:4px;margin-bottom:10px">—</div>
+        <div id="financialAssumptions" style="font-size:9px;color:var(--t3);line-height:1.7;background:var(--bg3);border:1px solid var(--b);padding:10px;border-radius:4px;margin-bottom:8px">—</div>
+        <button class="sb-btn-outline" onclick="editAssumsi()" style="margin-bottom:10px">✏️ EDIT ASUMSI</button>
         <div class="section-title" data-i18="lblComp">KOMPETITOR</div>
         <div id="competitorCount">—</div>
         <button class="btn-builder" id="btnBusinessPlan" onclick="goToBuilder()">BUAT BUSINESS PLAN →</button>
@@ -566,6 +567,7 @@ let bestMarkers = [];
 let heatmapCircles = [];
 let voronoiPolygons = [];
 let latestCompetitors = [];
+let assumptionOverrides = null;
 let currentRadius = 1000;
 let currentCategory = '';
 let currentCityKey = 'jakarta';
@@ -753,7 +755,13 @@ async function renderAnalysis(lat, lng) {
       restaurant:{seats:48,turnover:2.2,avgCheck:65000,cogs:0.37},
       default:{seats:42,turnover:2.2,avgCheck:55000,cogs:0.36}
     };
-    const cfg = categoryCfg[currentCategory] || categoryCfg.default;
+    const cfgBase = categoryCfg[currentCategory] || categoryCfg.default;
+    const cfg = {
+      seats: assumptionOverrides?.seats ?? cfgBase.seats,
+      turnover: assumptionOverrides?.turnover ?? cfgBase.turnover,
+      avgCheck: assumptionOverrides?.avgCheck ?? cfgBase.avgCheck,
+      cogs: assumptionOverrides?.cogs ?? cfgBase.cogs,
+    };
 
     const demandIdx = factors ? Math.round(factors.population * 0.28 + factors.income * 0.30 + factors.traffic * 0.22 + bayesDemand * 0.20) : bayesDemand;
     const competitionPenalty = ((competitors?.length || 0) * 1.1) + (factors ? factors.competition * 0.25 : 12) + (cannibalPct * 0.8);
@@ -767,15 +775,20 @@ async function renderAnalysis(lat, lng) {
       batam:0.93,denpasar:1.05,balikpapan:1.0,samarinda:0.9,pontianak:0.85,banjarmasin:0.84,
       pekanbaru:0.88,yogyakarta:0.9,malang:0.86,manado:0.87
     };
-    const rent = Math.round((22000000 + cfg.seats * 180000) * (cityRentFactor[currentCityKey] || 0.9));
-    const labor = Math.round(revM * 0.18 + 9000000);
+    const rentFactor = assumptionOverrides?.rentFactor ?? (cityRentFactor[currentCityKey] || 0.9);
+    const laborPct = assumptionOverrides?.laborPct ?? 0.18;
+    const marketingPct = assumptionOverrides?.marketingPct ?? 0.06;
+    const capexBase = assumptionOverrides?.capex ?? (320000000 + cfg.seats * 4500000);
+
+    const rent = Math.round((22000000 + cfg.seats * 180000) * rentFactor);
+    const labor = Math.round(revM * laborPct + 9000000);
     const cogs = Math.round(revM * cfg.cogs);
-    const marketing = Math.round(revM * 0.06);
+    const marketing = Math.round(revM * marketingPct);
     const opex = cogs + labor + rent + marketing;
     const profit = revM - opex;
     const marginPct = revM > 0 ? (profit / revM) * 100 : 0;
 
-    const setupCapex = Math.round(320000000 + cfg.seats * 4500000);
+    const setupCapex = Math.round(capexBase);
     const breakEvenMonths = profit > 0 ? Math.ceil(setupCapex / profit) : null;
 
     const score = Math.max(1, Math.min(100, Math.round(demandIdx * 0.62 + (100 - Math.min(100, competitionPenalty)) * 0.38)));
@@ -790,8 +803,8 @@ async function renderAnalysis(lat, lng) {
     document.getElementById('financialAssumptions').innerHTML = `
       <div>Seats: <strong>${cfg.seats}</strong> · Turnover/hari: <strong>${cfg.turnover.toFixed(1)}x</strong> · Avg Check: <strong>Rp ${(cfg.avgCheck/1000).toFixed(0)}K</strong></div>
       <div>Occupancy: <strong>${(occupancy*100).toFixed(1)}%</strong> · Monthly Covers: <strong>${monthlyCovers.toLocaleString()}</strong></div>
-      <div>COGS: <strong>${(cfg.cogs*100).toFixed(0)}%</strong> · Labor: <strong>~${((labor/revM)*100).toFixed(1)}%</strong> · Marketing: <strong>6%</strong></div>
-      <div>Rent Factor (${currentCityKey}): <strong>${(cityRentFactor[currentCityKey] || 0.9).toFixed(2)}x</strong> · CAPEX: <strong>Rp ${(setupCapex/1000000).toFixed(0)}JT</strong></div>
+      <div>COGS: <strong>${(cfg.cogs*100).toFixed(0)}%</strong> · Labor: <strong>${(laborPct*100).toFixed(1)}%</strong> · Marketing: <strong>${(marketingPct*100).toFixed(1)}%</strong></div>
+      <div>Rent Factor (${currentCityKey}): <strong>${rentFactor.toFixed(2)}x</strong> · CAPEX: <strong>Rp ${(setupCapex/1000000).toFixed(0)}JT</strong></div>
     `;
     
     // Update panel header
@@ -1252,6 +1265,26 @@ function findBestLocation() {
   }
 
   alert('Top ' + topN + ' lokasi terbaik di ' + city.name + ' berhasil dibuat.\n#1: ' + (best?.name || '-') + ' (Score ' + (best?.fitScore || '-') + ')');
+}
+
+function editAssumsi() {
+  const cur = assumptionOverrides || {};
+  const next = {
+    seats: parseFloat(prompt('Seats (kursi):', String(cur.seats ?? 42))) || (cur.seats ?? 42),
+    turnover: parseFloat(prompt('Turnover per hari (x):', String(cur.turnover ?? 2.2))) || (cur.turnover ?? 2.2),
+    avgCheck: parseFloat(prompt('Avg Check (Rp):', String(cur.avgCheck ?? 55000))) || (cur.avgCheck ?? 55000),
+    cogs: (parseFloat(prompt('COGS % (contoh 35):', String((cur.cogs ?? 0.36) * 100))) || ((cur.cogs ?? 0.36) * 100)) / 100,
+    laborPct: (parseFloat(prompt('Labor % (contoh 18):', String((cur.laborPct ?? 0.18) * 100))) || ((cur.laborPct ?? 0.18) * 100)) / 100,
+    marketingPct: (parseFloat(prompt('Marketing % (contoh 6):', String((cur.marketingPct ?? 0.06) * 100))) || ((cur.marketingPct ?? 0.06) * 100)) / 100,
+    rentFactor: parseFloat(prompt('Rent Factor kota (contoh 1.00):', String(cur.rentFactor ?? 1.00))) || (cur.rentFactor ?? 1.00),
+    capex: parseFloat(prompt('CAPEX baseline (Rp):', String(cur.capex ?? 450000000))) || (cur.capex ?? 450000000)
+  };
+  assumptionOverrides = next;
+  if (selectedLoc) {
+    scheduleRenderAnalysis(selectedLoc.lat, selectedLoc.lng, 50);
+  } else {
+    alert('Asumsi tersimpan. Pilih lokasi untuk lihat hasil hitungan.');
+  }
 }
 
 function saveLocation() {
