@@ -5,7 +5,7 @@ Format versi yang dipakai:
 - Contoh: `REV-20260325-01`
 
 ## REV-20260325-40
-- Commit: `(pending)`
+- Commit: `e077186`
 - Scope: Fix titik laut + animasi marker Top-N
 - Changes:
   - Tambah deteksi alamat laut (`isSeaLikeAddress`) dari hasil reverse geocode
