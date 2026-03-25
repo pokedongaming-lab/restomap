@@ -5,7 +5,7 @@ Format versi yang dipakai:
 - Contoh: `REV-20260325-01`
 
 ## REV-20260325-54
-- Commit: `(pending)`
+- Commit: `5877819`
 - Scope: Road uniqueness lock
 - Changes:
   - Tambah `getRoadKey()` untuk identitas unik road/POI snapping reference
