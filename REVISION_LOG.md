@@ -5,7 +5,7 @@ Format versi yang dipakai:
 - Contoh: `REV-20260325-01`
 
 ## REV-20260326-12
-- Commit: `(pending)`
+- Commit: `3b7de2a`
 - Scope: Batch Map Infra C.3
 - Changes:
   - Satukan best-location scoring, regional heatmap, dan Voronoi ke satu explanation pipeline
