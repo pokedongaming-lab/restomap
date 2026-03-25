@@ -4,6 +4,15 @@ Format versi yang dipakai:
 - `REV-YYYYMMDD-XX`
 - Contoh: `REV-20260325-01`
 
+## REV-20260326-03
+- Commit: `(pending)`
+- Scope: Refactor best-location phase 2c
+- Changes:
+  - Tambah commercial corridor filtering dan Voronoi spacing bias
+  - Tambah alasan pemilihan yang lebih spesifik (frontage, commercial activity, zoning fit, overlap rendah)
+- Reason:
+  - Melanjutkan phase 2c agar visual kandidat dan alasan pemilihannya lebih realistis dan tidak saling rapat
+
 ## REV-20260326-02
 - Commit: `00fb8cd`
 - Scope: Refactor best-location phase 2b

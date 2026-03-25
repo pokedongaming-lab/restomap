@@ -766,12 +766,12 @@ function getRoadKey(name = '', lat, lng) {
   return `${base}:${latKey}:${lngKey}`;
 }
 
-function scoreCommercialCandidate(baseFit, roadCount, poiCount, distFromAnchorKm, bucket) {
+function scoreCommercialCandidate(baseFit, roadCount, poiCount, distFromAnchorKm, bucket, corridorBias = 0, overlapPenalty = 0) {
   const roadScore = Math.min(20, roadCount * 3.5);
   const poiScore = Math.min(22, poiCount * 2.8);
   const spreadPenalty = Math.max(0, distFromAnchorKm < 0.35 ? 18 : distFromAnchorKm < 0.55 ? 8 : 0);
   const zoningBonus = ['C','N','E','S','W'].includes(bucket) ? 8 : 4;
-  return Math.round(baseFit * 0.58 + roadScore + poiScore + zoningBonus - spreadPenalty);
+  return Math.round(baseFit * 0.58 + roadScore + poiScore + zoningBonus + corridorBias - spreadPenalty - overlapPenalty);
 }
 
 async function harvestCommercialCandidates(seed, usedRoadKeys = new Set()) {
@@ -801,6 +801,7 @@ async function harvestCommercialCandidates(seed, usedRoadKeys = new Set()) {
       const p = r.geometry.location;
       const name = r.name || '';
       const frontageBoost = /ruko|shop|mart|plaza|trade|boulevard|avenue/i.test(name) ? 8 : 0;
+      const corridorBias = /boulevard|avenue|main|sudirman|gatsu|thamrin|yani|pandanaran|ringroad/i.test(name) ? 10 : frontageBoost;
       return {
         lat: p.lat(),
         lng: p.lng(),
@@ -809,6 +810,7 @@ async function harvestCommercialCandidates(seed, usedRoadKeys = new Set()) {
         userRatingsTotal: r.user_ratings_total || 0,
         rating: r.rating || 0,
         frontageBoost,
+        corridorBias,
       };
     })
     .filter(c => !usedRoadKeys.has(c.roadKey))
@@ -860,8 +862,10 @@ async function validatePoiRoadCandidate(loc, usedRoadKeys = new Set()) {
       cur.roadKey = picked.roadKey;
       usedRoadKeys.add(picked.roadKey);
       const distFromAnchorKm = distanceKm(cur.lat, cur.lng, anchor.lat, anchor.lng);
-      cur.candidateScore = scoreCommercialCandidate(cur.fitScore || 0, roads.length, poi.length, distFromAnchorKm, cur.bucket || cur.zoneBucket || 'C');
-      cur.selectionReason = `dekat frontage/jalan (${roads.length}), cluster komersial (${poi.length}), referensi ${picked.name || 'terdekat'}`;
+      const corridorBias = cur.corridorBias || (/boulevard|avenue|main|sudirman|gatsu|thamrin|yani|pandanaran|ringroad/i.test(picked.name || '') ? 10 : (cur.frontageBoost || 0));
+      const overlapPenalty = cur.overlapPenalty || 0;
+      cur.candidateScore = scoreCommercialCandidate(cur.fitScore || 0, roads.length, poi.length, distFromAnchorKm, cur.bucket || cur.zoneBucket || 'C', corridorBias, overlapPenalty);
+      cur.selectionReason = `frontage ${roads.length > 0 ? 'kuat' : 'cukup'}, aktivitas komersial ${poi.length}, zoning ${cur.bucket || cur.zoneBucket || 'C'}, overlap ${overlapPenalty > 0 ? 'rendah dijaga' : 'rendah'}`;
       return cur;
     }
 
@@ -1642,6 +1646,7 @@ async function findBestLocation() {
       const harvested = await harvestCommercialCandidates(seed, usedRoadKeys);
       const chosen = harvested[0];
       const basePoint = chosen ? applyCoastGuard(chosen.lat, chosen.lng) : applyCoastGuard(seed.lat, seed.lng);
+      const overlapPenalty = cityCandidates.some(c => distanceKm(c.lat, c.lng, basePoint.lat, basePoint.lng) < 0.45) ? 12 : 0;
       cityCandidates.push({
         id: `${currentCityKey}_${idx}`,
         name: chosen?.name || `${city.hotspots[idx % city.hotspots.length]}, ${city.name}`,
@@ -1652,6 +1657,8 @@ async function findBestLocation() {
         fitScore,
         harvestedFrontage: harvested.length,
         frontageBoost: chosen?.frontageBoost || 0,
+        corridorBias: chosen?.corridorBias || 0,
+        overlapPenalty,
       });
       if (chosen?.roadKey) usedRoadKeys.add(chosen.roadKey);
     }
@@ -1739,6 +1746,7 @@ async function findBestLocation() {
           <span>📊 Score ${l.fitScore}</span>
           <span>🏬 Commercial Score ${l.candidateScore || '-'}</span>
           <span>🛣️ Street Priority ${l.streetPriority || '-'}</span>
+          <span>🧩 Overlap ${l.overlapPenalty ? 'guarded' : 'low'}</span>
           <span>📍 ${l.lat.toFixed(4)}, ${l.lng.toFixed(4)}</span>
           <span>${l.poiFallback ? '🛟 Inland fallback' : (l.poiValidated ? '🛣️ POI/Road OK' : '🔎 Validating')}</span>
           <span>${l.deconflicted ? '↔️ Deconflicted' : ''}</span>
