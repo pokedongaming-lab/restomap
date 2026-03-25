@@ -4,6 +4,16 @@ Format versi yang dipakai:
 - `REV-YYYYMMDD-XX`
 - Contoh: `REV-20260325-01`
 
+## REV-20260326-07
+- Commit: `(pending)`
+- Scope: Batch Map Infra B.2
+- Changes:
+  - Upgrade render regional heatmap ke polygon-like blocks / choropleth-lite
+  - Tambah pemisahan visual area agar warna regional tidak saling rapat
+  - Tambah label/alasan per area heat region
+- Reason:
+  - Melanjutkan Batch Map Infra B.2 agar heatmap wilayah lebih terbaca sebagai area administratif, bukan lingkaran bertumpuk
+
 ## REV-20260326-06
 - Commit: `e7031f9`
 - Scope: Batch Map Infra B — BPS-style regional heatmap foundation

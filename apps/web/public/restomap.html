@@ -1477,18 +1477,41 @@ function toggleHeatmap() {
   const regionalCells = selectedLoc?.regionalHeatmap || [];
   const drawRegional = (color, stroke, key) => {
     if (!regionalCells.length) return false;
-    regionalCells.forEach((cell) => {
+    regionalCells.forEach((cell, idx) => {
       const intensity = key === 'population' ? cell.factors.population : key === 'traffic' ? cell.factors.traffic : cell.factors.income;
-      heatmapCircles.push(new google.maps.Circle({
+      const latR = Math.max(0.0022, (cell.radius / 111000) * 0.7);
+      const lngR = Math.max(0.0022, (cell.radius / 111000) * 0.9);
+      const path = [
+        { lat: cell.center.lat - latR, lng: cell.center.lng - lngR },
+        { lat: cell.center.lat - latR * 0.3, lng: cell.center.lng + lngR },
+        { lat: cell.center.lat + latR, lng: cell.center.lng + lngR * 0.65 },
+        { lat: cell.center.lat + latR * 0.45, lng: cell.center.lng - lngR },
+      ];
+      const poly = new google.maps.Polygon({
         map,
-        center: cell.center,
-        radius: Math.max(260, cell.radius),
+        paths: path,
         fillColor: color,
-        fillOpacity: Math.max(0.08, Math.min(0.24, intensity / 500)),
+        fillOpacity: Math.max(0.10, Math.min(0.28, intensity / 450)),
         strokeColor: stroke,
-        strokeOpacity: 0.62,
-        strokeWeight: 1,
-      }));
+        strokeOpacity: 0.72,
+        strokeWeight: 1.5,
+      });
+      poly.addListener('click', () => {
+        const heatEl = document.getElementById('heatmapContent');
+        if (heatEl) {
+          heatEl.innerHTML = `<div style="padding:10px;background:var(--bg3);border:1px solid var(--b);border-radius:6px;font-size:10px;color:var(--t3)">
+            <div style="color:var(--a);font-size:9px;letter-spacing:1px;margin-bottom:6px">${cell.label.toUpperCase()}</div>
+            <div>Level: <strong>${cell.level}</strong></div>
+            <div>Score: <strong>${cell.score}</strong></div>
+            <div>Population: <strong>${cell.factors.population}</strong></div>
+            <div>Income: <strong>${cell.factors.income}</strong></div>
+            <div>Traffic: <strong>${cell.factors.traffic}</strong></div>
+            <div>Competition: <strong>${cell.factors.competition}</strong></div>
+            <div style="margin-top:6px;color:var(--t4)">${lang === 'id' ? 'Dipilih karena area administratif ini punya sinyal pasar yang kuat untuk radius aktif.' : 'Chosen because this administrative area shows stronger market signal for the active radius.'}</div>
+          </div>`;
+        }
+      });
+      voronoiPolygons.push(poly);
     });
     return true;
   };
