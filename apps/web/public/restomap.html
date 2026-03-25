@@ -1525,20 +1525,22 @@ async function findBestLocation() {
 
     const city = CITY_PRESETS[currentCityKey] || CITY_PRESETS.jakarta;
     const anchor = getCityInlandAnchor();
+    const requestedTopN = parseInt(document.getElementById('topNSelect')?.value || '5', 10);
+    const radiusMeters = parseInt(document.getElementById('radiusSlider')?.value || String(currentRadius || 1000), 10);
+    const radiusScale = Math.max(1, Math.min(8, radiusMeters / 1000));
     const primaryZoneSeeds = [
-      { bucket: 'C', lat: anchor.lat, lng: anchor.lng + 0.0022, type: 'cbd' },
-      { bucket: 'N', lat: anchor.lat + 0.0046, lng: anchor.lng + 0.0008, type: 'premium' },
-      { bucket: 'E', lat: anchor.lat + 0.0012, lng: anchor.lng + 0.0048, type: 'commercial' },
-      { bucket: 'S', lat: anchor.lat - 0.0048, lng: anchor.lng + 0.0010, type: 'trendy' },
-      { bucket: 'W', lat: anchor.lat + 0.0008, lng: anchor.lng - 0.0046, type: 'suburban' },
+      { bucket: 'C', lat: anchor.lat, lng: anchor.lng + 0.0022 * radiusScale, type: 'cbd' },
+      { bucket: 'N', lat: anchor.lat + 0.0046 * radiusScale, lng: anchor.lng + 0.0008 * radiusScale, type: 'premium' },
+      { bucket: 'E', lat: anchor.lat + 0.0012 * radiusScale, lng: anchor.lng + 0.0048 * radiusScale, type: 'commercial' },
+      { bucket: 'S', lat: anchor.lat - 0.0048 * radiusScale, lng: anchor.lng + 0.0010 * radiusScale, type: 'trendy' },
+      { bucket: 'W', lat: anchor.lat + 0.0008 * radiusScale, lng: anchor.lng - 0.0046 * radiusScale, type: 'suburban' },
     ];
     const secondaryZoneSeeds = [
-      { bucket: 'NE', lat: anchor.lat + 0.0038, lng: anchor.lng + 0.0038, type: 'premium' },
-      { bucket: 'SE', lat: anchor.lat - 0.0038, lng: anchor.lng + 0.0036, type: 'commercial' },
-      { bucket: 'SW', lat: anchor.lat - 0.0036, lng: anchor.lng - 0.0036, type: 'suburban' },
-      { bucket: 'NW', lat: anchor.lat + 0.0036, lng: anchor.lng - 0.0038, type: 'cbd' },
+      { bucket: 'NE', lat: anchor.lat + 0.0038 * radiusScale, lng: anchor.lng + 0.0038 * radiusScale, type: 'premium' },
+      { bucket: 'SE', lat: anchor.lat - 0.0038 * radiusScale, lng: anchor.lng + 0.0036 * radiusScale, type: 'commercial' },
+      { bucket: 'SW', lat: anchor.lat - 0.0036 * radiusScale, lng: anchor.lng - 0.0036 * radiusScale, type: 'suburban' },
+      { bucket: 'NW', lat: anchor.lat + 0.0036 * radiusScale, lng: anchor.lng - 0.0038 * radiusScale, type: 'cbd' },
     ];
-    const requestedTopN = parseInt(document.getElementById('topNSelect')?.value || '5', 10);
     const zoneSeeds = requestedTopN <= 5 ? primaryZoneSeeds : [...primaryZoneSeeds, ...secondaryZoneSeeds];
 
     // Generate candidates from explicit city zones first, not from one center-heavy cluster

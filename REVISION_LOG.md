@@ -4,6 +4,16 @@ Format versi yang dipakai:
 - `REV-YYYYMMDD-XX`
 - Contoh: `REV-20260325-01`
 
+## REV-20260325-55
+- Commit: `(pending)`
+- Scope: Make Top-N spread respond to radius
+- Changes:
+  - `findBestLocation()` kini membaca `radiusSlider/currentRadius` untuk membentuk `radiusScale`
+  - Seed zona primer/sekunder kini dikalikan `radiusScale`, sehingga saat radius diperluas, jarak antarkandidat ikut melebar
+  - Menghilangkan perilaku lama di mana marker terlihat tidak berubah meski radius sudah dibesarkan
+- Reason:
+  - Screenshot terbaru menunjukkan titik tetap berdekatan dan hampir tidak berubah saat radius diluaskan, berarti spread logic belum terhubung ke radius
+
 ## REV-20260325-54
 - Commit: `5877819`
 - Scope: Road uniqueness lock
