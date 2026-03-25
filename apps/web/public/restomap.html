@@ -82,9 +82,10 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--t);font-f
 
 .btn-builder{width:100%;padding:12px;background:var(--a);border:none;color:#000;font-size:11px;font-weight:bold;cursor:pointer;margin-top:10px}
 /* THEMES */
-.th-matrix{--bg:#000500;--bg2:#000a00;--bg3:#001100;--b:rgba(0,255,65,.14);--a:#00FF41;--t:#00E676}
-.th-arctic{--bg:#000B14;--bg2:#001122;--b:rgba(0,229,255,.14);--a:#00E5FF;--t:#80DEEA}
-.th-ember{--bg:#0D0000;--bg2:#150000;--b:rgba(255,61,0,.16);--a:#FF3D00;--t:#FFAB91}
+.th-dgrey{--bg:#111827;--bg2:#1f2937;--bg3:#374151;--panel:#1f2937;--b:rgba(148,163,184,.30);--b2:rgba(148,163,184,.55);--a:#f59e0b;--t:#f3f4f6;--t3:rgba(243,244,246,.86);--t4:rgba(243,244,246,.55)}
+.th-grey{--bg:#1f2937;--bg2:#334155;--bg3:#475569;--panel:#334155;--b:rgba(203,213,225,.28);--b2:rgba(203,213,225,.5);--a:#fb923c;--t:#f8fafc;--t3:rgba(248,250,252,.86);--t4:rgba(248,250,252,.55)}
+.th-navy{--bg:#081018;--bg2:#101a25;--bg3:#162232;--panel:#132030;--b:rgba(255,109,0,.22);--b2:rgba(255,109,0,.45);--a:#FF6D00;--t:#FFD08A;--t3:rgba(255,208,138,.86);--t4:rgba(255,208,138,.58)}
+.th-blue{--bg:#0f172a;--bg2:#1e3a8a;--bg3:#1e40af;--panel:#1e3a8a;--b:rgba(147,197,253,.28);--b2:rgba(147,197,253,.55);--a:#60a5fa;--t:#e0f2fe;--t3:rgba(224,242,254,.88);--t4:rgba(224,242,254,.58)}
 </style>
 </head>
 <body>
@@ -113,10 +114,10 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--t);font-f
     <button class="lang-btn" id="btnLangEN" onclick="setLang('en')">EN</button>
   </div>
   <div class="theme-grp">
-    <div class="tc on" style="background:#FF6D00" onclick="setTheme('')" title="Bloomberg"></div>
-    <div class="tc" style="background:#00FF41" onclick="setTheme('th-matrix')" title="Matrix"></div>
-    <div class="tc" style="background:#00E5FF" onclick="setTheme('th-arctic')" title="Arctic"></div>
-    <div class="tc" style="background:#FF3D00" onclick="setTheme('th-ember')" title="Ember"></div>
+    <div class="tc" style="background:#1f2937" onclick="setTheme('th-dgrey')" title="Dark Grey"></div>
+    <div class="tc" style="background:#334155" onclick="setTheme('th-grey')" title="Grey"></div>
+    <div class="tc on" style="background:#1e3a5f" onclick="setTheme('th-navy')" title="Navy"></div>
+    <div class="tc" style="background:#1d4ed8" onclick="setTheme('th-blue')" title="Blue"></div>
   </div>
 </div>
 
@@ -484,7 +485,8 @@ function setTheme(t) {
   theme = t;
   document.body.className = t;
   document.querySelectorAll('.tc').forEach(el => el.classList.remove('on'));
-  event.target.classList.add('on');
+  const target = window.event && window.event.target ? window.event.target : null;
+  if (target) target.classList.add('on');
 }
 
 function setTier(t, el) {

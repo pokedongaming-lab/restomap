@@ -6,7 +6,7 @@
 <title>RestoBuilder — RestoSuite</title>
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#030303;--bg2:#0a0a0a;--bg3:#111;--panel:#0d0d0d;--b:rgba(255,109,0,.15);--b2:rgba(255,109,0,.38);--a:#FF6D00;--a2:#FF8F00;--a3:rgba(255,109,0,.07);--t:#FFB74D;--t2:#FFA726;--t3:rgba(255,183,77,.45);--t4:rgba(255,183,77,.15);--pos:#69F0AE;--neg:#FF5252;--info:#4DA6FF;}
+:root{--bg:#081018;--bg2:#101a25;--bg3:#162232;--panel:#132030;--b:rgba(255,109,0,.22);--b2:rgba(255,109,0,.45);--a:#FF6D00;--a2:#FF8F00;--a3:rgba(255,109,0,.10);--t:#FFD08A;--t2:#FFB14A;--t3:rgba(255,208,138,.86);--t4:rgba(255,208,138,.58);--pos:#69F0AE;--neg:#FF5252;--info:#4DA6FF;}
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--t);font-family:'Share Tech Mono',monospace;font-size:11px}
 .tb{display:flex;align-items:center;height:38px;background:var(--bg2);border-bottom:1px solid var(--b2)}
@@ -24,6 +24,9 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--t);font-f
 .lang-grp{display:flex;align-items:center;gap:4px;padding:0 10px;border-left:1px solid var(--b)}
 .lang-btn{font-size:9px;cursor:pointer;padding:2px 6px;border:1px solid var(--b);color:var(--t3);background:none}
 .lang-btn.on{background:var(--a);border-color:var(--a);color:#000}
+.theme-grp{display:flex;align-items:center;gap:5px;padding:0 12px}
+.tc{width:13px;height:13px;border-radius:2px;cursor:pointer;border:1px solid transparent}
+.tc:hover,.tc.on{border-color:var(--t);transform:scale(1.2)}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.12}}
 
 .app{display:flex;height:calc(100vh - 38px)}
@@ -91,6 +94,12 @@ select.fi option{background:var(--bg3)}
 
 .btn-export{background:var(--pos);border:none;color:#000;padding:12px 24px;font-size:11px;font-weight:bold;cursor:pointer;margin:8px 4px}
 .btn-export:hover{opacity:0.9}
+
+/* THEMES */
+.th-dgrey{--bg:#111827;--bg2:#1f2937;--bg3:#374151;--panel:#1f2937;--b:rgba(148,163,184,.30);--b2:rgba(148,163,184,.55);--a:#f59e0b;--t:#f3f4f6;--t3:rgba(243,244,246,.86);--t4:rgba(243,244,246,.55)}
+.th-grey{--bg:#1f2937;--bg2:#334155;--bg3:#475569;--panel:#334155;--b:rgba(203,213,225,.28);--b2:rgba(203,213,225,.5);--a:#fb923c;--t:#f8fafc;--t3:rgba(248,250,252,.86);--t4:rgba(248,250,252,.55)}
+.th-navy{--bg:#081018;--bg2:#101a25;--bg3:#162232;--panel:#132030;--b:rgba(255,109,0,.22);--b2:rgba(255,109,0,.45);--a:#FF6D00;--t:#FFD08A;--t3:rgba(255,208,138,.86);--t4:rgba(255,208,138,.58)}
+.th-blue{--bg:#0f172a;--bg2:#1e3a8a;--bg3:#1e40af;--panel:#1e3a8a;--b:rgba(147,197,253,.28);--b2:rgba(147,197,253,.55);--a:#60a5fa;--t:#e0f2fe;--t3:rgba(224,242,254,.88);--t4:rgba(224,242,254,.58)}
 </style>
 </head>
 <body>
@@ -111,6 +120,12 @@ select.fi option{background:var(--bg3)}
   <div class="lang-grp">
     <button class="lang-btn on" id="btnLangID" onclick="setLangBuilder('id')">ID</button>
     <button class="lang-btn" id="btnLangEN" onclick="setLangBuilder('en')">EN</button>
+  </div>
+  <div class="theme-grp">
+    <div class="tc" style="background:#1f2937" onclick="setThemeBuilder('th-dgrey', this)" title="Dark Grey"></div>
+    <div class="tc" style="background:#334155" onclick="setThemeBuilder('th-grey', this)" title="Grey"></div>
+    <div class="tc on" style="background:#1e3a5f" onclick="setThemeBuilder('th-navy', this)" title="Navy"></div>
+    <div class="tc" style="background:#1d4ed8" onclick="setThemeBuilder('th-blue', this)" title="Blue"></div>
   </div>
 </div>
 
@@ -174,7 +189,15 @@ const methodMetrics = {
 document.getElementById('locationInfo').textContent = '📍 LOKASI: ' + locationData.city.toUpperCase() + ' (' + locationData.lat.toFixed(2) + ', ' + locationData.lng.toFixed(2) + ')';
 
 let lang = 'id';
+let themeBuilder = 'th-navy';
 function BL(idText, enText){ return lang === 'id' ? idText : enText; }
+
+function setThemeBuilder(themeClass, el){
+  themeBuilder = themeClass;
+  document.body.className = themeClass;
+  document.querySelectorAll('.tc').forEach(x => x.classList.remove('on'));
+  if (el) el.classList.add('on');
+}
 
 // ═══ STEPS - NEW ORDER ═══
 const STEPS_ID = [
@@ -514,6 +537,7 @@ function renderStep8(body) {
 }
 
 // INIT
+document.body.className = themeBuilder;
 renderStep();
 setInterval(() => {
   document.getElementById('clock').textContent = new Date().toLocaleTimeString(lang === 'id' ? 'id-ID' : 'en-US');

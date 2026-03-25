@@ -4,6 +4,17 @@ Format versi yang dipakai:
 - `REV-YYYYMMDD-XX`
 - Contoh: `REV-20260325-01`
 
+## REV-20260325-12
+- Commit: `(pending)`
+- Scope: Theme expansion (RestoMap + RestoBuilder)
+- Changes:
+  - Tambah pilihan tema non-hitam: Dark Grey, Grey, Navy, Blue
+  - Terapkan skema warna baru di RestoBuilder (sebelumnya dominan hitam)
+  - Tambah theme swatches di topbar RestoBuilder
+  - Sinkronkan default look & feel ke nuansa navy
+- Reason:
+  - Permintaan user agar tema tidak hanya hitam dan konsisten di kedua halaman
+
 ## REV-20260325-11
 - Commit: `9763f8f`
 - Scope: Readability + visual theme (RestoMap)
