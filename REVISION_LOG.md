@@ -5,7 +5,7 @@ Format versi yang dipakai:
 - Contoh: `REV-20260325-01`
 
 ## REV-20260325-28
-- Commit: `(pending)`
+- Commit: `f5e436c`
 - Scope: Monitoring ringan
 - Changes:
   - Tambah script `scripts/healthcheck-light.ps1`
