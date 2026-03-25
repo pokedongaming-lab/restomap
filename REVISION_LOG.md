@@ -4,6 +4,18 @@ Format versi yang dipakai:
 - `REV-YYYYMMDD-XX`
 - Contoh: `REV-20260325-01`
 
+## REV-20260325-37
+- Commit: `(pending)`
+- Scope: Batch B.6 Financial Model detail + infographic
+- Changes:
+  - Step 7 ditingkatkan ke mode skenario (Conservative/Base/Aggressive)
+  - Tambah KPI per skenario: revenue, profit, margin, BEP
+  - Tambah breakdown infografis (bar composition untuk COGS/Labor/Rent/Marketing)
+  - Tambah rekomendasi finansial otomatis berdasarkan base margin vs target
+  - Simpan hasil ke `builderModel.financial`
+- Reason:
+  - Menjalankan Batch B.6 sesuai arahan user (financial model lebih detail + infografis + recommendation)
+
 ## REV-20260325-36
 - Commit: `6f55e8e`
 - Scope: Batch B.5 Launch Strategy

@@ -845,31 +845,79 @@ function renderStep6(body) {
 
 // STEP 7: FINANCIAL MODEL (CALCULATED FROM ALL ABOVE)
 function renderStep7(body) {
-  const rev = restaurantData.seating * restaurantData.avgCheck * 26 * 0.7;
-  const cogs = rev * 0.30;
+  const baseRev = restaurantData.seating * restaurantData.avgCheck * 26 * 0.7;
+  const cogsPct = restaurantData.assumptions?.cogs || 0.30;
   const laborFactor = 0.9 + (methodMetrics.cannibal > 20 ? 0.15 : 0.05);
-  const labor = Math.round(25000000 * laborFactor);
+  const laborBase = Math.round(25000000 * laborFactor);
   const rent = restaurantData.spaceArea * 250000;
   const mmmFactor = Math.max(0.75, Math.min(1.25, methodMetrics.mmm / 70));
   const milpFactor = Math.max(0.75, Math.min(1.20, methodMetrics.milp / 70));
-  const optimizedMarketing = Math.round(restaurantData.marketingBudget * mmmFactor * milpFactor);
-  const opex = cogs + labor + rent + optimizedMarketing;
-  const profit = rev - opex;
+  const marketingBase = Math.round((restaurantData.marketingBudget || 5000000) * mmmFactor * milpFactor);
+
+  const scenarios = [
+    {key:'Conservative', mult:0.85},
+    {key:'Base', mult:1.00},
+    {key:'Aggressive', mult:1.15}
+  ].map(s => {
+    const rev = Math.round(baseRev * s.mult);
+    const cogs = Math.round(rev * cogsPct);
+    const labor = Math.round(laborBase * (s.mult > 1 ? 1.07 : s.mult < 1 ? 0.95 : 1));
+    const marketing = Math.round(marketingBase * (s.mult > 1 ? 1.10 : s.mult < 1 ? 0.9 : 1));
+    const opex = cogs + labor + rent + marketing;
+    const profit = rev - opex;
+    const margin = rev > 0 ? (profit / rev) * 100 : 0;
+    const capex = restaurantData.assumptions?.capex || 450000000;
+    const bep = profit > 0 ? Math.ceil(capex / profit) : null;
+    return { ...s, rev, cogs, labor, rent, marketing, opex, profit, margin, bep };
+  });
+
+  const base = scenarios.find(x => x.key === 'Base');
+  const recommendation = base.margin >= 18
+    ? BL('Lanjut ekspansi bertahap, fokus optimasi digital CAC.', 'Proceed with phased expansion, focus on digital CAC optimization.')
+    : base.margin >= 10
+      ? BL('Perlu optimasi COGS dan payroll sebelum scale-up.', 'Need COGS and payroll optimization before scaling up.')
+      : BL('Tunda scale-up, revisi pricing/mix dan efisiensi operasional.', 'Delay scale-up, revise pricing/mix and operations efficiency.');
+
+  builderModel.financial = { scenarios, selected: 'Base', recommendation };
+
+  const scenarioCards = scenarios.map(s => `
+    <div class="metric-box" style="border-color:${s.key==='Base'?'var(--a)':'var(--b)'}">
+      <div class="mb-label">${s.key.toUpperCase()}</div>
+      <div class="mb-val">Rp ${(s.rev/1000000).toFixed(1)}JT</div>
+      <div style="font-size:9px;color:${s.profit>=0?'var(--pos)':'var(--neg)'};margin-top:4px">${BL('Profit','Profit')}: ${(s.profit/1000000).toFixed(1)}JT</div>
+      <div style="font-size:9px;color:var(--t3)">${BL('Margin','Margin')}: ${s.margin.toFixed(1)}% · BEP: ${s.bep ? s.bep+' bln' : '>36 bln'}</div>
+    </div>
+  `).join('');
+
+  const bar = (label, value, total, color) => {
+    const pct = total > 0 ? Math.max(2, Math.round((value/total)*100)) : 0;
+    return `<div style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;font-size:9px;color:var(--t3)"><span>${label}</span><span>Rp ${(value/1000000).toFixed(1)}JT</span></div><div style="height:8px;background:rgba(255,255,255,.08);border-radius:999px;overflow:hidden"><div style="height:100%;width:${pct}%;background:${color}"></div></div></div>`;
+  };
+
   body.innerHTML = `
     <div class="section-title">💰 ${BL('FINANCIAL MODEL (DARI SEMUA STEP)','FINANCIAL MODEL (FROM ALL STEPS)')}</div>
-    <div class="metrics-grid">
-      <div class="metric-box"><div class="mb-label">${BL('REVENUE','REVENUE')}</div><div class="mb-val">Rp ${(rev/1000000).toFixed(1)}JT</div></div>
-      <div class="metric-box"><div class="mb-label">OPEX</div><div class="mb-val">Rp ${(opex/1000000).toFixed(1)}JT</div></div>
-      <div class="metric-box"><div class="mb-label">${BL('PROFIT','PROFIT')}</div><div class="mb-val ${profit>0?'pos':'neg'}">${profit>0?'+':'Rp '}${(profit>0?profit/1000000:profit/1000000).toFixed(1)}JT</div></div>
-    </div>
+    <div class="metrics-grid">${scenarioCards}</div>
+
     <div class="result-card">
-      <div class="rc-title">📊 ${BL('RINCIAN','BREAKDOWN')}</div>
-      <div class="rc-row"><span>${BL('Revenue','Revenue')}</span><span class="rc-value">Rp ${(rev/1000000).toFixed(1)}JT</span></div>
-      <div class="rc-row"><span>COGS (30%)</span><span class="rc-value">Rp ${(cogs/1000000).toFixed(1)}JT</span></div>
-      <div class="rc-row"><span>${BL('Labor','Labor')}</span><span class="rc-value">Rp ${(labor/1000000).toFixed(1)}JT</span></div>
-      <div class="rc-row"><span>${BL('Sewa','Rent')}</span><span class="rc-value">Rp ${(rent/1000000).toFixed(1)}JT</span></div>
-      <div class="rc-row"><span>${BL('Marketing (MMM+MILP)','Marketing (MMM+MILP)')}</span><span class="rc-value">Rp ${(optimizedMarketing/1000000).toFixed(1)}JT</span></div>
+      <div class="rc-title">📊 ${BL('BREAKDOWN BASE SCENARIO','BASE SCENARIO BREAKDOWN')}</div>
+      ${bar('Revenue', base.rev, base.rev, '#22c55e')}
+      ${bar('COGS', base.cogs, base.rev, '#f59e0b')}
+      ${bar('Labor', base.labor, base.rev, '#60a5fa')}
+      ${bar('Rent', base.rent, base.rev, '#a78bfa')}
+      ${bar('Marketing', base.marketing, base.rev, '#f97316')}
+      <div class="rc-row"><span>${BL('Net Profit','Net Profit')}</span><span class="rc-value" style="color:${base.profit>=0?'var(--pos)':'var(--neg)'}">Rp ${(base.profit/1000000).toFixed(1)}JT</span></div>
     </div>
+
+    <div class="ai-box">
+      <div class="ai-title">🤖 ${BL('REKOMENDASI FINANSIAL','FINANCIAL RECOMMENDATION')}</div>
+      <div class="ai-content">
+        ${recommendation}<br>
+        • ${BL('Target margin','Target margin')}: ${STANDARD_PARAMS.targetMarginPct}%<br>
+        • ${BL('Target payback','Target payback')}: ${STANDARD_PARAMS.targetPaybackMonths} ${BL('bulan','months')}<br>
+        • ${BL('Current base margin','Current base margin')}: <strong>${base.margin.toFixed(1)}%</strong>
+      </div>
+    </div>
+
     <button class="btn-nav" onclick="nextStep()">${BL('LANJUT KE RESULTS →','CONTINUE TO RESULTS →')}</button>
   `;
 }
