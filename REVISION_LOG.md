@@ -5,7 +5,7 @@ Format versi yang dipakai:
 - Contoh: `REV-20260325-01`
 
 ## REV-20260326-09
-- Commit: `(pending)`
+- Commit: `acceab4`
 - Scope: Batch Map Infra B.4
 - Changes:
   - Sinkronkan regional heatmap dengan best-location scoring
