@@ -4,6 +4,16 @@ Format versi yang dipakai:
 - `REV-YYYYMMDD-XX`
 - Contoh: `REV-20260325-01`
 
+## REV-20260326-17
+- Commit: `(pending)`
+- Scope: Product Refactor 1 — phase 2
+- Changes:
+  - Perkuat competitor retrieval dan klasifikasi direct/indirect agar lebih realistis
+  - Hubungkan hasil klasifikasi ke SWOT/cannibalization/score breakdown
+  - Tambah output decision-grade summary untuk competitor intelligence
+- Reason:
+  - Melanjutkan Product Refactor 1 agar competitor intelligence menjadi engine inti yang konsisten lintas tab
+
 ## REV-20260326-16
 - Commit: `dbdbab2`
 - Scope: Product Refactor 1 — Competitor Intelligence Core (phase 1)

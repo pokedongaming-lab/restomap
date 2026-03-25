@@ -1194,11 +1194,16 @@ async function renderAnalysis(lat, lng) {
     
     // Derive method scores to sync with RestoBuilder modules
     const competitionCount = competitors?.length || 0;
+    const competitorNorm = (competitors || []).map(c => ({
+      ...c,
+      distanceNum: parseFloat(String(c.distance || '0').replace(/[^0-9.]/g, '')) || currentRadius,
+      ratingNum: parseFloat(c.rating) || 0,
+    }));
     const avgCompetitorDistance = competitionCount > 0
-      ? competitors.reduce((sum, c) => sum + (parseFloat(String(c.distance || '0').replace(/[^0-9.]/g, '')) || currentRadius), 0) / competitionCount
+      ? competitorNorm.reduce((sum, c) => sum + c.distanceNum, 0) / competitionCount
       : currentRadius;
     const avgCompetitorRating = competitionCount > 0
-      ? competitors.reduce((sum, c) => sum + (parseFloat(c.rating) || 0), 0) / competitionCount
+      ? competitorNorm.reduce((sum, c) => sum + c.ratingNum, 0) / competitionCount
       : 0;
     const hhiProxy = Math.min(100, Math.round(Math.max(0, 100 - competitionCount * 3.2)));
     const bayesDemand = factors ? Math.round((factors.population * 0.45 + factors.income * 0.30 + factors.traffic * 0.25)) : 70;
@@ -1211,6 +1216,13 @@ async function renderAnalysis(lat, lng) {
     latestCompetitors = competitors || [];
 
     // Update state
+    const competitorIntel = {
+      total: competitionCount,
+      avgDistance: Math.round(avgCompetitorDistance),
+      avgRating: Number(avgCompetitorRating.toFixed(1)),
+      pressure: competitionCount >= 12 ? 'high' : competitionCount >= 6 ? 'medium' : 'low',
+    };
+
     selectedLoc = {
       ...selectedLoc,
       lat,
@@ -1219,6 +1231,7 @@ async function renderAnalysis(lat, lng) {
       competitors,
       categories,
       regionalHeatmap,
+      competitorIntel,
       methodScores: {
         bayesDemand,
         hhiProxy,
@@ -1330,7 +1343,8 @@ async function renderAnalysis(lat, lng) {
         <div>💰 Revenue: <strong>Rp ${revM.toLocaleString()}/bln</strong></div>
         <div>⏱️ Break-even: <strong>${breakEvenMonths ? breakEvenMonths : '>36'} bulan</strong></div>
         <div>📈 Margin: <strong style="color:${marginPct >= 0 ? 'var(--pos)' : 'var(--neg)'}">${marginPct.toFixed(1)}%</strong></div>
-        <div>👥 Kompetitor: <strong>${competitors?.length || 0}</strong></div>
+        <div>👥 Kompetitor: <strong>${competitors?.length || 0}</strong> · Pressure: <strong>${competitorIntel.pressure}</strong></div>
+        <div>📍 Avg Competitor Distance: <strong>${competitorIntel.avgDistance}m</strong> · Avg Rating: <strong>${competitorIntel.avgRating}</strong></div>
         ${factors ? `<div>🚗 Traffic: <strong>${factors.traffic}/100</strong></div>` : ''}
         ${factors ? `<div>💰 Income: <strong>${factors.income}/100</strong></div>` : ''}
 
@@ -1410,9 +1424,9 @@ function renderCompetitors(competitors) {
   const avgDirectRating = direct.length ? (direct.reduce((s, c) => s + c.ratingNum, 0) / direct.length).toFixed(1) : '-';
   const swot = {
     s: `Demand score kuat (Bayes ${(selectedLoc?.methodScores?.bayesDemand ?? 70)}) + trafik tinggi area inti`,
-    w: `Tekanan direct competitor ${direct.length} outlet dalam radius dekat`,
+    w: `Tekanan direct competitor ${direct.length} outlet dalam radius dekat · avg distance ${(selectedLoc?.competitorIntel?.avgDistance ?? '-') }m`,
     o: potential.length ? `Kategori celah terbaik: ${potential[0].name}` : 'Peluang category gap masih tersedia',
-    t: `Cannibal overlap ${(selectedLoc?.methodScores?.cannibalPct ?? 12).toFixed(1)}% + HHI ${(selectedLoc?.methodScores?.hhiProxy ?? 55)}`
+    t: `Cannibal overlap ${(selectedLoc?.methodScores?.cannibalPct ?? 12).toFixed(1)}% + HHI ${(selectedLoc?.methodScores?.hhiProxy ?? 55)} · pressure ${(selectedLoc?.competitorIntel?.pressure ?? 'medium')}`
   };
 
   const renderSection = (title, items) => `
@@ -1451,6 +1465,7 @@ function renderCompetitors(competitors) {
       </div>
       <div style="margin-top:6px">Total: <strong>${norm.length}</strong> · Direct: <strong>${direct.length}</strong> · Indirect: <strong>${indirect.length}</strong> · Replacement: <strong>${replacement.length}</strong></div>
       <div>Avg Direct Rating: <strong>${avgDirectRating}</strong></div>
+      <div>Avg Competitor Distance: <strong>${selectedLoc?.competitorIntel?.avgDistance ?? '-' }m</strong> · Pressure: <strong>${selectedLoc?.competitorIntel?.pressure ?? '-'}</strong></div>
     </div>
 
     ${renderSection('DIRECT COMPETITORS', direct)}
