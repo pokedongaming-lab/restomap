@@ -5,7 +5,7 @@ Format versi yang dipakai:
 - Contoh: `REV-20260325-01`
 
 ## REV-20260325-52
-- Commit: `(pending)`
+- Commit: `7e45c45`
 - Scope: Zone-seeded candidate generation
 - Changes:
   - `findBestLocation()` tidak lagi membangkitkan kandidat dari cluster radial tunggal
