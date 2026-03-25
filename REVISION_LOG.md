@@ -4,6 +4,17 @@ Format versi yang dipakai:
 - `REV-YYYYMMDD-XX`
 - Contoh: `REV-20260325-01`
 
+## REV-20260325-47
+- Commit: `(pending)`
+- Scope: Street-priority ranking + alasan pemilihan
+- Changes:
+  - Tambah normalisasi nama jalan dan `streetPriority` score berbasis fit score + kepadatan road/POI sekitar
+  - Top-N kini diurutkan ulang berdasarkan street priority, bukan score mentah saja
+  - Deduplikasi diperketat: marker pada jalan yang sama atau terlalu dekat dipisahkan
+  - Tiap opsi kini menyimpan dan menampilkan alasan kenapa dipilih (`rankReason` / `selectionReason`)
+- Reason:
+  - Menangani kasus titik #1 dan #4 masih terlalu berdekatan dan memenuhi requirement user agar setiap rekomendasi punya alasan pemilihan yang jelas
+
 ## REV-20260325-46
 - Commit: `62fe662`
 - Scope: De-overlap marker + road-aligned snapping

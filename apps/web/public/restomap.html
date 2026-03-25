@@ -795,6 +795,8 @@ async function validatePoiRoadCandidate(loc) {
       cur.poiCount = poi.length;
       cur.roadCount = roads.length;
       cur.poiRefName = bestRef.name;
+      cur.streetName = roads[0]?.name || bestRef.name || '';
+      cur.selectionReason = `Akses jalan ${roads.length}, POI ${poi.length}, referensi ${bestRef.name || 'terdekat'}`;
       return cur;
     }
 
@@ -810,15 +812,46 @@ async function validatePoiRoadCandidate(loc) {
   return cur;
 }
 
+function normalizeStreetName(name = '') {
+  return String(name || '')
+    .toLowerCase()
+    .replace(/jalan|jl\.?/g, '')
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function buildStreetPriorityScore(loc) {
+  const poiBonus = Math.min(18, (loc.poiCount || 0) * 2.2);
+  const roadBonus = Math.min(14, (loc.roadCount || 0) * 2.5);
+  const fit = loc.fitScore || 0;
+  return Math.round(fit * 0.72 + poiBonus + roadBonus);
+}
+
 function deconflictBestList(bestList) {
-  const minKm = 0.16;
+  const minKm = 0.22;
+  const usedStreets = new Set();
+
+  bestList.forEach((loc) => {
+    loc.streetPriority = buildStreetPriorityScore(loc);
+    const streetKey = normalizeStreetName(loc.streetName || loc.poiRefName || loc.displayName || loc.name);
+    loc.streetKey = streetKey;
+
+    if (streetKey && usedStreets.has(streetKey)) {
+      loc.streetConflict = true;
+    } else if (streetKey) {
+      usedStreets.add(streetKey);
+    }
+  });
+
   for (let i = 0; i < bestList.length; i++) {
     for (let j = i + 1; j < bestList.length; j++) {
       const a = bestList[i];
       const b = bestList[j];
+      const sameStreet = a.streetKey && b.streetKey && a.streetKey === b.streetKey;
       const dist = distanceKm(a.lat, a.lng, b.lat, b.lng);
-      if (dist < minKm) {
-        const push = 0.0014 + (j * 0.00035);
+      if (dist < minKm || sameStreet) {
+        const push = 0.0018 + (j * 0.00045);
         const moved = applyCoastGuard(b.lat + push, b.lng + push);
         b.lat = moved.lat;
         b.lng = moved.lng;
@@ -1475,9 +1508,12 @@ async function findBestLocation() {
   }));
 
   deconflictBestList(bestList);
-  await Promise.all(bestList.map(async (loc) => {
+  await Promise.all(bestList.map(async (loc, idx) => {
     loc.displayName = await reverseGeocodeLabel(loc.lat, loc.lng, loc.displayName || loc.name);
+    loc.selectionReason = loc.selectionReason || `Street priority ${loc.streetPriority || loc.fitScore}; akses jalan dan POI sekitar lebih kuat.`;
+    loc.rankReason = `${BL('Dipilih karena','Chosen because')} ${loc.selectionReason}`;
   }));
+  bestList.sort((a,b) => (b.streetPriority || b.fitScore) - (a.streetPriority || a.fitScore));
 
   // Clear previous best markers
   bestMarkers.forEach(m => m.setMap(null));
@@ -1537,10 +1573,12 @@ async function findBestLocation() {
         <div style="font-size:11px;color:${i===0?'var(--a)':'var(--t)'};margin-bottom:4px">#${i+1} ${l.displayName || l.name}</div>
         <div style="font-size:9px;color:var(--t3);display:flex;gap:12px;flex-wrap:wrap">
           <span>📊 Score ${l.fitScore}</span>
+          <span>🛣️ Street Priority ${l.streetPriority || '-'}</span>
           <span>📍 ${l.lat.toFixed(4)}, ${l.lng.toFixed(4)}</span>
           <span>${l.poiFallback ? '🛟 Inland fallback' : (l.poiValidated ? '🛣️ POI/Road OK' : '🔎 Validating')}</span>
           <span>${l.deconflicted ? '↔️ Deconflicted' : ''}</span>
         </div>
+        <div style="font-size:9px;color:var(--t4);margin-top:4px;line-height:1.6">${l.rankReason || ''}</div>
       </div>
     `).join('');
   }
