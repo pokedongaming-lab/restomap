@@ -4,6 +4,16 @@ Format versi yang dipakai:
 - `REV-YYYYMMDD-XX`
 - Contoh: `REV-20260325-01`
 
+## REV-20260325-52
+- Commit: `(pending)`
+- Scope: Zone-seeded candidate generation
+- Changes:
+  - `findBestLocation()` tidak lagi membangkitkan kandidat dari cluster radial tunggal
+  - Kandidat kini dibangkitkan dari seed zona eksplisit (C/N/E/S/W + diagonal) agar sebaran berbeda sejak awal
+  - Tujuan: mengurangi kebutuhan deconflict besar di tahap akhir dan mencegah titik #2/#3 bertumpuk sejak source generation
+- Reason:
+  - Menangani bukti terbaru bahwa marker masih menumpuk meski sudah ada zone spread pasca-proses
+
 ## REV-20260325-51
 - Commit: `b60575f`
 - Scope: Zone bucket allocation untuk Top-N

@@ -1512,23 +1512,30 @@ async function findBestLocation() {
 
     const city = CITY_PRESETS[currentCityKey] || CITY_PRESETS.jakarta;
     const anchor = getCityInlandAnchor();
-    const types = ['cbd','premium','commercial','trendy','suburban'];
+    const zoneSeeds = [
+      { bucket: 'C', lat: anchor.lat, lng: anchor.lng + 0.0022, type: 'cbd' },
+      { bucket: 'N', lat: anchor.lat + 0.0046, lng: anchor.lng + 0.0008, type: 'premium' },
+      { bucket: 'E', lat: anchor.lat + 0.0012, lng: anchor.lng + 0.0048, type: 'commercial' },
+      { bucket: 'S', lat: anchor.lat - 0.0048, lng: anchor.lng + 0.0010, type: 'trendy' },
+      { bucket: 'W', lat: anchor.lat + 0.0008, lng: anchor.lng - 0.0046, type: 'suburban' },
+      { bucket: 'NE', lat: anchor.lat + 0.0038, lng: anchor.lng + 0.0038, type: 'premium' },
+      { bucket: 'SE', lat: anchor.lat - 0.0038, lng: anchor.lng + 0.0036, type: 'commercial' },
+      { bucket: 'SW', lat: anchor.lat - 0.0036, lng: anchor.lng - 0.0036, type: 'suburban' },
+      { bucket: 'NW', lat: anchor.lat + 0.0036, lng: anchor.lng - 0.0038, type: 'cbd' },
+    ];
 
-    // Generate 12 city-local candidates around inland anchor to avoid coast/harbor bias
-    const cityCandidates = Array.from({ length: 12 }).map((_, idx) => {
-      const ring = 0.005 + (idx % 4) * 0.0045;
-      const ang = (idx / 12) * Math.PI * 2;
-      const latJitter = Math.cos(ang) * ring;
-      const lngJitter = Math.sin(ang) * ring;
-      const type = types[idx % types.length];
+    // Generate candidates from explicit city zones first, not from one center-heavy cluster
+    const cityCandidates = zoneSeeds.map((seed, idx) => {
+      const type = seed.type;
       const base = TYPE_STATS[type]?.score || 60;
       const roadFit = (type === 'cbd' || type === 'premium') ? (mainRoad * 0.6 + altRoad * 0.4) : (mainRoad * 0.4 + altRoad * 0.6);
       const fitScore = Math.round(base * 0.55 + traffic * 0.15 + buying * 0.15 + pop * 0.10 + roadFit * 0.05);
       return {
         id: `${currentCityKey}_${idx}`,
         name: `${city.hotspots[idx % city.hotspots.length]}, ${city.name}`,
-        ...applyCoastGuard(anchor.lat + latJitter, anchor.lng + lngJitter),
+        ...applyCoastGuard(seed.lat, seed.lng),
         type,
+        bucket: seed.bucket,
         fitScore,
       };
     });
