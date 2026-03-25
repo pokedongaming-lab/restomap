@@ -5,7 +5,7 @@ Format versi yang dipakai:
 - Contoh: `REV-20260325-01`
 
 ## REV-20260325-44
-- Commit: `(pending)`
+- Commit: `e7491ce`
 - Scope: City-specific coastal exclusion guard
 - Changes:
   - Tambah `coastGuard` per kota pantai untuk membatasi marker agar tidak melewati sisi pesisir tertentu
