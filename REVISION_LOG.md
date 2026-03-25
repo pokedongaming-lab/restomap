@@ -5,7 +5,7 @@ Format versi yang dipakai:
 - Contoh: `REV-20260325-01`
 
 ## REV-20260325-27
-- Commit: `(pending)`
+- Commit: `10b6338`
 - Scope: Ops quickstart documentation
 - Changes:
   - Tambah `RUNBOOK_60S.md` untuk verifikasi operasional super cepat
