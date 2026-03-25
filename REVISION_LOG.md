@@ -5,7 +5,7 @@ Format versi yang dipakai:
 - Contoh: `REV-20260325-01`
 
 ## REV-20260325-51
-- Commit: `(pending)`
+- Commit: `b60575f`
 - Scope: Zone bucket allocation untuk Top-N
 - Changes:
   - Tambah `assignZoneBucket()` dan `enforceZoneSpread()` agar Top-N disebar ke zona berbeda (C/N/E/S/W)
