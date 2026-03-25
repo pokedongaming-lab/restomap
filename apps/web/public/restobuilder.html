@@ -454,28 +454,81 @@ function renderStep1(body) {
 
 // STEP 2: MARKET ANALYSIS
 function renderStep2(body) {
+  const standards = { bayes: 70, hhi: 55, voronoi: 60, cannibal: 12, mmm: 65, milp: 62 };
+  const values = {
+    bayes: methodMetrics.bayes,
+    hhi: methodMetrics.hhi,
+    voronoi: methodMetrics.voronoi,
+    cannibal: methodMetrics.cannibal,
+    mmm: methodMetrics.mmm,
+    milp: methodMetrics.milp,
+  };
+
+  const objectiveScore = Math.round(
+    values.bayes * 0.26 +
+    (100 - values.hhi) * 0.18 +
+    values.voronoi * 0.18 +
+    (100 - values.cannibal * 2) * 0.12 +
+    values.mmm * 0.14 +
+    values.milp * 0.12
+  );
+
+  const row = (key, label, isLowerBetter = false) => {
+    const val = values[key];
+    const std = standards[key];
+    const better = isLowerBetter ? val <= std : val >= std;
+    const delta = (val - std).toFixed(1);
+    const bar = Math.max(0, Math.min(100, isLowerBetter ? (100 - val) : val));
+    return `
+      <div style="background:var(--bg3);border:1px solid var(--b);padding:8px;border-radius:6px;margin-bottom:7px">
+        <div style="display:flex;justify-content:space-between;align-items:center;font-size:9px;color:var(--t3);margin-bottom:4px">
+          <span>${label}</span>
+          <span><strong>${val.toFixed(1)}</strong> / Std ${std} · <span style="color:${better?'var(--pos)':'var(--neg)'}">${delta >= 0 ? '+' : ''}${delta}</span></span>
+        </div>
+        <div style="height:7px;background:rgba(255,255,255,.08);border-radius:999px;overflow:hidden">
+          <div style="height:100%;width:${bar}%;background:${better?'#22c55e':'#f97316'}"></div>
+        </div>
+      </div>
+    `;
+  };
+
+  const objectiveLabel = objectiveScore >= 78 ? BL('SANGAT MENARIK','HIGHLY ATTRACTIVE') : objectiveScore >= 62 ? BL('MENARIK','ATTRACTIVE') : BL('PERLU VALIDASI','NEEDS VALIDATION');
+
+  builderModel.marketAnalysis = {
+    objectiveScore,
+    standards,
+    values,
+    verdict: objectiveLabel
+  };
+
   body.innerHTML = `
     <div class="metrics-grid">
-      <div class="metric-box"><div class="mb-label">${BL('BAYES DEMAND','BAYES DEMAND')}</div><div class="mb-val">${methodMetrics.bayes.toFixed(0)}</div></div>
-      <div class="metric-box"><div class="mb-label">${BL('HHI KOMPETISI','HHI COMPETITION')}</div><div class="mb-val">${methodMetrics.hhi.toFixed(0)}</div></div>
-      <div class="metric-box"><div class="mb-label">${BL('VORONOI GAP','VORONOI GAP')}</div><div class="mb-val">${methodMetrics.voronoi.toFixed(0)}</div></div>
+      <div class="metric-box"><div class="mb-label">${BL('OBJECTIVE MARKET SCORE','OBJECTIVE MARKET SCORE')}</div><div class="mb-val" style="color:var(--a)">${objectiveScore}</div></div>
+      <div class="metric-box"><div class="mb-label">${BL('VS STANDARD','VS STANDARD')}</div><div class="mb-val">${objectiveLabel}</div></div>
+      <div class="metric-box"><div class="mb-label">${BL('CITY','CITY')}</div><div class="mb-val">${locationData.city}</div></div>
     </div>
-    <div class="metrics-grid">
-      <div class="metric-box"><div class="mb-label">${BL('CANNIBAL OVERLAP','CANNIBAL OVERLAP')}</div><div class="mb-val">${methodMetrics.cannibal.toFixed(1)}%</div></div>
-      <div class="metric-box"><div class="mb-label">${BL('MMM EFISIENSI','MMM EFFICIENCY')}</div><div class="mb-val">${methodMetrics.mmm.toFixed(0)}</div></div>
-      <div class="metric-box"><div class="mb-label">${BL('MILP FEASIBILITY','MILP FEASIBILITY')}</div><div class="mb-val">${methodMetrics.milp.toFixed(0)}</div></div>
-    </div>
+
+    <div class="section-title">📊 ${BL('MARKET INFOGRAFIS INTERAKTIF','INTERACTIVE MARKET INFOGRAPHICS')}</div>
+    ${row('bayes', 'Bayes Demand')}
+    ${row('hhi', 'HHI Competition', true)}
+    ${row('voronoi', 'Voronoi Gap')}
+    ${row('cannibal', 'Cannibal Overlap', true)}
+    ${row('mmm', 'MMM Efficiency')}
+    ${row('milp', 'MILP Feasibility')}
+
     <div class="form-grid">
       <div class="fg"><div class="fl">${BL('TARGET MARKET','TARGET MARKET')}</div><select class="fi"><option>${BL('Urban Professional','Urban Professional')}</option><option>${BL('Keluarga','Family')}</option></select></div>
       <div class="fg"><div class="fl">${BL('TREN','TREND')}</div><select class="fi"><option>${BL('Bertumbuh','Growing')}</option><option>${BL('Stabil','Stable')}</option></select></div>
     </div>
+
     <div class="ai-box">
       <div class="ai-title">🤖 ${BL('AI MARKET INSIGHTS','AI MARKET INSIGHTS')}</div>
       <div class="ai-content">
         📈 ${locationData.city} ${BL('tren positif','has positive trend')}<br>
+        🎯 ${BL('Objective score','Objective score')}: <strong>${objectiveScore}</strong> (${objectiveLabel})<br>
         🧠 ${BL('Model Bayes + HHI menunjukkan tekanan kompetisi','Bayes + HHI model indicates competition pressure')} <strong>${methodMetrics.hhi.toFixed(0)}</strong><br>
         🗺️ ${BL('Voronoi gap score','Voronoi gap score')}: <strong>${methodMetrics.voronoi.toFixed(0)}</strong><br>
-        🎯 ${BL('Rekomendasi','Recommendation')}: ${restaurantData.concept === 'coffee' ? 'Coffee culture' : 'Quality experience'}
+        ✅ ${BL('Rekomendasi','Recommendation')}: ${objectiveScore >= 62 ? BL('Lanjut ke desain menu berbasis segmen target.','Proceed to target-segment menu design.') : BL('Perkuat diferensiasi sebelum lanjut.','Strengthen differentiation before proceeding.')}
       </div>
     </div>
     <button class="btn-nav" onclick="nextStep()">${BL('LANJUT KE MENU →','CONTINUE TO MENU →')}</button>

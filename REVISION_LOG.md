@@ -4,6 +4,17 @@ Format versi yang dipakai:
 - `REV-YYYYMMDD-XX`
 - Contoh: `REV-20260325-01`
 
+## REV-20260325-32
+- Commit: `(pending)`
+- Scope: Batch B.1 Market Analysis infografis interaktif
+- Changes:
+  - Step 2 diubah menjadi market infographic interaktif berbasis bar progress per metrik
+  - Tambah perbandingan objektif vs standard parameter (delta + status)
+  - Tambah Objective Market Score dengan verdict otomatis
+  - Simpan hasil ke `builderModel.marketAnalysis` untuk dipakai step berikutnya
+- Reason:
+  - Menjalankan Batch B.1 sesuai arahan user (interactive market analysis + objective vs standard)
+
 ## REV-20260325-31
 - Commit: `6c88a5d`
 - Scope: Batch A foundation sync
