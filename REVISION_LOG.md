@@ -4,6 +4,16 @@ Format versi yang dipakai:
 - `REV-YYYYMMDD-XX`
 - Contoh: `REV-20260325-01`
 
+## REV-20260326-25
+- Commit: `(pending)`
+- Scope: Product Refactor 2 — phase 5
+- Changes:
+  - Final QA dan cleanup best-location engine
+  - Rapikan display / explainability hasil Top-N agar lebih siap dicek user
+  - Tutup technical debt utama pada ranking output
+- Reason:
+  - Menutup Product Refactor 2 dengan batch stabilisasi akhir sebelum user review lebih intensif
+
 ## REV-20260326-24
 - Commit: `639d225`
 - Scope: Product Refactor 2 — phase 4

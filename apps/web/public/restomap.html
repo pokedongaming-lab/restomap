@@ -1916,7 +1916,8 @@ async function findBestLocation() {
     if (strongestRegion) {
       loc.selectionReason += `; didukung region ${strongestRegion.label} (score ${strongestRegion.score})`;
     }
-    loc.rankReason = `${lang === 'id' ? 'Dipilih karena' : 'Chosen because'} ${loc.selectionReason}`;
+    loc.rankReason = `${lang === 'id' ? 'Dipilih karena' : 'Chosen because'} ${loc.selectionReason}`
+      .replaceAll('; ', ' • ');
   }
   const stabilized = stabilizeBestList(bestList);
   bestList.splice(0, bestList.length, ...stabilized);
@@ -1933,7 +1934,7 @@ async function findBestLocation() {
       position: { lat: loc.lat, lng: loc.lng },
       map,
       label: { text: String(idx + 1), color: '#fff', fontWeight: '700' },
-      title: `${idx+1}. ${loc.displayName || loc.name} (${loc.fitScore})`,
+      title: `${loc.stableRank || (idx+1)}. ${loc.displayName || loc.name} (${loc.finalScore || loc.fitScore})`,
       icon: {
         path: google.maps.SymbolPath.CIRCLE,
         scale: 9,
@@ -1976,7 +1977,7 @@ async function findBestLocation() {
   if (listEl) {
     listEl.innerHTML = bestList.map((l, i) => `
       <div style="background:var(--bg3);border:1px solid var(--b);padding:10px;margin-bottom:8px;border-radius:4px">
-        <div style="font-size:11px;color:${i===0?'var(--a)':'var(--t)'};margin-bottom:4px">#${i+1} ${l.displayName || l.name}</div>
+        <div style="font-size:11px;color:${i===0?'var(--a)':'var(--t)'};margin-bottom:4px">#${l.stableRank || (i+1)} ${l.displayName || l.name}</div>
         <div style="font-size:9px;color:var(--t3);display:flex;gap:12px;flex-wrap:wrap">
           <span>📊 Score ${l.fitScore}</span>
           <span>🎯 Final Score ${l.finalScore || l.candidateScore || '-'}</span>
