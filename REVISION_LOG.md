@@ -5,7 +5,7 @@ Format versi yang dipakai:
 - Contoh: `REV-20260325-01`
 
 ## REV-20260326-22
-- Commit: `(pending)`
+- Commit: `a17c47a`
 - Scope: Product Refactor 2 — phase 2
 - Changes:
   - Integrasikan regional support dan competitor pressure langsung ke skor kandidat akhir
