@@ -1884,6 +1884,17 @@ async function findBestLocation() {
     const corridorReason = loc.roadClass === 'main' ? 'main corridor frontage' : 'secondary connector frontage';
     const voronoiReason = `Voronoi opportunity didorong ${dominant.key}`;
     const competitorPressure = selectedLoc?.competitorIntel?.pressure || 'medium';
+    const regionalSupport = strongestRegion ? Math.round(strongestRegion.score * 0.18) : 0;
+    const competitorPenalty = selectedLoc?.competitorIntel?.severity || 0;
+    const voronoiBoost = Math.round((dominant.value || 0) * 0.08);
+    loc.finalScore = Math.max(1, Math.min(100, Math.round((loc.candidateScore || loc.fitScore || 50) + regionalSupport + voronoiBoost - competitorPenalty)));
+    loc.intelligenceBreakdown = {
+      ...(loc.intelligenceBreakdown || {}),
+      regionalSupport,
+      competitorPenalty,
+      voronoiBoost,
+      finalScore: loc.finalScore,
+    };
     loc.selectionReason = loc.selectionReason || `dekat frontage komersial, akses jalan lebih kuat, dan POI sekitar lebih aktif`;
     loc.selectionReason = `${corridorReason}; ${loc.selectionReason}; ${voronoiReason}; competitor pressure ${competitorPressure}`;
     if (strongestRegion) {
@@ -1891,7 +1902,7 @@ async function findBestLocation() {
     }
     loc.rankReason = `${lang === 'id' ? 'Dipilih karena' : 'Chosen because'} ${loc.selectionReason}`;
   }
-  bestList.sort((a,b) => (b.candidateScore || b.streetPriority || b.fitScore) - (a.candidateScore || a.streetPriority || a.fitScore));
+  bestList.sort((a,b) => (b.finalScore || b.candidateScore || b.streetPriority || b.fitScore) - (a.finalScore || a.candidateScore || a.streetPriority || a.fitScore));
 
   // Clear previous best markers
   bestMarkers.forEach(m => m.setMap(null));
@@ -1951,6 +1962,7 @@ async function findBestLocation() {
         <div style="font-size:11px;color:${i===0?'var(--a)':'var(--t)'};margin-bottom:4px">#${i+1} ${l.displayName || l.name}</div>
         <div style="font-size:9px;color:var(--t3);display:flex;gap:12px;flex-wrap:wrap">
           <span>📊 Score ${l.fitScore}</span>
+          <span>🎯 Final Score ${l.finalScore || l.candidateScore || '-'}</span>
           <span>🏬 Commercial Score ${l.candidateScore || '-'}</span>
           <span>🛣️ Street Priority ${l.streetPriority || '-'}</span>
           <span>🛣️ Class ${l.roadClass || l.preferredRoadClass || '-'}</span>
@@ -1963,7 +1975,7 @@ async function findBestLocation() {
           <span>${l.noResnap ? '📌 Pinned zone' : ''}</span>
         </div>
         <div style="font-size:9px;color:var(--t4);margin-top:4px;line-height:1.6">${l.rankReason || ''}</div>
-        <div style="font-size:8px;color:var(--t4);margin-top:4px">Base ${l.intelligenceBreakdown?.baseFit ?? '-'} · Road ${l.intelligenceBreakdown?.roadAccess ?? '-'} · Activity ${l.intelligenceBreakdown?.commercialActivity ?? '-'} · Corridor ${l.intelligenceBreakdown?.corridorBias ?? '-'} · Zone ${l.intelligenceBreakdown?.zone ?? '-'}</div>
+        <div style="font-size:8px;color:var(--t4);margin-top:4px">Base ${l.intelligenceBreakdown?.baseFit ?? '-'} · Road ${l.intelligenceBreakdown?.roadAccess ?? '-'} · Activity ${l.intelligenceBreakdown?.commercialActivity ?? '-'} · Corridor ${l.intelligenceBreakdown?.corridorBias ?? '-'} · Region +${l.intelligenceBreakdown?.regionalSupport ?? '-'} · Voronoi +${l.intelligenceBreakdown?.voronoiBoost ?? '-'} · Competitor -${l.intelligenceBreakdown?.competitorPenalty ?? '-'} · Zone ${l.intelligenceBreakdown?.zone ?? '-'}</div>
       </div>
     `).join('');
   }

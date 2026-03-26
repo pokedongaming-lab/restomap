@@ -4,6 +4,16 @@ Format versi yang dipakai:
 - `REV-YYYYMMDD-XX`
 - Contoh: `REV-20260325-01`
 
+## REV-20260326-22
+- Commit: `(pending)`
+- Scope: Product Refactor 2 — phase 2
+- Changes:
+  - Integrasikan regional support dan competitor pressure langsung ke skor kandidat akhir
+  - Rapikan formula ranking best-location agar lebih matematis dan locator-grade
+  - Perkuat breakdown score untuk audit keputusan
+- Reason:
+  - Melanjutkan Product Refactor 2 agar best-location tidak hanya punya reason yang kaya, tetapi juga score akhir yang benar-benar mencerminkan intelligence layers utama
+
 ## REV-20260326-21
 - Commit: `8df14a8`
 - Scope: Product Refactor 2 — Best Location Intelligence Core (phase 1)
