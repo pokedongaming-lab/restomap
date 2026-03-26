@@ -1216,10 +1216,11 @@ async function renderAnalysis(lat, lng) {
   
   try {
     // Fetch from API
+    const normalizedCategory = (currentCategory || '').trim().toLowerCase();
     const [factors, regionalHeatmap, competitors, categories] = await Promise.all([
       fetchHeatmapFactors(lat, lng, currentRadius),
       fetchRegionalHeatmap(lat, lng, currentRadius),
-      fetchCompetitors(lat, lng, currentRadius, currentCategory),
+      fetchCompetitors(lat, lng, currentRadius, normalizedCategory),
       fetchGapCategory(lat, lng, currentRadius)
     ]);
     

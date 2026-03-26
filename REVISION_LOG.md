@@ -4,6 +4,16 @@ Format versi yang dipakai:
 - `REV-YYYYMMDD-XX`
 - Contoh: `REV-20260325-01`
 
+## REV-20260326-26
+- Commit: `(pending)`
+- Scope: Stabilization + boundary heatmap (phase 1)
+- Changes:
+  - Audit integrasi category → competitor → AI agar refresh lebih konsisten
+  - Siapkan fondasi heatmap boundary-aware berbasis wilayah administratif ringan
+  - Kurangi gap antar modul sebelum upgrade visual boundary penuh
+- Reason:
+  - Menjalankan batch stabilisasi + boundary heatmap sesuai arahan user setelah ditemukan competitor/AI masih kosong dan heatmap wilayah belum cukup boundary-aware
+
 ## REV-20260326-25
 - Commit: `b620687`
 - Scope: Product Refactor 2 — phase 5
