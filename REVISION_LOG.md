@@ -4,6 +4,16 @@ Format versi yang dipakai:
 - `REV-YYYYMMDD-XX`
 - Contoh: `REV-20260325-01`
 
+## REV-20260326-23
+- Commit: `(pending)`
+- Scope: Product Refactor 2 — phase 3
+- Changes:
+  - Kalibrasi bobot ranking best-location agar lebih stabil lintas kota
+  - Kurangi distorsi dari fallback/seed dengan normalisasi score dan penalty cap
+  - Perkuat output audit score agar QA ranking engine lebih mudah
+- Reason:
+  - Melanjutkan Product Refactor 2 untuk menstabilkan ranking engine dan mengurangi perilaku yang terlalu sensitif terhadap fallback heuristics
+
 ## REV-20260326-22
 - Commit: `a17c47a`
 - Scope: Product Refactor 2 — phase 2

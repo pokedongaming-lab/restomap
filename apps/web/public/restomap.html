@@ -1884,15 +1884,19 @@ async function findBestLocation() {
     const corridorReason = loc.roadClass === 'main' ? 'main corridor frontage' : 'secondary connector frontage';
     const voronoiReason = `Voronoi opportunity didorong ${dominant.key}`;
     const competitorPressure = selectedLoc?.competitorIntel?.pressure || 'medium';
-    const regionalSupport = strongestRegion ? Math.round(strongestRegion.score * 0.18) : 0;
-    const competitorPenalty = selectedLoc?.competitorIntel?.severity || 0;
-    const voronoiBoost = Math.round((dominant.value || 0) * 0.08);
-    loc.finalScore = Math.max(1, Math.min(100, Math.round((loc.candidateScore || loc.fitScore || 50) + regionalSupport + voronoiBoost - competitorPenalty)));
+    const baseCandidate = Math.max(35, Math.min(92, loc.candidateScore || loc.fitScore || 50));
+    const regionalSupport = strongestRegion ? Math.min(14, Math.round(strongestRegion.score * 0.14)) : 0;
+    const competitorPenalty = Math.min(18, selectedLoc?.competitorIntel?.severity || 0);
+    const voronoiBoost = Math.min(9, Math.round((dominant.value || 0) * 0.06));
+    const fallbackPenalty = loc.poiFallback ? 6 : 0;
+    loc.finalScore = Math.max(1, Math.min(100, Math.round(baseCandidate + regionalSupport + voronoiBoost - competitorPenalty - fallbackPenalty)));
     loc.intelligenceBreakdown = {
       ...(loc.intelligenceBreakdown || {}),
+      baseCandidate,
       regionalSupport,
       competitorPenalty,
       voronoiBoost,
+      fallbackPenalty,
       finalScore: loc.finalScore,
     };
     loc.selectionReason = loc.selectionReason || `dekat frontage komersial, akses jalan lebih kuat, dan POI sekitar lebih aktif`;
@@ -1975,7 +1979,7 @@ async function findBestLocation() {
           <span>${l.noResnap ? '📌 Pinned zone' : ''}</span>
         </div>
         <div style="font-size:9px;color:var(--t4);margin-top:4px;line-height:1.6">${l.rankReason || ''}</div>
-        <div style="font-size:8px;color:var(--t4);margin-top:4px">Base ${l.intelligenceBreakdown?.baseFit ?? '-'} · Road ${l.intelligenceBreakdown?.roadAccess ?? '-'} · Activity ${l.intelligenceBreakdown?.commercialActivity ?? '-'} · Corridor ${l.intelligenceBreakdown?.corridorBias ?? '-'} · Region +${l.intelligenceBreakdown?.regionalSupport ?? '-'} · Voronoi +${l.intelligenceBreakdown?.voronoiBoost ?? '-'} · Competitor -${l.intelligenceBreakdown?.competitorPenalty ?? '-'} · Zone ${l.intelligenceBreakdown?.zone ?? '-'}</div>
+        <div style="font-size:8px;color:var(--t4);margin-top:4px">Base ${l.intelligenceBreakdown?.baseCandidate ?? l.intelligenceBreakdown?.baseFit ?? '-'} · Road ${l.intelligenceBreakdown?.roadAccess ?? '-'} · Activity ${l.intelligenceBreakdown?.commercialActivity ?? '-'} · Corridor ${l.intelligenceBreakdown?.corridorBias ?? '-'} · Region +${l.intelligenceBreakdown?.regionalSupport ?? '-'} · Voronoi +${l.intelligenceBreakdown?.voronoiBoost ?? '-'} · Competitor -${l.intelligenceBreakdown?.competitorPenalty ?? '-'} · Fallback -${l.intelligenceBreakdown?.fallbackPenalty ?? '0'} · Zone ${l.intelligenceBreakdown?.zone ?? '-'}</div>
       </div>
     `).join('');
   }
