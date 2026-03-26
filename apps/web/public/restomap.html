@@ -1032,6 +1032,18 @@ function finalDistanceLock(bestList) {
   return bestList;
 }
 
+function stabilizeBestList(bestList) {
+  return bestList
+    .sort((a, b) => {
+      const scoreDelta = (b.finalScore || 0) - (a.finalScore || 0);
+      if (Math.abs(scoreDelta) > 2) return scoreDelta;
+      const distA = distanceKm(a.lat, a.lng, getCityInlandAnchor().lat, getCityInlandAnchor().lng);
+      const distB = distanceKm(b.lat, b.lng, getCityInlandAnchor().lat, getCityInlandAnchor().lng);
+      return distB - distA;
+    })
+    .map((loc, idx) => ({ ...loc, stableRank: idx + 1 }));
+}
+
 function deconflictBestList(bestList) {
   const minKm = 0.35;
   const anchor = getCityInlandAnchor();
@@ -1906,7 +1918,8 @@ async function findBestLocation() {
     }
     loc.rankReason = `${lang === 'id' ? 'Dipilih karena' : 'Chosen because'} ${loc.selectionReason}`;
   }
-  bestList.sort((a,b) => (b.finalScore || b.candidateScore || b.streetPriority || b.fitScore) - (a.finalScore || a.candidateScore || a.streetPriority || a.fitScore));
+  const stabilized = stabilizeBestList(bestList);
+  bestList.splice(0, bestList.length, ...stabilized);
 
   // Clear previous best markers
   bestMarkers.forEach(m => m.setMap(null));

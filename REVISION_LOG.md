@@ -4,6 +4,16 @@ Format versi yang dipakai:
 - `REV-YYYYMMDD-XX`
 - Contoh: `REV-20260325-01`
 
+## REV-20260326-24
+- Commit: `(pending)`
+- Scope: Product Refactor 2 — phase 4
+- Changes:
+  - QA end-to-end best-location engine dan rapikan candidate generation vs ranking vs visual output
+  - Tambah guard agar hasil map lebih sinkron dengan ekspektasi bisnis
+  - Perkuat consistency layer untuk hasil Top-N lintas kota
+- Reason:
+  - Melanjutkan Product Refactor 2 agar best-location engine lebih final dan siap masuk ke tahap stabilisasi produk
+
 ## REV-20260326-23
 - Commit: `8bbb1ae`
 - Scope: Product Refactor 2 — phase 3
