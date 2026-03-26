@@ -5,7 +5,7 @@ Format versi yang dipakai:
 - Contoh: `REV-20260325-01`
 
 ## REV-20260326-26
-- Commit: `(pending)`
+- Commit: `02a80e1`
 - Scope: Stabilization + boundary heatmap (phase 1)
 - Changes:
   - Audit integrasi category → competitor → AI agar refresh lebih konsisten
