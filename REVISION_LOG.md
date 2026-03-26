@@ -5,7 +5,7 @@ Format versi yang dipakai:
 - Contoh: `REV-20260325-01`
 
 ## REV-20260326-23
-- Commit: `(pending)`
+- Commit: `8bbb1ae`
 - Scope: Product Refactor 2 — phase 3
 - Changes:
   - Kalibrasi bobot ranking best-location agar lebih stabil lintas kota
